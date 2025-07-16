@@ -307,10 +307,7 @@ export class NotentionApp extends HTMLElement {
       <div class="app-container">
         <!-- Sidebar Overlay for Mobile -->
         <div class="sidebar-overlay ${!this.sidebarCollapsed ? "show" : ""}" 
-             @click="${() => {
-               this.sidebarCollapsed = true;
-               this.render();
-             }}"></div>
+             data-action="close-sidebar"></div>
 
         <!-- Sidebar -->
         <div class="sidebar-container ${this.sidebarCollapsed ? "collapsed" : ""} ${!this.sidebarCollapsed ? "show" : ""}">
@@ -322,10 +319,7 @@ export class NotentionApp extends HTMLElement {
           <!-- App Header -->
           <header class="app-header">
             <div class="header-left">
-              <button class="toggle-sidebar-btn" @click="${() => {
-                this.sidebarCollapsed = !this.sidebarCollapsed;
-                this.render();
-              }}">
+              <button class="toggle-sidebar-btn" data-action="toggle-sidebar">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M3 12h18m-9-9v18"></path>
                 </svg>
@@ -354,7 +348,7 @@ export class NotentionApp extends HTMLElement {
     if (!this.shadowRoot) return;
 
     // Toggle sidebar button
-    const toggleBtn = this.shadowRoot.querySelector(".toggle-sidebar-btn");
+    const toggleBtn = this.shadowRoot.querySelector('[data-action="toggle-sidebar"]');
     if (toggleBtn) {
       toggleBtn.addEventListener("click", () => {
         this.sidebarCollapsed = !this.sidebarCollapsed;
@@ -363,7 +357,7 @@ export class NotentionApp extends HTMLElement {
     }
 
     // Sidebar overlay
-    const overlay = this.shadowRoot.querySelector(".sidebar-overlay");
+    const overlay = this.shadowRoot.querySelector('[data-action="close-sidebar"]');
     if (overlay) {
       overlay.addEventListener("click", () => {
         this.sidebarCollapsed = true;

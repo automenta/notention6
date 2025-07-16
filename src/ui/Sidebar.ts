@@ -327,7 +327,7 @@ export class Sidebar extends HTMLElement {
         <!-- Sidebar Header -->
         <div class="sidebar-header">
           <h1 class="sidebar-title">Notention</h1>
-          <button class="new-note-button" @click="${() => this.handleNewNote()}">
+          <button class="new-note-button" data-action="new-note">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               ${this.getIcon("plus")}
             </svg>
@@ -345,7 +345,7 @@ export class Sidebar extends HTMLElement {
                 <button 
                   class="nav-button ${tab.id === this.currentView ? "active" : ""}"
                   data-tab="${tab.id}"
-                  @click="${() => this.handleTabClick(tab.id)}"
+                  data-action="handle-tab-click"
                 >
                   <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     ${this.getIcon(tab.icon)}
@@ -383,13 +383,13 @@ export class Sidebar extends HTMLElement {
     if (!this.shadowRoot) return;
 
     // New note button
-    const newNoteButton = this.shadowRoot.querySelector(".new-note-button");
+    const newNoteButton = this.shadowRoot.querySelector('[data-action="new-note"]');
     if (newNoteButton) {
       newNoteButton.addEventListener("click", () => this.handleNewNote());
     }
 
     // Navigation buttons
-    const navButtons = this.shadowRoot.querySelectorAll(".nav-button");
+    const navButtons = this.shadowRoot.querySelectorAll('[data-action="handle-tab-click"]');
     navButtons.forEach((button) => {
       button.addEventListener("click", () => {
         const tabId = (button as HTMLElement).dataset.tab;

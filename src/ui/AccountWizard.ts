@@ -488,15 +488,15 @@ export class AccountWizard extends HTMLElement {
         <div class="wizard-actions">
           <ui-button 
             variant="ghost" 
+            data-action="previous"
             ${this.currentStep === 0 ? 'style="visibility: hidden;"' : ""}
-            @click="${() => this.handlePrevious()}"
           >
             Previous
           </ui-button>
           
           <ui-button 
             variant="primary"
-            @click="${() => this.handleNext()}"
+            data-action="next"
           >
             ${this.currentStep === this.steps.length - 1 ? "Get Started" : "Next"}
           </ui-button>
