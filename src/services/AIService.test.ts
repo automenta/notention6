@@ -72,7 +72,7 @@ const mockGeminiEmbeddingsInstance = {
   embedQuery: vi.fn(),
 };
 
-describe.skip("AIService", () => {
+describe("AIService", () => {
   const defaultUserProfilePreferences = {
     aiEnabled: false,
     ollamaApiEndpoint: "",
