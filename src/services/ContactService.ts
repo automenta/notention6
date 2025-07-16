@@ -1,13 +1,11 @@
 import { Contact } from "../../shared/types";
-import { db } from "./db";
+import { DBService } from "./db";
 import { store } from "../store";
 import { nostrService } from "./NostrService";
 
-const CONTACTS_KEY = "contacts";
-
 class ContactService {
   async getContacts(): Promise<Contact[]> {
-    let contacts = await db.getItem<Contact[]>(CONTACTS_KEY);
+    let contacts = await DBService.getContacts();
     if (!contacts) {
       contacts = [];
     }
@@ -21,14 +19,14 @@ class ContactService {
       return; // Contact already exists
     }
     const newContacts = [...contacts, contact];
-    await db.setItem(CONTACTS_KEY, newContacts);
+    await DBService.saveContacts(newContacts);
     store.getState().setContacts(newContacts);
   }
 
   async removeContact(pubkey: string): Promise<void> {
     const contacts = await this.getContacts();
     const newContacts = contacts.filter((c) => c.pubkey !== pubkey);
-    await db.setItem(CONTACTS_KEY, newContacts);
+    await DBService.saveContacts(newContacts);
     store.getState().setContacts(newContacts);
   }
 

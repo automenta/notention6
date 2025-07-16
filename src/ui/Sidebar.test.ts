@@ -8,172 +8,11 @@ import "./Sidebar";
 import "./NotesList";
 
 // Mock the Zustand store
-vi.mock("../store", async (importOriginal) => {
-  const actual = await importOriginal();
-  const mockNotes: { [id: string]: Note } = {};
-  const mockFolders: { [id: string]: Folder } = {};
-
-  return {
-    ...actual,
-    useAppStore: {
-      getState: vi.fn(() => ({
-        notes: mockNotes,
-        folders: mockFolders,
-        searchFilters: { folderId: undefined },
-        createNote: vi.fn(async (noteData: Partial<Note>) => {
-          const newNote: Note = {
-            id: `note-${Object.keys(mockNotes).length + 1}`,
-            title: noteData.title || "Untitled",
-            content: noteData.content || "",
-            tags: [],
-            values: {},
-            fields: {},
-            status: "draft",
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          };
-          mockNotes[newNote.id] = newNote;
-          // Manually trigger a state update for subscribers
-          (useAppStore.subscribe as vi.Mock).mock.calls.forEach((call: any) => {
-            const selector = call[0];
-            const equalityFn = call[1];
-            const newState = {
-              notes: mockNotes,
-              folders: mockFolders,
-              searchFilters: { folderId: undefined },
-            };
-            if (!equalityFn || !equalityFn(newState, useAppStore.getState())) {
-              selector(newState);
-            }
-          });
-          return newNote;
-        }),
-        loadNotes: vi.fn(async () => {
-          // Simulate loading notes into the store
-          (useAppStore.subscribe as vi.Mock).mock.calls.forEach((call: any) => {
-            const selector = call[0];
-            const equalityFn = call[1];
-            const newState = {
-              notes: mockNotes,
-              folders: mockFolders,
-              searchFilters: { folderId: undefined },
-            };
-            if (!equalityFn || !equalityFn(newState, useAppStore.getState())) {
-              selector(newState);
-            }
-          });
-        }),
-        loadFolders: vi.fn(async () => {
-          // Simulate loading folders into the store
-          (useAppStore.subscribe as vi.Mock).mock.calls.forEach((call: any) => {
-            const selector = call[0];
-            const equalityFn = call[1];
-            const newState = {
-              notes: mockNotes,
-              folders: mockFolders,
-              searchFilters: { folderId: undefined },
-            };
-            if (!equalityFn || !equalityFn(newState, useAppStore.getState())) {
-              selector(newState);
-            }
-          });
-        }),
-        setSearchFilter: vi.fn((key, value) => {
-          (useAppStore.getState as vi.Mock).mockReturnValue({
-            ...useAppStore.getState(),
-            searchFilters: {
-              ...useAppStore.getState().searchFilters,
-              [key]: value,
-            },
-          });
-          // Manually trigger a state update for subscribers
-          (useAppStore.subscribe as vi.Mock).mock.calls.forEach((call: any) => {
-            const selector = call[0];
-            const equalityFn = call[1];
-            const newState = {
-              notes: mockNotes,
-              folders: mockFolders,
-              searchFilters: { folderId: value },
-            };
-            if (!equalityFn || !equalityFn(newState, useAppStore.getState())) {
-              selector(newState);
-            }
-          });
-        }),
-        createFolder: vi.fn(async (name: string, parentId?: string) => {
-          const newFolder: Folder = {
-            id: `folder-${Object.keys(mockFolders).length + 1}`,
-            name,
-            noteIds: [],
-            children: [],
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            parentId,
-          };
-          mockFolders[newFolder.id] = newFolder;
-          // Manually trigger a state update for subscribers
-          (useAppStore.subscribe as vi.Mock).mock.calls.forEach((call: any) => {
-            const selector = call[0];
-            const equalityFn = call[1];
-            const newState = {
-              notes: mockNotes,
-              folders: mockFolders,
-              searchFilters: { folderId: undefined },
-            };
-            if (!equalityFn || !equalityFn(newState, useAppStore.getState())) {
-              selector(newState);
-            }
-          });
-          return newFolder.id;
-        }),
-        updateFolder: vi.fn(async (id: string, updates: Partial<Folder>) => {
-          if (mockFolders[id]) {
-            mockFolders[id] = {
-              ...mockFolders[id],
-              ...updates,
-              updatedAt: new Date(),
-            };
-            // Manually trigger a state update for subscribers
-            (useAppStore.subscribe as vi.Mock).mock.calls.forEach(
-              (call: any) => {
-                const selector = call[0];
-                const equalityFn = call[1];
-                const newState = {
-                  notes: mockNotes,
-                  folders: mockFolders,
-                  searchFilters: { folderId: undefined },
-                };
-                if (
-                  !equalityFn ||
-                  !equalityFn(newState, useAppStore.getState())
-                ) {
-                  selector(newState);
-                }
-              },
-            );
-          }
-        }),
-        deleteFolder: vi.fn(async (id: string) => {
-          delete mockFolders[id];
-          // Manually trigger a state update for subscribers
-          (useAppStore.subscribe as vi.Mock).mock.calls.forEach((call: any) => {
-            const selector = call[0];
-            const equalityFn = call[1];
-            const newState = {
-              notes: mockNotes,
-              folders: mockFolders,
-              searchFilters: { folderId: undefined },
-            };
-            if (!equalityFn || !equalityFn(newState, useAppStore.getState())) {
-              selector(newState);
-            }
-          });
-        }),
-      })),
-      subscribe: vi.fn(() => vi.fn()), // Mock subscribe to return an unsubscribe function
-    },
-  };
-});
+vi.mock("../services/db", () => ({
+  DBService: {
+    getContacts: vi.fn().mockResolvedValue([]),
+  },
+}));
 
 describe("Sidebar Component", () => {
   let app: NotentionApp;
@@ -183,53 +22,29 @@ describe("Sidebar Component", () => {
   beforeEach(async () => {
     // Reset mocks and state before each test
     vi.clearAllMocks();
+
     const mockNotes: { [id: string]: Note } = {};
     const mockFolders: { [id: string]: Folder } = {};
-
-    (useAppStore.getState as vi.Mock).mockReturnValue({
+    const mockStore = {
       notes: mockNotes,
       folders: mockFolders,
       searchFilters: { folderId: undefined },
       sidebarTab: "notes",
+      initializeApp: vi.fn(),
+      setCurrentNoteId: vi.fn(),
+      setSidebarTab: vi.fn(),
+      setCurrentNote: vi.fn(),
       createNote: vi.fn(async (noteData) => {
         const newNote = {
           id: `note-${Object.keys(mockNotes).length + 1}`,
           ...noteData,
         };
         mockNotes[newNote.id] = newNote as Note;
-        // Simulate store update
-        const subscriber = (useAppStore.subscribe as vi.Mock).mock.calls[0][0];
-        subscriber({
-          notes: mockNotes,
-          folders: mockFolders,
-          searchFilters: { folderId: undefined },
-        });
         return newNote;
       }),
-      loadNotes: vi.fn(async () => {
-        const subscriber = (useAppStore.subscribe as vi.Mock).mock.calls[0][0];
-        subscriber({
-          notes: mockNotes,
-          folders: mockFolders,
-          searchFilters: { folderId: undefined },
-        });
-      }),
-      loadFolders: vi.fn(async () => {
-        const subscriber = (useAppStore.subscribe as vi.Mock).mock.calls[0][0];
-        subscriber({
-          notes: mockNotes,
-          folders: mockFolders,
-          searchFilters: { folderId: undefined },
-        });
-      }),
-      setSearchFilter: vi.fn((key, value) => {
-        const subscriber = (useAppStore.subscribe as vi.Mock).mock.calls[0][0];
-        subscriber({
-          notes: mockNotes,
-          folders: mockFolders,
-          searchFilters: { folderId: value },
-        });
-      }),
+      loadNotes: vi.fn(),
+      loadFolders: vi.fn(),
+      setSearchFilter: vi.fn(),
       createFolder: vi.fn(async (name, parentId) => {
         const newFolder = {
           id: `folder-${Object.keys(mockFolders).length + 1}`,
@@ -239,39 +54,22 @@ describe("Sidebar Component", () => {
           children: [],
         };
         mockFolders[newFolder.id] = newFolder as Folder;
-        const subscriber = (useAppStore.subscribe as vi.Mock).mock.calls[0][0];
-        subscriber({
-          notes: mockNotes,
-          folders: mockFolders,
-          searchFilters: { folderId: undefined },
-        });
         return newFolder.id;
       }),
-      updateFolder: vi.fn(async (id, updates) => {
-        mockFolders[id] = { ...mockFolders[id], ...updates };
-        const subscriber = (useAppStore.subscribe as vi.Mock).mock.calls[0][0];
-        subscriber({
-          notes: mockNotes,
-          folders: mockFolders,
-          searchFilters: { folderId: undefined },
-        });
-      }),
-      deleteFolder: vi.fn(async (id) => {
-        delete mockFolders[id];
-        const subscriber = (useAppStore.subscribe as vi.Mock).mock.calls[0][0];
-        subscriber({
-          notes: mockNotes,
-          folders: mockFolders,
-          searchFilters: { folderId: undefined },
-        });
-      }),
-    });
+      updateFolder: vi.fn(),
+      deleteFolder: vi.fn(),
+    };
+
+    vi.spyOn(useAppStore, "getState").mockReturnValue(mockStore);
+    vi.spyOn(useAppStore, "subscribe").mockImplementation(() => () => {});
 
     app = new NotentionApp();
     document.body.innerHTML = "";
     document.body.appendChild(app);
 
     // Wait for components to render
+    useAppStore.getState().setSidebarTab("notes");
+
     await waitFor(() => {
       sidebarElement = app.shadowRoot!.querySelector("notention-sidebar")!;
       notesListElement = app.shadowRoot!.querySelector("notention-notes-list")!;

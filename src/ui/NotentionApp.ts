@@ -8,11 +8,12 @@ import "./Settings";
 import "./AccountWizard";
 import "./ChatPanel";
 import "./ContactsView";
+import "./Dashboard";
 
 export class NotentionApp extends HTMLElement {
   private unsubscribe: () => void = () => {};
   private showWizard = false;
-  private currentView = "notes";
+  private currentView = "dashboard";
   private sidebarCollapsed = false;
 
   constructor() {
@@ -98,22 +99,24 @@ export class NotentionApp extends HTMLElement {
   }
 
   private getMainContent() {
-    switch (this.currentView) {
-      case "notes":
-        return "<notention-notes-list></notention-notes-list>";
-      case "ontology":
-        return "<notention-ontology-editor></notention-ontology-editor>";
-      case "network":
-        return "<notention-network-panel></notention-network-panel>";
-      case "settings":
-        return "<notention-settings></notention-settings>";
-      case "contacts":
-        return "<contacts-view></contacts-view>";
-      case "chats":
-        return "<notention-chat-panel></notention-chat-panel>";
-      default:
-        return "<notention-notes-list></notention-notes-list>";
-    }
+    const views = {
+      dashboard: "<notention-dashboard></notention-dashboard>",
+      notes: "<notention-notes-list></notention-notes-list>",
+      ontology: "<notention-ontology-editor></notention-ontology-editor>",
+      network: "<notention-network-panel></notention-network-panel>",
+      settings: "<notention-settings></notention-settings>",
+      contacts: "<contacts-view></contacts-view>",
+      chats: "<notention-chat-panel></notention-chat-panel>",
+    };
+
+    return Object.entries(views)
+      .map(([view, content]) => {
+        const isVisible = view === this.currentView;
+        return `<div class="view-wrapper" data-view="${view}" ${
+          isVisible ? "" : "hidden"
+        }>${content}</div>`;
+      })
+      .join("");
   }
 
   render() {
@@ -121,189 +124,17 @@ export class NotentionApp extends HTMLElement {
 
     if (this.showWizard) {
       this.shadowRoot.innerHTML = `
-        <style>
-          :host {
-            display: block;
-            min-height: 100vh;
-            background: var(--color-background);
-          }
-        </style>
+        <link rel="stylesheet" href="src/ui/styles/variables.css">
+        <link rel="stylesheet" href="src/ui/styles/base.css">
         <notention-account-wizard></notention-account-wizard>
       `;
       return;
     }
 
     this.shadowRoot.innerHTML = `
-      <style>
-        :host {
-          display: block;
-          min-height: 100vh;
-          background: var(--color-background);
-          font-family: var(--font-family-sans);
-        }
-
-        .app-container {
-          display: flex;
-          min-height: 100vh;
-          position: relative;
-        }
-
-        .sidebar-container {
-          background: var(--color-surface);
-          border-right: 1px solid var(--color-border);
-          width: 280px;
-          flex-shrink: 0;
-          transition: transform var(--transition-base);
-          position: relative;
-          z-index: var(--z-fixed);
-        }
-
-        .sidebar-container.collapsed {
-          transform: translateX(-100%);
-          position: fixed;
-          height: 100vh;
-        }
-
-        .main-container {
-          flex: 1;
-          min-width: 0;
-          display: flex;
-          flex-direction: column;
-          background: var(--color-background);
-          transition: margin-left var(--transition-base);
-        }
-
-        .main-container.sidebar-collapsed {
-          margin-left: 0;
-        }
-
-        .app-header {
-          background: var(--color-surface);
-          border-bottom: 1px solid var(--color-border);
-          padding: var(--space-3) var(--space-4);
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          min-height: 60px;
-        }
-
-        .header-left {
-          display: flex;
-          align-items: center;
-          gap: var(--space-3);
-        }
-
-        .toggle-sidebar-btn {
-          display: none;
-          background: none;
-          border: none;
-          padding: var(--space-2);
-          border-radius: var(--radius-md);
-          color: var(--color-text-secondary);
-          cursor: pointer;
-          transition: var(--transition-base);
-        }
-
-        .toggle-sidebar-btn:hover {
-          background: var(--color-surface-hover);
-          color: var(--color-text-primary);
-        }
-
-        .app-title {
-          font-size: var(--font-size-lg);
-          font-weight: var(--font-weight-semibold);
-          color: var(--color-text-primary);
-          margin: 0;
-        }
-
-        .main-content {
-          flex: 1;
-          padding: var(--space-6);
-          overflow-y: auto;
-          min-height: 0;
-        }
-
-        .sidebar-overlay {
-          display: none;
-          position: fixed;
-          inset: 0;
-          background: rgba(0, 0, 0, 0.5);
-          z-index: var(--z-modal-backdrop);
-        }
-
-        .sidebar-overlay.show {
-          display: block;
-        }
-
-        /* Mobile Styles */
-        @media (max-width: 768px) {
-          .sidebar-container {
-            position: fixed;
-            height: 100vh;
-            z-index: var(--z-modal);
-            transform: translateX(-100%);
-          }
-
-          .sidebar-container.show {
-            transform: translateX(0);
-          }
-
-          .main-container {
-            margin-left: 0 !important;
-          }
-
-          .toggle-sidebar-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-          }
-
-          .main-content {
-            padding: var(--space-4);
-          }
-        }
-
-        @media (max-width: 480px) {
-          .main-content {
-            padding: var(--space-3);
-          }
-          
-          .app-header {
-            padding: var(--space-2) var(--space-3);
-            min-height: 50px;
-          }
-        }
-
-        /* Status Indicators */
-        .status-indicator {
-          display: flex;
-          align-items: center;
-          gap: var(--space-2);
-          font-size: var(--font-size-sm);
-          color: var(--color-text-muted);
-        }
-
-        .status-dot {
-          width: 8px;
-          height: 8px;
-          border-radius: var(--radius-full);
-          background: var(--color-error-500);
-        }
-
-        .status-dot.connected {
-          background: var(--color-success-500);
-        }
-
-        .status-dot.syncing {
-          background: var(--color-warning-500);
-          animation: pulse 1.5s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.5; }
-        }
-      </style>
+      <link rel="stylesheet" href="src/ui/styles/variables.css">
+      <link rel="stylesheet" href="src/ui/styles/base.css">
+      <link rel="stylesheet" href="src/ui/NotentionApp.css">
 
       <div class="app-container">
         <!-- Sidebar Overlay for Mobile -->
