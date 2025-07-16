@@ -175,7 +175,7 @@ vi.mock("../store", async (importOriginal) => {
   };
 });
 
-describe.skip("Sidebar Component", () => {
+describe("Sidebar Component", () => {
   let app: NotentionApp;
   let sidebarElement: HTMLElement;
   let notesListElement: HTMLElement;

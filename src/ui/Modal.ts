@@ -239,11 +239,7 @@ export class Modal extends HTMLElement {
         }
       </style>
 
-      <div class="modal-overlay" @click="${(e: Event) => {
-        if (e.target === e.currentTarget && !this._persistent) {
-          this.close();
-        }
-      }}"></div>
+      <div class="modal-overlay" data-action="close-overlay"></div>
       
       <div class="modal-container">
         <div class="modal-content ${this._size}">
@@ -255,7 +251,7 @@ export class Modal extends HTMLElement {
               ${
                 this._showClose
                   ? `
-                <button class="close-button" @click="${() => this.close()}">
+                <button class="close-button" data-action="close">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M18 6L6 18M6 6l12 12"></path>
                   </svg>
@@ -286,7 +282,7 @@ export class Modal extends HTMLElement {
   private addEventListeners() {
     if (!this.shadowRoot) return;
 
-    const overlay = this.shadowRoot.querySelector(".modal-overlay");
+    const overlay = this.shadowRoot.querySelector('[data-action="close-overlay"]');
     if (overlay) {
       overlay.addEventListener("click", (e) => {
         if (e.target === overlay && !this._persistent) {
@@ -295,7 +291,7 @@ export class Modal extends HTMLElement {
       });
     }
 
-    const closeButton = this.shadowRoot.querySelector(".close-button");
+    const closeButton = this.shadowRoot.querySelector('[data-action="close"]');
     if (closeButton) {
       closeButton.addEventListener("click", () => this.close());
     }

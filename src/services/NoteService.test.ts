@@ -288,7 +288,7 @@ describe("NoteService", () => {
       expect(savedArgWithEmbedding.embedding).toEqual([0.1, 0.2, 0.3]);
     });
 
-    it.skip("createNote should not generate embedding if AI is disabled in preferences", async () => {
+    it("createNote should not generate embedding if AI is disabled in preferences", async () => {
       (useAppStore.getState as vi.Mock).mockReturnValue({
         userProfile: {
           ...mockUserProfile,
