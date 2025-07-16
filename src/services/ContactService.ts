@@ -1,6 +1,5 @@
 import { Contact } from "../../shared/types";
 import { DBService } from "./db";
-import { store } from "../store";
 import { nostrService } from "./NostrService";
 
 class ContactService {
@@ -9,7 +8,6 @@ class ContactService {
     if (!contacts) {
       contacts = [];
     }
-    store.getState().setContacts(contacts);
     return contacts;
   }
 
@@ -20,14 +18,12 @@ class ContactService {
     }
     const newContacts = [...contacts, contact];
     await DBService.saveContacts(newContacts);
-    store.getState().setContacts(newContacts);
   }
 
   async removeContact(pubkey: string): Promise<void> {
     const contacts = await this.getContacts();
     const newContacts = contacts.filter((c) => c.pubkey !== pubkey);
     await DBService.saveContacts(newContacts);
-    store.getState().setContacts(newContacts);
   }
 
   async fetchContactsFromNostr() {

@@ -1,5 +1,6 @@
 import { useAppStore } from "../store";
 import "./Button";
+import "./FolderTree";
 
 interface SidebarTab {
   id: string;
@@ -361,6 +362,13 @@ export class Sidebar extends HTMLElement {
               .join("")}
           </ul>
         </nav>
+
+        <!-- Folder Tree -->
+        ${
+          this.currentView === "notes"
+            ? "<notention-folder-tree></notention-folder-tree>"
+            : ""
+        }
 
         <!-- User Info -->
         <div class="sidebar-footer">
