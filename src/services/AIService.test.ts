@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { AIService, aiService } from "./AIService"; // Test the singleton instance
+import { AIService, aiService, setupAiServiceStoreListener } from "./AIService"; // Test the singleton instance
 import { useAppStore } from "../store";
 import { Ollama } from "@langchain/community/llms/ollama";
 import { OllamaEmbeddings } from "@langchain/community/embeddings/ollama";
@@ -92,6 +92,7 @@ describe("AIService", () => {
         preferences: { ...defaultUserProfilePreferences, ...preferences },
       },
     };
+    aiService.preferences = mockStoreState.userProfile.preferences;
     // After setting state, we need to manually trigger reinitialization for the singleton
     aiService.reinitializeModels();
   };
@@ -109,13 +110,9 @@ describe("AIService", () => {
     (GoogleGenerativeAIEmbeddings as vi.Mock).mockImplementation(
       () => mockGeminiEmbeddingsInstance,
     );
-    (StringOutputParser as vi.Mock).mockImplementation(() => {
-      const mockParserInstance = {
-        pipe: vi.fn().mockReturnThis(),
-        invoke: vi.fn(),
-      };
-      return mockParserInstance;
-    });
+    (StringOutputParser as vi.Mock).mockImplementation(() => ({
+      parse: vi.fn((x) => x),
+    }));
 
     // Reset instance method mocks
     vi.mocked(mockOllamaInstance.invoke).mockReset();
@@ -216,13 +213,13 @@ describe("AIService", () => {
         mockReturn: JSON.stringify([{ label: "Suggestion" }]),
       },
       {
-        method: "getAutoTags",
+        method: "autoTag",
         args: ["content"],
         expectedResultOnError: [],
         mockReturn: JSON.stringify(["#tag"]),
       },
       {
-        method: "getSummarization",
+        method: "summarize",
         args: ["content"],
         expectedResultOnError: "",
         mockReturn: "Summary",
@@ -242,7 +239,7 @@ describe("AIService", () => {
           const result = await (aiService as any)[method](...args);
           expect(result).toEqual(expectedResultOnError);
           expect(console.warn).toHaveBeenCalledWith(
-            `No active AI chat model for ${method.replace("get", "").replace("OntologySuggestions", "ontology suggestions").replace("AutoTags", "auto-tagging").toLowerCase()}.`,
+            `AIService: ${method} - No active chat model configured or initialized.`,
           );
         });
 
@@ -329,7 +326,7 @@ describe("AIService", () => {
       });
     });
 
-    it("should handle errors gracefully for getSummarization", async () => {
+    it("should handle errors gracefully for summarize", async () => {
       setMockStoreUserProfile({
         aiEnabled: true,
         geminiApiKey: "gemini-key",
@@ -338,10 +335,10 @@ describe("AIService", () => {
       vi.mocked(mockGeminiInstance.invoke).mockRejectedValue(
         new Error("AI API Error"),
       );
-      const result = await aiService.getSummarization("content");
+      const result = await aiService.summarize("content");
       expect(result).toEqual("");
       expect(console.error).toHaveBeenCalledWith(
-        "Error getting summarization:",
+        "Error summarizing:",
         expect.any(Error),
       );
     });

@@ -24,10 +24,15 @@ export class AIService {
 
   constructor(preferences?: AIPreferences) {
     this.preferences = preferences;
-    this.initializeModels();
+    this.reinitializeModels();
   }
 
-  private initializeModels() {
+  public reinitializeModels() {
+    this.ollama = null;
+    this.gemini = null;
+    this.ollamaEmbeddings = null;
+    this.geminiEmbeddings = null;
+
     if (this.preferences?.aiEnabled) {
       const {
         ollamaApiEndpoint,
@@ -76,11 +81,23 @@ export class AIService {
     }
   }
 
-  private getActiveChatModel(): Ollama | ChatGoogleGenerativeAI | null {
+  private getActiveChatModel(method: string): Ollama | ChatGoogleGenerativeAI | null {
     const preferredProvider = this.preferences?.aiProviderPreference;
-    if (preferredProvider === "gemini" && this.gemini) return this.gemini;
-    if (preferredProvider === "ollama" && this.ollama) return this.ollama;
-    return this.gemini || this.ollama;
+    let model: Ollama | ChatGoogleGenerativeAI | null = null;
+    if (preferredProvider === "gemini" && this.gemini) {
+      model = this.gemini;
+    } else if (preferredProvider === "ollama" && this.ollama) {
+      model = this.ollama;
+    } else {
+      model = this.gemini || this.ollama;
+    }
+
+    if (!model) {
+      console.warn(
+        `AIService: ${method} - No active chat model configured or initialized.`,
+      );
+    }
+    return model;
   }
 
   private getActiveEmbeddingModel():
@@ -103,7 +120,7 @@ export class AIService {
     existingOntology: OntologyTree,
     context?: string,
   ): Promise<any[]> {
-    const model = this.getActiveChatModel();
+    const model = this.getActiveChatModel("getOntologySuggestions");
     if (!model) return [];
 
     const prompt = ChatPromptTemplate.fromMessages([
@@ -136,7 +153,7 @@ export class AIService {
     noteTitle?: string,
     existingOntology?: OntologyTree,
   ): Promise<string[]> {
-    const model = this.getActiveChatModel();
+    const model = this.getActiveChatModel("autoTag");
     if (!model) return [];
 
     const ontologyContext = existingOntology
@@ -169,7 +186,7 @@ export class AIService {
     noteContent: string,
     noteTitle?: string,
   ): Promise<string> {
-    const model = this.getActiveChatModel();
+    const model = this.getActiveChatModel("summarize");
     if (!model) return "";
 
     const prompt = ChatPromptTemplate.fromMessages([
@@ -183,7 +200,8 @@ export class AIService {
 
     try {
       const chain = prompt.pipe(model).pipe(new StringOutputParser());
-      return await chain.invoke({});
+      const result = await chain.invoke({});
+      return result;
     } catch (error) {
       console.error("Error summarizing:", error);
       return "";
@@ -203,4 +221,18 @@ export class AIService {
   }
 }
 
+import { useAppStore } from "../store";
+
 export const aiService = new AIService();
+
+export function setupAiServiceStoreListener() {
+  useAppStore.subscribe((state, prevState) => {
+    const newPreferences = state.userProfile?.preferences;
+    const oldPreferences = prevState.userProfile?.preferences;
+
+    if (JSON.stringify(newPreferences) !== JSON.stringify(oldPreferences)) {
+      aiService.preferences = newPreferences;
+      aiService.reinitializeModels();
+    }
+  });
+}

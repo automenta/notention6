@@ -7,6 +7,7 @@ import "./NetworkPanel";
 import "./Settings";
 import "./AccountWizard";
 import "./ChatPanel";
+import "./ContactsView";
 
 export class NotentionApp extends HTMLElement {
   private unsubscribe: () => void = () => {};
@@ -107,7 +108,7 @@ export class NotentionApp extends HTMLElement {
       case "settings":
         return "<notention-settings></notention-settings>";
       case "contacts":
-        return "<notention-contact-list></notention-contact-list>";
+        return "<contacts-view></contacts-view>";
       case "chats":
         return "<notention-chat-panel></notention-chat-panel>";
       default:
