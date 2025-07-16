@@ -27,6 +27,10 @@ export class Sidebar extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
+
+    // Bind methods
+    this.handleNewNoteClick = this.handleNewNoteClick.bind(this);
+    this.handleTabClick = this.handleTabClick.bind(this);
   }
 
   connectedCallback() {
@@ -34,9 +38,7 @@ export class Sidebar extends HTMLElement {
 
     // Subscribe to store changes
     this.unsubscribe = useAppStore.subscribe((state) => {
-      // Update badges based on store state
       this.updateBadges(state);
-
       if (state.sidebarTab !== this.currentView) {
         this.currentView = state.sidebarTab;
         this.render();
@@ -44,10 +46,12 @@ export class Sidebar extends HTMLElement {
     });
 
     this.render();
+    this.addEventListeners();
   }
 
   disconnectedCallback() {
     this.unsubscribe();
+    this.removeEventListeners();
   }
 
   attributeChangedCallback(name: string, oldValue: string, newValue: string) {
@@ -71,8 +75,11 @@ export class Sidebar extends HTMLElement {
     }
   }
 
-  private handleTabClick(tabId: string) {
-    if (tabId !== this.currentView) {
+  private handleTabClick(event: Event) {
+    const button = (event.currentTarget as HTMLElement);
+    const tabId = button.dataset.tab;
+
+    if (tabId && tabId !== this.currentView) {
       this.currentView = tabId;
       useAppStore.getState().setSidebarTab(tabId as any);
 
@@ -87,7 +94,7 @@ export class Sidebar extends HTMLElement {
     }
   }
 
-  private handleNewNote() {
+  private handleNewNoteClick() {
     useAppStore
       .getState()
       .createNote()
@@ -375,28 +382,37 @@ export class Sidebar extends HTMLElement {
       </div>
     `;
 
-    // Add event listeners for dynamic content
-    this.addEventListeners();
   }
 
   private addEventListeners() {
     if (!this.shadowRoot) return;
 
-    // New note button
-    const newNoteButton = this.shadowRoot.querySelector('[data-action="new-note"]');
-    if (newNoteButton) {
-      newNoteButton.addEventListener("click", () => this.handleNewNote());
-    }
+    const newNoteButton = this.shadowRoot.querySelector(
+      '[data-action="new-note"]',
+    );
+    newNoteButton?.addEventListener("click", this.handleNewNoteClick);
 
-    // Navigation buttons
-    const navButtons = this.shadowRoot.querySelectorAll('[data-action="handle-tab-click"]');
+    const navButtons = this.shadowRoot.querySelectorAll(
+      '[data-action="handle-tab-click"]',
+    );
     navButtons.forEach((button) => {
-      button.addEventListener("click", () => {
-        const tabId = (button as HTMLElement).dataset.tab;
-        if (tabId) {
-          this.handleTabClick(tabId);
-        }
-      });
+      button.addEventListener("click", this.handleTabClick);
+    });
+  }
+
+  private removeEventListeners() {
+    if (!this.shadowRoot) return;
+
+    const newNoteButton = this.shadowRoot.querySelector(
+      '[data-action="new-note"]',
+    );
+    newNoteButton?.removeEventListener("click", this.handleNewNoteClick);
+
+    const navButtons = this.shadowRoot.querySelectorAll(
+      '[data-action="handle-tab-click"]',
+    );
+    navButtons.forEach((button) => {
+      button.removeEventListener("click", this.handleTabClick);
     });
   }
 }

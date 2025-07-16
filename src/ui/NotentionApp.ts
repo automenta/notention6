@@ -17,6 +17,13 @@ export class NotentionApp extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
+
+    // Bind methods
+    this.handleNavigation = this.handleNavigation.bind(this);
+    this.handleWizardCompleted = this.handleWizardCompleted.bind(this);
+    this.handleToggleSidebar = this.handleToggleSidebar.bind(this);
+    this.handleResize = this.handleResize.bind(this);
+    this.handleCloseSidebar = this.handleCloseSidebar.bind(this);
   }
 
   connectedCallback() {
@@ -35,12 +42,13 @@ export class NotentionApp extends HTMLElement {
       }
     });
 
-    this.setupEventListeners();
     this.render();
+    this.setupEventListeners();
   }
 
   disconnectedCallback() {
     this.unsubscribe();
+    this.removeEventListeners();
   }
 
   private async initializeApp() {
@@ -52,24 +60,13 @@ export class NotentionApp extends HTMLElement {
   }
 
   private setupEventListeners() {
-    // Handle navigation events
-    this.addEventListener(
-      "notention-navigate",
-      this.handleNavigation.bind(this),
-    );
-    this.addEventListener(
-      "wizard-completed",
-      this.handleWizardCompleted.bind(this),
-    );
-    this.addEventListener(
-      "toggle-sidebar",
-      this.handleToggleSidebar.bind(this),
-    );
-
-    // Handle responsive behavior
-    this.handleResize();
-    window.addEventListener("resize", this.handleResize.bind(this));
+    this.addEventListener("notention-navigate", this.handleNavigation);
+    this.addEventListener("wizard-completed", this.handleWizardCompleted);
+    this.addEventListener("toggle-sidebar", this.handleToggleSidebar);
+    window.addEventListener("resize", this.handleResize);
+    this.handleResize(); // Initial check
   }
+
 
   private handleNavigation(event: CustomEvent) {
     const { view } = event.detail;
@@ -344,26 +341,37 @@ export class NotentionApp extends HTMLElement {
     this.addEventListeners();
   }
 
+  private handleCloseSidebar() {
+    this.sidebarCollapsed = true;
+    this.render();
+  }
+
   private addEventListeners() {
     if (!this.shadowRoot) return;
 
-    // Toggle sidebar button
-    const toggleBtn = this.shadowRoot.querySelector('[data-action="toggle-sidebar"]');
-    if (toggleBtn) {
-      toggleBtn.addEventListener("click", () => {
-        this.sidebarCollapsed = !this.sidebarCollapsed;
-        this.render();
-      });
-    }
+    const toggleBtn = this.shadowRoot.querySelector(
+      '[data-action="toggle-sidebar"]',
+    );
+    toggleBtn?.addEventListener("click", this.handleToggleSidebar);
 
-    // Sidebar overlay
-    const overlay = this.shadowRoot.querySelector('[data-action="close-sidebar"]');
-    if (overlay) {
-      overlay.addEventListener("click", () => {
-        this.sidebarCollapsed = true;
-        this.render();
-      });
-    }
+    const overlay = this.shadowRoot.querySelector(
+      '[data-action="close-sidebar"]',
+    );
+    overlay?.addEventListener("click", this.handleCloseSidebar);
+  }
+
+  private removeEventListeners() {
+    if (!this.shadowRoot) return;
+
+    const toggleBtn = this.shadowRoot.querySelector(
+      '[data-action="toggle-sidebar"]',
+    );
+    toggleBtn?.removeEventListener("click", this.handleToggleSidebar);
+
+    const overlay = this.shadowRoot.querySelector(
+      '[data-action="close-sidebar"]',
+    );
+    overlay?.removeEventListener("click", this.handleCloseSidebar);
   }
 }
 
