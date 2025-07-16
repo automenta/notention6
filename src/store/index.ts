@@ -115,6 +115,7 @@ interface AppActions {
   ) => Promise<void>;
 
   // Contacts (Buddy List)
+  setContacts: (contacts: Contact[]) => void;
   addContact: (contact: Contact) => Promise<void>;
   removeContact: (pubkey: string) => Promise<void>;
   updateContactAlias: (pubkey: string, alias: string) => Promise<void>;
@@ -2224,6 +2225,13 @@ export const useAppStore = create<AppStore>((set, get) => ({
         },
       };
     });
+  },
+
+  setContacts: (contacts: Contact[]) => {
+    const { userProfile, updateUserProfile } = get();
+    if (userProfile) {
+      updateUserProfile({ ...userProfile, contacts });
+    }
   },
 
   addContact: async (contact: Contact) => {

@@ -1,9 +1,11 @@
-import { html } from "lit";
 import { useAppStore } from "../store";
 import { Contact } from "../../shared/types";
+import { html, render } from "lit-html";
+import { repeat } from "lit-html/directives/repeat.js";
 import { contactService } from "../services/ContactService";
+import "./Card";
 import "./Button";
-import "./Contact";
+import "./Input";
 
 export class ContactList extends HTMLElement {
   private unsubscribe: () => void = () => {};
@@ -15,84 +17,69 @@ export class ContactList extends HTMLElement {
   }
 
   connectedCallback() {
-    this.unsubscribe = useAppStore.subscribe((state) => {
-      this.contacts = state.contacts || [];
-      this.render();
-    });
-    contactService.getContacts();
+    this.unsubscribe = useAppStore.subscribe(
+      (state) => state.userProfile?.contacts,
+      (contacts) => {
+        if (contacts) {
+          this.contacts = contacts;
+          this.render();
+        }
+      },
+      { equalityFn: (a, b) => a === b }
+    );
     this.render();
-    this.addEventListener("remove-contact", this.handleRemoveContact);
   }
 
   disconnectedCallback() {
     this.unsubscribe();
-    this.removeEventListener("remove-contact", this.handleRemoveContact);
   }
 
-  private handleRemoveContact(e: Event) {
-    const pubkey = (e as CustomEvent).detail.pubkey;
-    contactService.removeContact(pubkey);
-  }
-
-  private handleAddContact() {
-    const pubkey = prompt("Enter contact public key:");
-    if (pubkey) {
-      const alias = prompt("Enter contact alias (optional):");
-      contactService.addContact({ pubkey, alias: alias || "" });
+  private async addContact() {
+    const pubkey = this.shadowRoot?.querySelector<HTMLInputElement>("#new-contact-pubkey")?.value;
+    const name = this.shadowRoot?.querySelector<HTMLInputElement>("#new-contact-name")?.value;
+    if (pubkey && name) {
+      await contactService.addContact({ pubkey, alias: name });
     }
   }
 
   render() {
     if (!this.shadowRoot) return;
 
-    let contactListHtml = "";
-    if (this.contacts) {
-      contactListHtml = this.contacts
-        .map(
-          (contact) =>
-            `<contact-item data-pubkey="${contact.pubkey}"></contact-item>`,
-        )
-        .join("");
-    }
-
-    this.shadowRoot.innerHTML = `
-      <style>
-        :host {
-          display: block;
-        }
-        .contact-list {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-          gap: 16px;
-        }
-        .add-contact-button {
-          margin-bottom: 16px;
-        }
-      </style>
+    const template = html`
+      <link rel="stylesheet" href="src/ui/ContactList.css" />
       <div class="contact-list-container">
-        <ui-button class="add-contact-button">
-          Add Contact
-        </ui-button>
+        <h1>Contacts</h1>
+        <div class="add-contact-form">
+          <ui-input id="new-contact-name" placeholder="Name"></ui-input>
+          <ui-input id="new-contact-pubkey" placeholder="Public Key"></ui-input>
+          <ui-button @click=${() => this.addContact()}>Add Contact</ui-button>
+        </div>
         <div class="contact-list">
-          ${contactListHtml}
+          ${repeat(
+            this.contacts,
+            (contact) => contact.pubkey,
+            (contact) => html`
+              <ui-card class="contact-card">
+                <div class="contact-info">
+                  <span class="contact-name">${contact.alias}</span>
+                  <span class="contact-pubkey">${contact.pubkey}</span>
+                </div>
+                <ui-button
+                  variant="ghost"
+                  size="sm"
+                  @click=${() => contactService.removeContact(contact.pubkey)}
+                >
+                  Remove
+                </ui-button>
+              </ui-card>
+            `,
+          )}
         </div>
       </div>
     `;
 
-    const addButton = this.shadowRoot.querySelector(".add-contact-button");
-    if (addButton) {
-      addButton.addEventListener("click", () => this.handleAddContact());
-    }
-
-    const contactItems = this.shadowRoot.querySelectorAll("contact-item");
-    contactItems.forEach((item) => {
-      const pubkey = item.getAttribute("data-pubkey");
-      const contact = this.contacts.find((c) => c.pubkey === pubkey);
-      if (contact) {
-        (item as any).contact = contact;
-      }
-    });
+    render(template, this.shadowRoot);
   }
 }
 
-customElements.define("notention-contact-list", ContactList);
+customElements.define("contact-list", ContactList);

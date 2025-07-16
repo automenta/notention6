@@ -2,6 +2,10 @@ import { useAppStore } from "../store";
 import { Note } from "../../shared/types";
 import { Editor } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
+import Mention from "@tiptap/extension-mention";
+import { html, render } from "lit-html";
+import { repeat } from "lit-html/directives/repeat.js";
+import { suggestion } from "../lib/suggestion";
 import "./Button";
 import "./Input";
 
@@ -18,20 +22,26 @@ export class NoteEditor extends HTMLElement {
   }
 
   connectedCallback() {
-    this.unsubscribe = useAppStore.subscribe((state) => {
-      const noteId = state.currentNoteId;
-      const newNote = noteId ? state.notes[noteId] : null;
-
-      if (newNote?.id !== this.currentNote?.id || !this.hasUnsavedChanges) {
-        this.currentNote = newNote;
-        this.hasUnsavedChanges = false;
-        this.render();
-        this.initializeTiptap();
-      }
-    });
+    this.unsubscribe = useAppStore.subscribe(
+      (state) => ({
+        currentNoteId: state.currentNoteId,
+        notes: state.notes,
+      }),
+      ({ currentNoteId, notes }) => {
+        const newNote = currentNoteId ? notes[currentNoteId] : null;
+        if (newNote?.id !== this.currentNote?.id || !this.hasUnsavedChanges) {
+          this.currentNote = newNote;
+          this.hasUnsavedChanges = false;
+          this.render();
+        }
+      },
+      {
+        equalityFn: (a, b) =>
+          a.currentNoteId === b.currentNoteId && a.notes === b.notes,
+      },
+    );
 
     this.render();
-    this.initializeTiptap();
   }
 
   disconnectedCallback() {
@@ -52,15 +62,23 @@ export class NoteEditor extends HTMLElement {
 
     this.editor = new Editor({
       element: editorElement,
-      extensions: [StarterKit],
+      extensions: [
+        StarterKit,
+        Mention.configure({
+          HTMLAttributes: {
+            class: "tag",
+          },
+          suggestion: suggestion,
+        }),
+      ],
       content: this.currentNote.content,
       onUpdate: () => {
         this.hasUnsavedChanges = true;
         this.autoSave();
-        this.updateToolbar();
+        this.requestUpdate();
       },
       onSelectionUpdate: () => {
-        this.updateToolbar();
+        this.requestUpdate();
       },
     });
   }
@@ -94,7 +112,7 @@ export class NoteEditor extends HTMLElement {
 
       useAppStore.getState().updateNote(this.currentNote.id, updatedNote);
       this.hasUnsavedChanges = false;
-      this.renderToolbar(); // Re-render toolbar to update save status
+      this.requestUpdate();
     }
   };
 
@@ -115,48 +133,104 @@ export class NoteEditor extends HTMLElement {
   private handleInput = () => {
     this.hasUnsavedChanges = true;
     this.autoSave();
-    this.renderToolbar();
+    this.requestUpdate();
   };
 
-  private formatDate = (dateString: string) =>
-    new Date(dateString).toLocaleString();
-
-  private updateToolbar() {
-    if (!this.shadowRoot || !this.editor) return;
-    const buttons = this.shadowRoot.querySelectorAll(".toolbar-button");
-    buttons.forEach((button) => {
-      const action = button.getAttribute("data-action");
-      if (action && this.editor?.isActive(action)) {
-        button.classList.add("is-active");
-      } else {
-        button.classList.remove("is-active");
-      }
-    });
+  private requestUpdate() {
+    this.render();
   }
 
-  private renderToolbar() {
-    if (!this.shadowRoot) return;
-    const toolbarContainer = this.shadowRoot.querySelector(".editor-header");
-    if (toolbarContainer) {
-      toolbarContainer.innerHTML = this.getToolbarHTML();
-    }
-  }
+  private getToolbarHTML() {
+    const isBold = this.editor?.isActive("bold");
+    const isItalic = this.editor?.isActive("italic");
+    const isStrike = this.editor?.isActive("strike");
+    const isBulletList = this.editor?.isActive("bulletList");
+    const isOrderedList = this.editor?.isActive("orderedList");
+    const isBlockquote = this.editor?.isActive("blockquote");
+    const isCodeBlock = this.editor?.isActive("codeBlock");
 
-  private getToolbarHTML(): string {
-    return `
+    return html`
       <div class="editor-actions">
         <span class="save-status ${this.hasUnsavedChanges ? "unsaved" : ""}">
           ${this.hasUnsavedChanges ? "Saving..." : "Saved"}
         </span>
-        <ui-button variant="primary" size="sm" onclick="this.getRootNode().host.saveNote()">Save</ui-button>
-        <ui-button variant="ghost" size="sm" onclick="this.getRootNode().host.deleteNote()">Delete</ui-button>
+        <ui-button variant="primary" size="sm" @click=${this.saveNote}
+          >Save</ui-button
+        >
+        <ui-button variant="ghost" size="sm" @click=${this.deleteNote}
+          >Delete</ui-button
+        >
       </div>
       <div class="editor-toolbar">
-        <button class="toolbar-button" data-action="bold" onclick="this.getRootNode().host.editor.chain().focus().toggleBold().run()">B</button>
-        <button class="toolbar-button" data-action="italic" onclick="this.getRootNode().host.editor.chain().focus().toggleItalic().run()">I</button>
-        <button class="toolbar-button" data-action="strike" onclick="this.getRootNode().host.editor.chain().focus().toggleStrike().run()">S</button>
-        <button class="toolbar-button" data-action="bulletList" onclick="this.getRootNode().host.editor.chain().focus().toggleBulletList().run()">UL</button>
-        <button class="toolbar-button" data-action="orderedList" onclick="this.getRootNode().host.editor.chain().focus().toggleOrderedList().run()">OL</button>
+        <button
+          class="toolbar-button ${isBold ? "is-active" : ""}"
+          @click=${() => this.editor?.chain().focus().toggleBold().run()}
+        >
+          B
+        </button>
+        <button
+          class="toolbar-button ${isItalic ? "is-active" : ""}"
+          @click=${() => this.editor?.chain().focus().toggleItalic().run()}
+        >
+          I
+        </button>
+        <button
+          class="toolbar-button ${isStrike ? "is-active" : ""}"
+          @click=${() => this.editor?.chain().focus().toggleStrike().run()}
+        >
+          S
+        </button>
+        <button
+          class="toolbar-button"
+          @click=${() =>
+            this.editor?.chain().focus().toggleHeading({ level: 1 }).run()}
+        >
+          H1
+        </button>
+        <button
+          class="toolbar-button"
+          @click=${() =>
+            this.editor?.chain().focus().toggleHeading({ level: 2 }).run()}
+        >
+          H2
+        </button>
+        <button
+          class="toolbar-button"
+          @click=${() =>
+            this.editor?.chain().focus().toggleHeading({ level: 3 }).run()}
+        >
+          H3
+        </button>
+        <button
+          class="toolbar-button ${isBulletList ? "is-active" : ""}"
+          @click=${() => this.editor?.chain().focus().toggleBulletList().run()}
+        >
+          UL
+        </button>
+        <button
+          class="toolbar-button ${isOrderedList ? "is-active" : ""}"
+          @click=${() => this.editor?.chain().focus().toggleOrderedList().run()}
+        >
+          OL
+        </button>
+        <button
+          class="toolbar-button ${isBlockquote ? "is-active" : ""}"
+          @click=${() => this.editor?.chain().focus().toggleBlockquote().run()}
+        >
+          ”
+        </button>
+        <button
+          class="toolbar-button ${isCodeBlock ? "is-active" : ""}"
+          @click=${() => this.editor?.chain().focus().toggleCodeBlock().run()}
+        >
+          &lt;/&gt;
+        </button>
+        <button
+          class="toolbar-button"
+          @click=${() => this.editor?.chain().focus().setHorizontalRule().run()}
+        >
+          ―
+        </button>
       </div>
     `;
   }
@@ -164,63 +238,83 @@ export class NoteEditor extends HTMLElement {
   render() {
     if (!this.shadowRoot) return;
 
-    this.shadowRoot.innerHTML = `
-      <link rel="stylesheet" href="src/ui/styles/variables.css">
-      <link rel="stylesheet" href="src/ui/NoteEditor.css">
+    const template = html`
+      <link rel="stylesheet" href="src/ui/styles/variables.css" />
+      <link rel="stylesheet" href="src/ui/NoteEditor.css" />
+
+      ${!this.currentNote
+        ? html`
+            <div class="welcome-container">
+              <svg
+                class="welcome-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+                ></path>
+                <polyline points="14,2 14,8 20,8"></polyline>
+              </svg>
+              <h3 class="welcome-title">Select a Note</h3>
+              <p class="welcome-description">
+                Choose a note from the list to view and edit it, or create a
+                new one to get started.
+              </p>
+              <ui-button variant="primary" @click=${this.createNewNote}>
+                Create New Note
+              </ui-button>
+            </div>
+          `
+        : this.renderEditor()}
     `;
 
-    if (!this.currentNote) {
-      this.shadowRoot.innerHTML += `
-        <div class="welcome-container">
-          <svg class="welcome-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-            <polyline points="14,2 14,8 20,8"></polyline>
-          </svg>
-          <h3 class="welcome-title">Select a Note</h3>
-          <p class="welcome-description">
-            Choose a note from the list to view and edit it, or create a new one to get started.
-          </p>
-          <ui-button variant="primary" onclick="this.getRootNode().host.createNewNote()">
-            Create New Note
-          </ui-button>
-        </div>
-      `;
-      return;
+    render(template, this.shadowRoot);
+    if (this.currentNote && !this.editor) {
+      this.initializeTiptap();
     }
+  }
 
+  private renderEditor() {
     const store = useAppStore.getState();
     const folders = Object.values(store.folders);
 
-    this.shadowRoot.innerHTML += `
+    return html`
       <div class="editor-container">
-        <div class="editor-header">
-          ${this.getToolbarHTML()}
-        </div>
+        <div class="editor-header">${this.getToolbarHTML()}</div>
         <div class="editor-content">
           <div class="note-meta">
             <div class="meta-row">
               <label class="meta-label" for="note-title">Title</label>
-              <ui-input 
-                id="note-title" 
-                type="text" 
-                value="${this.currentNote.title}"
-                oninput="this.getRootNode().host.handleInput()"
+              <ui-input
+                id="note-title"
+                type="text"
+                .value=${this.currentNote?.title || ""}
+                @input=${this.handleInput}
               ></ui-input>
             </div>
             <div class="meta-row">
               <label class="meta-label" for="note-folder">Folder</label>
-              <select id="note-folder" onchange="this.getRootNode().host.handleInput()">
-                <option value="root" ${
-                  this.currentNote.folderId === "root" ? "selected" : ""
-                }>Root</option>
-                ${folders
-                  .map(
-                    (f) =>
-                      `<option value="${f.id}" ${
-                        this.currentNote?.folderId === f.id ? "selected" : ""
-                      }>${f.name}</option>`,
-                  )
-                  .join("")}
+              <select id="note-folder" @change=${this.handleInput}>
+                <option
+                  value="root"
+                  ?selected=${this.currentNote?.folderId === "root"}
+                >
+                  Root
+                </option>
+                ${repeat(
+                  folders,
+                  (f) => f.id,
+                  (f) => html`
+                    <option
+                      value="${f.id}"
+                      ?selected=${this.currentNote?.folderId === f.id}
+                    >
+                      ${f.name}
+                    </option>
+                  `,
+                )}
               </select>
             </div>
           </div>
@@ -228,27 +322,7 @@ export class NoteEditor extends HTMLElement {
         </div>
       </div>
     `;
-
-    this.addEventListeners();
-  }
-
-  private addEventListeners() {
-    if (!this.shadowRoot) return;
-    const toolbar = this.shadowRoot.querySelector(".editor-toolbar");
-    toolbar?.addEventListener("click", (e) => {
-      const target = e.target as HTMLElement;
-      const button = target.closest(".toolbar-button");
-      if (button) {
-        this.updateToolbar();
-      }
-    });
   }
 }
 
 customElements.define("notention-note-editor", NoteEditor);
-
-// Make methods available on the instance for event handlers
-(NoteEditor.prototype as any).createNewNote = NoteEditor.prototype.createNewNote;
-(NoteEditor.prototype as any).saveNote = NoteEditor.prototype.saveNote;
-(NoteEditor.prototype as any).deleteNote = NoteEditor.prototype.deleteNote;
-(NoteEditor.prototype as any).handleInput = NoteEditor.prototype.handleInput;

@@ -1,9 +1,13 @@
 import { useAppStore } from "../store";
 import { Note } from "../../shared/types";
+import { html, render } from "lit-html";
+import { repeat } from "lit-html/directives/repeat.js";
 import "./Card";
 
 export class Dashboard extends HTMLElement {
   private unsubscribe: () => void = () => {};
+  private recentNotes: Note[] = [];
+  private upcomingDeadlines: Note[] = [];
 
   constructor() {
     super();
@@ -11,7 +15,24 @@ export class Dashboard extends HTMLElement {
   }
 
   connectedCallback() {
-    this.unsubscribe = useAppStore.subscribe(() => this.render());
+    this.unsubscribe = useAppStore.subscribe(
+      (state) => ({
+        notes: Object.values(state.notes),
+      }),
+      ({ notes }) => {
+        const recentNotes = this.getRecentNotes(notes);
+        const upcomingDeadlines = this.getUpcomingDeadlines(notes);
+        if (
+          this.recentNotes !== recentNotes ||
+          this.upcomingDeadlines !== upcomingDeadlines
+        ) {
+          this.recentNotes = recentNotes;
+          this.upcomingDeadlines = upcomingDeadlines;
+          this.render();
+        }
+      },
+      { equalityFn: (a, b) => a.notes === b.notes }
+    );
     this.render();
   }
 
@@ -19,24 +40,27 @@ export class Dashboard extends HTMLElement {
     this.unsubscribe();
   }
 
-  private getRecentNotes(): Note[] {
-    const notes = Object.values(useAppStore.getState().notes);
+  private getRecentNotes(notes: Note[]): Note[] {
     return notes
-      .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+      .sort(
+        (a, b) =>
+          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+      )
       .slice(0, 5);
   }
 
-  private getUpcomingDeadlines(): Note[] {
-    const notes = Object.values(useAppStore.getState().notes);
-    const notesWithDeadlines = notes.filter(note => {
+  private getUpcomingDeadlines(notes: Note[]): Note[] {
+    const notesWithDeadlines = notes.filter((note) => {
       const dueDate = this.getDueDate(note.content);
       return dueDate && dueDate > new Date();
     });
-    return notesWithDeadlines.sort((a, b) => {
-      const dateA = this.getDueDate(a.content) as Date;
-      const dateB = this.getDueDate(b.content) as Date;
-      return dateA.getTime() - dateB.getTime();
-    }).slice(0, 5);
+    return notesWithDeadlines
+      .sort((a, b) => {
+        const dateA = this.getDueDate(a.content) as Date;
+        const dateB = this.getDueDate(b.content) as Date;
+        return dateA.getTime() - dateB.getTime();
+      })
+      .slice(0, 5);
   }
 
   private getDueDate(content: string): Date | null {
@@ -49,21 +73,23 @@ export class Dashboard extends HTMLElement {
 
   private formatDate(date: Date): string {
     return date.toLocaleDateString(undefined, {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
+  }
+
+  private handleNoteClick(noteId: string) {
+    useAppStore.getState().setCurrentNoteId(noteId);
+    useAppStore.getState().setSidebarTab("notes");
   }
 
   render() {
     if (!this.shadowRoot) return;
 
-    const recentNotes = this.getRecentNotes();
-    const upcomingDeadlines = this.getUpcomingDeadlines();
-
-    this.shadowRoot.innerHTML = `
-      <link rel="stylesheet" href="src/ui/styles/variables.css">
-      <link rel="stylesheet" href="src/ui/Dashboard.css">
+    const template = html`
+      <link rel="stylesheet" href="src/ui/styles/variables.css" />
+      <link rel="stylesheet" href="src/ui/Dashboard.css" />
 
       <div class="dashboard-container">
         <h1 class="dashboard-title">Dashboard</h1>
@@ -72,52 +98,61 @@ export class Dashboard extends HTMLElement {
           <ui-card>
             <h2 class="card-title">Recent Notes</h2>
             <ul class="note-list">
-              ${recentNotes
-                .map(
-                  (note) => `
-                <li class="note-item">
-                  <a href="#" data-note-id="${note.id}">${note.title}</a>
-                  <span class="note-date">${new Date(note.updatedAt).toLocaleDateString()}</span>
-                </li>
-              `,
-                )
-                .join("")}
+              ${repeat(
+                this.recentNotes,
+                (note) => note.id,
+                (note) => html`
+                  <li class="note-item">
+                    <a
+                      href="#"
+                      @click=${(e: Event) => {
+                        e.preventDefault();
+                        this.handleNoteClick(note.id);
+                      }}
+                      >${note.title}</a
+                    >
+                    <span class="note-date"
+                      >${new Date(
+                        note.updatedAt,
+                      ).toLocaleDateString()}</span
+                    >
+                  </li>
+                `,
+              )}
             </ul>
           </ui-card>
 
           <ui-card>
             <h2 class="card-title">Upcoming Deadlines</h2>
             <ul class="note-list">
-              ${upcomingDeadlines
-                .map(
-                  (note) => `
-                <li class="note-item">
-                  <a href="#" data-note-id="${note.id}">${note.title}</a>
-                  <span class="note-date">${this.formatDate(this.getDueDate(note.content) as Date)}</span>
-                </li>
-              `,
-                )
-                .join("")}
+              ${repeat(
+                this.upcomingDeadlines,
+                (note) => note.id,
+                (note) => html`
+                  <li class="note-item">
+                    <a
+                      href="#"
+                      @click=${(e: Event) => {
+                        e.preventDefault();
+                        this.handleNoteClick(note.id);
+                      }}
+                      >${note.title}</a
+                    >
+                    <span class="note-date"
+                      >${this.formatDate(
+                        this.getDueDate(note.content) as Date,
+                      )}</span
+                    >
+                  </li>
+                `,
+              )}
             </ul>
           </ui-card>
         </div>
       </div>
     `;
 
-    this.addEventListeners();
-  }
-
-  private addEventListeners() {
-    this.shadowRoot?.querySelectorAll("a[data-note-id]").forEach((link) => {
-      link.addEventListener("click", (e) => {
-        e.preventDefault();
-        const noteId = (e.currentTarget as HTMLElement).dataset.noteId;
-        if (noteId) {
-          useAppStore.getState().setCurrentNoteId(noteId);
-          useAppStore.getState().setSidebarTab("notes");
-        }
-      });
-    });
+    render(template, this.shadowRoot);
   }
 }
 

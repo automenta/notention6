@@ -1,0 +1,75 @@
+.folder-tree-container {
+  padding: var(--space-4);
+}
+
+.folder-tree-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-2);
+}
+
+.folder-tree-title {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.create-folder-button {
+  font-size: var(--font-size-lg);
+}
+
+.folder-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.folder-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition-base);
+}
+
+.folder-item:hover {
+  background: var(--color-surface-hover);
+}
+
+.folder-item.active {
+  background: var(--color-accent-light);
+  color: var(--color-accent);
+}
+
+.folder-name {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.folder-actions {
+  display: none;
+}
+
+.folder-item:hover .folder-actions {
+  display: block;
+}
+
+.edit-folder-button,
+.delete-folder-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  padding: var(--space-1);
+}
+
+.edit-folder-button:hover,
+.delete-folder-button:hover {
+  color: var(--color-text-primary);
+}
