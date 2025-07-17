@@ -684,10 +684,10 @@ export class NostrService {
     ];
 
     // .get() should return the most recent event first for replaceable kinds if relays behave.
-    const events = await this.pool.list(relaysToUse, filters);
+    const events = await this.pool.querySync(relaysToUse, filters);
     if (!events || events.length === 0) return null;
 
-    // Sort by created_at descending to be sure we get the latest, as pool.list might return from multiple relays.
+    // Sort by created_at descending to be sure we get the latest, as pool.querySync might return from multiple relays.
     events.sort((a, b) => b.created_at - a.created_at);
 
     const latestEvent = events[0];

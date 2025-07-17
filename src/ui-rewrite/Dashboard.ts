@@ -18,7 +18,7 @@ function getUpcomingEventsCount(notes: Note[]): number {
 export function createDashboard(): HTMLElement {
   const { notes, contacts, createNote, setCurrentNote, setSidebarTab, matches } = useAppStore.getState();
   const notesArray = Object.values(notes);
-  const contactsArray = Object.values(contacts);
+  const contactsArray = contacts ? Object.values(contacts) : [];
 
   const dashboard = document.createElement('div');
   dashboard.className = 'dashboard';
