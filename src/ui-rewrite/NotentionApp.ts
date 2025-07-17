@@ -1,6 +1,7 @@
 // src/ui-rewrite/NotentionApp.ts
 import { useAppStore } from '../store';
 import { createButton } from './Button';
+import './Dashboard.css';
 import { createSidebar } from './Sidebar';
 import { createAccountWizard } from './AccountWizard';
 import { createDashboard } from './Dashboard';
