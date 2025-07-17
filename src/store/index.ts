@@ -152,6 +152,8 @@ type NostrSubscriptionStore = {
   [id: string]: any; // nostr-tools subscription object
 };
 
+const aiService = new AIService();
+
 export const useAppStore = create<AppStore>((set, get) => ({
   // Initial state
   notes: {
@@ -350,6 +352,9 @@ export const useAppStore = create<AppStore>((set, get) => ({
         aiMatchingSensitivity: 0.7, // Ensure default here too
         ...userProfileData.preferences,
       };
+
+      aiService.preferences = userProfileData.preferences;
+      aiService.reinitializeModels();
 
       const foldersList = await FolderService.getAllFolders(); // Renamed
       const foldersMap: { [id: string]: Folder } = {};
@@ -2385,6 +2390,8 @@ export const useAppStore = create<AppStore>((set, get) => ({
       const updatedProfile = { ...userProfile, ...profileUpdates };
       await DBService.saveUserProfile(updatedProfile);
       set({ userProfile: updatedProfile });
+      aiService.preferences = updatedProfile.preferences;
+      aiService.reinitializeModels();
     }
   },
 
@@ -2404,8 +2411,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
   },
 
   getAIService: () => {
-    const { userProfile } = get();
-    return new AIService(userProfile?.preferences);
+    return aiService;
   },
 
   setTheme: (theme: "light" | "dark" | "system") => {

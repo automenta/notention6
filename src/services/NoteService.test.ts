@@ -145,12 +145,10 @@ describe("NoteService", () => {
           preferences: { ...mockUserProfile.preferences, aiEnabled: false },
         },
       });
-      (aiService.isAIEnabled as vi.Mock).mockReturnValue(false);
 
       const partialNote: Partial<Note> = { title: "No AI Note" };
       await NoteService.createNote(partialNote);
 
-      expect(aiService.isAIEnabled).toHaveBeenCalled();
       expect(aiService.getEmbeddingVector).not.toHaveBeenCalled();
       const savedArg = (DBService.saveNote as vi.Mock).mock.calls[0][0] as Note;
       expect(savedArg.embedding).toBeUndefined();

@@ -560,7 +560,7 @@ export class NostrService {
       },
     ];
 
-    const events = await this.pool.list(relaysToUse, filters);
+    const events = await this.pool.querySync(relaysToUse, filters);
     if (!events) return [];
     const syncedNotes: Note[] = [];
 
@@ -832,7 +832,7 @@ export class NostrService {
       filters,
     );
     try {
-      const events = await this.pool.list(relaysToUse, filters);
+      const events = await this.pool.querySync(relaysToUse, filters);
       if (!events) {
         return [];
       }
@@ -870,7 +870,7 @@ export class NostrService {
       },
     ];
 
-    const events = await this.pool.list(relaysToUse, filters);
+    const events = await this.pool.querySync(relaysToUse, filters);
     if (!events || events.length === 0) return null;
 
     events.sort((a, b) => b.created_at - a.created_at);
