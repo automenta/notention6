@@ -174,12 +174,12 @@ export class Sidebar extends HTMLElement {
           </ul>
         </nav>
 
-        <div class="sidebar-folders">
+        <!-- <div class="sidebar-folders">
           ${when(
             this.currentView === "notes",
             () => html`<notention-folder-tree></notention-folder-tree>`,
           )}
-        </div>
+        </div> -->
 
         <footer class="sidebar-footer">
           <div class="user-info">
