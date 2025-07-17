@@ -26,6 +26,7 @@ export class NostrService {
   private privateKey: string | null = null;
   private publicKey: string | null = null;
   private pool: SimplePool;
+  private relays: string[] = [];
   private defaultRelays: string[] = [
     "wss://relay.damus.io",
     "wss://nos.lol",
@@ -34,6 +35,16 @@ export class NostrService {
 
   private constructor() {
     this.pool = new SimplePool();
+    this.loadRelays();
+  }
+
+  private async loadRelays() {
+    const storedRelays = await DBService.getRelays();
+    if (storedRelays && storedRelays.length > 0) {
+      this.relays = storedRelays;
+    } else {
+      this.relays = this.relays;
+    }
   }
 
   public static getInstance(): NostrService {
@@ -130,6 +141,22 @@ export class NostrService {
     return !!this.privateKey && !!this.publicKey;
   }
 
+  public getRelays(): string[] {
+    return this.relays;
+  }
+
+  public async addRelay(url: string): Promise<void> {
+    if (!this.relays.includes(url)) {
+      this.relays.push(url);
+      await DBService.saveRelays(this.relays);
+    }
+  }
+
+  public async removeRelay(url: string): Promise<void> {
+    this.relays = this.relays.filter(r => r !== url);
+    await DBService.saveRelays(this.relays);
+  }
+
   /**
    * Publishes a note to the Nostr network.
    * @param note The note to publish.
@@ -179,7 +206,7 @@ export class NostrService {
     const relaysToPublish =
       targetRelays && targetRelays.length > 0
         ? targetRelays
-        : this.defaultRelays;
+        : this.relays;
     if (relaysToPublish.length === 0) {
       console.warn("No relays configured or provided to publish note.");
       return [];
@@ -334,7 +361,7 @@ export class NostrService {
     const relaysToUse =
       targetRelays && targetRelays.length > 0
         ? targetRelays
-        : this.defaultRelays;
+        : this.relays;
     if (relaysToUse.length === 0) {
       console.warn("No relays to subscribe to.");
       return null; // Or handle appropriately
@@ -381,7 +408,7 @@ export class NostrService {
     // To explicitly close, one might need to manage individual relay connections if not using SimplePool,
     // or rely on SimplePool's internal management (e.g., when no active subscriptions).
     // For now, we can clear the pool, which should close connections.
-    // this.pool.close(this.defaultRelays); // This would close specific relays
+    // this.pool.close(this.relays); // This would close specific relays
     // A more robust way might involve re-instantiating the pool or managing relays more granularly.
     // For now, this is a conceptual placeholder as SimplePool handles connections abstractly.
     console.log(
@@ -456,7 +483,7 @@ export class NostrService {
     const relaysToPublish =
       targetRelays && targetRelays.length > 0
         ? targetRelays
-        : this.defaultRelays;
+        : this.relays;
     if (relaysToPublish.length === 0) {
       console.warn(
         "No relays configured or provided to publish note for sync.",
@@ -517,7 +544,7 @@ export class NostrService {
     const relaysToUse =
       targetRelays && targetRelays.length > 0
         ? targetRelays
-        : this.defaultRelays;
+        : this.relays;
     if (relaysToUse.length === 0) return [];
 
     const filters: Filter[] = [
@@ -533,7 +560,8 @@ export class NostrService {
       },
     ];
 
-    const events = await this.pool.get(relaysToUse, filters);
+    const events = await this.pool.list(relaysToUse, filters);
+    if (!events) return [];
     const syncedNotes: Note[] = [];
 
     for (const event of events) {
@@ -604,7 +632,7 @@ export class NostrService {
     const relaysToPublish =
       targetRelays && targetRelays.length > 0
         ? targetRelays
-        : this.defaultRelays;
+        : this.relays;
     if (relaysToPublish.length === 0) {
       console.warn("No relays for ontology sync.");
       return [];
@@ -643,7 +671,7 @@ export class NostrService {
     const relaysToUse =
       targetRelays && targetRelays.length > 0
         ? targetRelays
-        : this.defaultRelays;
+        : this.relays;
     if (relaysToUse.length === 0) return null;
 
     const filters: Filter[] = [
@@ -656,8 +684,8 @@ export class NostrService {
     ];
 
     // .get() should return the most recent event first for replaceable kinds if relays behave.
-    const events = await this.pool.get(relaysToUse, filters);
-    if (events.length === 0) return null;
+    const events = await this.pool.list(relaysToUse, filters);
+    if (!events || events.length === 0) return null;
 
     // Sort by created_at descending to be sure we get the latest, as pool.list might return from multiple relays.
     events.sort((a, b) => b.created_at - a.created_at);
@@ -689,7 +717,7 @@ export class NostrService {
     const relaysToUse =
       targetRelays && targetRelays.length > 0
         ? targetRelays
-        : this.defaultRelays;
+        : this.relays;
     if (relaysToUse.length === 0) {
       console.warn("No relays to fetch event from.");
       return null;
@@ -745,7 +773,7 @@ export class NostrService {
     const relaysToPublish =
       targetRelays && targetRelays.length > 0
         ? targetRelays
-        : this.defaultRelays;
+        : this.relays;
     if (relaysToPublish.length === 0) {
       console.warn("No relays for deletion event.");
       return [];
@@ -785,7 +813,7 @@ export class NostrService {
     const relaysToUse =
       targetRelays && targetRelays.length > 0
         ? targetRelays
-        : this.defaultRelays;
+        : this.relays;
     if (relaysToUse.length === 0) {
       console.warn("No relays configured to fetch deletion events.");
       return [];
@@ -804,7 +832,7 @@ export class NostrService {
       filters,
     );
     try {
-      const events = await this.pool.get(relaysToUse, filters);
+      const events = await this.pool.list(relaysToUse, filters);
       if (!events) {
         return [];
       }
@@ -831,7 +859,7 @@ export class NostrService {
     const relaysToUse =
       targetRelays && targetRelays.length > 0
         ? targetRelays
-        : this.defaultRelays;
+        : this.relays;
     if (relaysToUse.length === 0) return null;
 
     const filters: Filter[] = [
@@ -842,8 +870,8 @@ export class NostrService {
       },
     ];
 
-    const events = await this.pool.get(relaysToUse, filters);
-    if (events.length === 0) return null;
+    const events = await this.pool.list(relaysToUse, filters);
+    if (!events || events.length === 0) return null;
 
     events.sort((a, b) => b.created_at - a.created_at);
     const latestEvent = events[0];
@@ -894,7 +922,7 @@ export class NostrService {
     const relaysToPublish =
       targetRelays && targetRelays.length > 0
         ? targetRelays
-        : this.defaultRelays;
+        : this.relays;
     if (relaysToPublish.length === 0) {
       console.warn("No relays for contact list sync.");
       return [];

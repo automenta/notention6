@@ -1,0 +1,19 @@
+/* src/ui-rewrite/NotesList.css */
+
+.notes-list ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.notes-list li {
+  padding: 16px;
+  border-bottom: 1px solid #eee;
+}
+
+.notes-list li:hover {
+  background-color: #f9f9f9;
+}
+
+.notes-list h3 {
+  margin-top: 0;
+}

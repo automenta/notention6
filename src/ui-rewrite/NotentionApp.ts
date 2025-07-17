@@ -5,11 +5,13 @@ import { createSidebar } from './Sidebar';
 import { createAccountWizard } from './AccountWizard';
 import { createDashboard } from './Dashboard';
 import { createNotesList } from './NotesList';
+import { createNoteEditor } from './NoteEditor';
 import { createOntologyEditor } from './OntologyEditor';
 import { createNetworkPanel } from './NetworkPanel';
 import { createContactsView } from './ContactsView';
 import { createChatPanel } from './ChatPanel';
 import { createSettings } from './Settings';
+import { createNotificationBar } from './NotificationBar';
 
 // A type guard to check if a profile exists and has a public key
 function profileExists(profile: any): profile is { nostrPubkey: string } {
@@ -20,7 +22,7 @@ export function renderApp(rootElement: HTMLElement) {
     // Initial render function
     const render = () => {
         const state = useAppStore.getState();
-        const { userProfile, sidebarTab, sidebarCollapsed } = state;
+        const { userProfile, sidebarTab, sidebarCollapsed, currentNoteId } = state;
 
         // Clear the root element
         rootElement.innerHTML = '';
@@ -49,10 +51,7 @@ export function renderApp(rootElement: HTMLElement) {
             header.className = 'app-header';
             const toggleButton = createButton({
                 label: '☰',
-                onClick: () => {
-                    // This is a temporary solution. A proper action should be created in the store.
-                    useAppStore.setState({ sidebarCollapsed: !sidebarCollapsed });
-                }
+                onClick: () => useAppStore.getState().toggleSidebar()
             });
             const title = document.createElement('h1');
             title.textContent = 'Notention';
@@ -63,39 +62,51 @@ export function renderApp(rootElement: HTMLElement) {
             const mainViewContainer = document.createElement('main');
             mainViewContainer.className = 'main-content';
             
-            let currentView: HTMLElement;
-            switch (sidebarTab) {
-                case 'dashboard':
-                    currentView = createDashboard();
-                    break;
-                case 'notes':
-                    currentView = createNotesList({ notes: [], onDelete: () => {} });
-                    break;
-                case 'ontology':
-                    currentView = createOntologyEditor({ onSave: () => {} });
-                    break;
-                case 'network':
-                    currentView = createNetworkPanel();
-                    break;
-                case 'contacts':
-                    currentView = createContactsView();
-                    break;
-                case 'chats':
-                    currentView = createChatPanel();
-                    break;
-                case 'settings':
-                    currentView = createSettings();
-                    break;
-                default:
-                    currentView = createDashboard();
+            let currentView: HTMLElement | null;
+
+            if (sidebarTab === 'notes' && currentNoteId) {
+                currentView = createNoteEditor();
+            } else {
+                switch (sidebarTab) {
+                    case 'dashboard':
+                        currentView = createDashboard();
+                        break;
+                    case 'notes':
+                        currentView = createNotesList();
+                        break;
+                    case 'ontology':
+                        currentView = createOntologyEditor({ onSave: () => {} });
+                        break;
+                    case 'network':
+                        currentView = createNetworkPanel();
+                        break;
+                    case 'contacts':
+                        currentView = createContactsView();
+                        break;
+                    case 'chats':
+                        currentView = createChatPanel();
+                        break;
+                    case 'settings':
+                        currentView = createSettings();
+                        break;
+                    default:
+                        currentView = createDashboard();
+                }
             }
-            mainViewContainer.appendChild(currentView);
+
+            if (currentView) {
+                mainViewContainer.appendChild(currentView);
+            }
 
             mainContainer.appendChild(header);
             mainContainer.appendChild(mainViewContainer);
             
             appContainer.appendChild(sidebarContainer);
             appContainer.appendChild(mainContainer);
+
+            // Notification Bar
+            const notificationBar = createNotificationBar();
+            appContainer.appendChild(notificationBar);
             
             rootElement.appendChild(appContainer);
         }

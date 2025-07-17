@@ -1,0 +1,26 @@
+/* src/ui-rewrite/NoteEditor.css */
+
+.editor-toolbar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.editor-toolbar button {
+  font-weight: bold;
+  padding: 4px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #f0f0f0;
+  cursor: pointer;
+}
+
+.editor-toolbar button:hover {
+  background-color: #e0e0e0;
+}
+
+#tiptap-editor {
+  border: 1px solid #ccc;
+  padding: 8px;
+  min-height: 200px;
+}

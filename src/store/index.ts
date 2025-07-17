@@ -70,12 +70,17 @@ interface AppActions {
 
   // UI actions
   setSidebarTab: (tab: AppState["sidebarTab"]) => void;
+  toggleSidebar: () => void;
   setEditorContent: (content: string) => void;
   setIsEditing: (editing: boolean) => void;
 
   // Loading and error actions
   setLoading: (key: keyof AppState["loading"], loading: boolean) => void;
   setError: (key: keyof AppState["errors"], error: string | undefined) => void;
+
+  // Notifications
+  addNotification: (notification: Notification) => void;
+  removeNotification: (id: string) => void;
 
   // Nostr specific actions
   initializeNostr: () => Promise<void>; // Renamed from initializeNostrService
@@ -213,6 +218,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
     | "settings"
     | "contacts"
     | "chats", // Added 'chats' back
+  sidebarCollapsed: false,
   searchQuery: "",
   searchFilters: {},
 
@@ -243,8 +249,12 @@ export const useAppStore = create<AppStore>((set, get) => ({
   },
 
   errors: {
+    notes: undefined,
+    ontology: undefined,
+    network: undefined,
     sync: undefined, // For sync errors
   },
+  notifications: [], // Initialize notifications array
 
   lastSyncTimestamp: undefined, // Timestamp of the last successful full sync
 
@@ -366,6 +376,9 @@ export const useAppStore = create<AppStore>((set, get) => ({
         templates: templatesMap,
         nostrRelays: relaysToUseInStore,
       });
+
+      // Apply initial theme based on user profile
+      get().setTheme(userProfileData.preferences.theme);
 
       await get().initializeNostr(); // This might update userProfile with nostrPubkey
 
@@ -902,6 +915,10 @@ export const useAppStore = create<AppStore>((set, get) => ({
     set({ sidebarTab: tab });
   },
 
+  toggleSidebar: () => {
+    set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed }));
+  },
+
   setEditorContent: (content: string) => {
     set({ editorContent: content });
   },
@@ -920,7 +937,36 @@ export const useAppStore = create<AppStore>((set, get) => ({
     set((state) => ({
       errors: { ...state.errors, [key]: error },
     }));
+    if (error) {
+      get().addNotification({
+        id: uuidv4(),
+        type: "error",
+        message: `Error: ${key}`,
+        description: error,
+        timestamp: new Date(),
+        timeout: 5000,
+      });
+    }
   },
+
+  addNotification: (notification: Notification) => {
+    set((state) => ({
+      notifications: [...state.notifications, notification],
+    }));
+    if (notification.timeout) {
+      setTimeout(() => {
+        get().removeNotification(notification.id);
+      }, notification.timeout);
+    }
+  },
+
+  removeNotification: (id: string) => {
+    set((state) => ({
+      notifications: state.notifications.filter((n) => n.id !== id),
+    }));
+  },
+
+  
 
   // Nostr Actions Implementation
   initializeNostr: async () => {

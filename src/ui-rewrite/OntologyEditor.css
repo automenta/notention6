@@ -1,0 +1,16 @@
+/* src/ui-rewrite/OntologyEditor.css */
+
+.ontology-tree {
+  list-style-type: none;
+  padding-left: 20px;
+}
+
+.ontology-tree li {
+  padding: 4px;
+  border-left: 1px solid #ccc;
+}
+
+.ontology-tree li:hover {
+  background-color: #f0f0f0;
+  cursor: grab;
+}

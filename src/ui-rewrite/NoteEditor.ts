@@ -1,34 +1,110 @@
 // src/ui-rewrite/NoteEditor.ts
+import { Editor } from '@tiptap/core';
+import StarterKit from '@tiptap/starter-kit';
+import { useAppStore } from '../store';
+import { createButton } from './Button';
 
-export function createNoteEditor(options: {
-  onSave: (note: { title: string; content: string }) => void;
-}): HTMLElement {
-  const editor = document.createElement("div");
-  editor.className = "note-editor";
+export function createNoteEditor(): HTMLElement | null {
+  const { notes, currentNoteId, updateNote, setCurrentNote } = useAppStore.getState();
 
-  editor.innerHTML = `
-    <input type="text" id="note-title" placeholder="Note Title" />
-    <textarea id="note-content" placeholder="Note Content"></textarea>
-    <div id="editor-button-container"></div>
-  `;
+  if (!currentNoteId) {
+    return null;
+  }
 
-  const titleInput = editor.querySelector("#note-title") as HTMLInputElement;
-  const contentTextarea = editor.querySelector("#note-content") as HTMLTextAreaElement;
-  const buttonContainer = editor.querySelector("#editor-button-container") as HTMLElement;
+  const note = notes[currentNoteId];
+  if (!note) {
+    return null;
+  }
 
-  const saveButton = document.createElement("button");
-  saveButton.textContent = "Save Note";
-  saveButton.className = "btn btn-primary";
-  saveButton.addEventListener("click", () => {
-    options.onSave({
-      title: titleInput.value,
-      content: contentTextarea.value,
-    });
-    titleInput.value = "";
-    contentTextarea.value = "";
+  const editorWrapper = document.createElement("div");
+  editorWrapper.className = "note-editor";
+
+  const titleInput = document.createElement('input');
+  titleInput.type = 'text';
+  titleInput.id = 'note-title';
+  titleInput.placeholder = 'Note Title';
+  titleInput.value = note.title;
+
+  const editorEl = document.createElement('div');
+  editorEl.id = 'tiptap-editor';
+
+  const buttonContainer = document.createElement('div');
+  buttonContainer.id = 'editor-button-container';
+
+  const toolbar = document.createElement('div');
+  toolbar.className = 'editor-toolbar';
+  
+  const editor = new Editor({
+    element: editorEl,
+    extensions: [
+      StarterKit,
+    ],
+    content: note.content,
+  });
+
+  const boldButton = createButton({
+    label: 'B',
+    onClick: () => editor.chain().focus().toggleBold().run(),
+    className: editor.isActive('bold') ? 'is-active' : ''
+  });
+  
+  const italicButton = createButton({
+    label: 'I',
+    onClick: () => editor.chain().focus().toggleItalic().run(),
+    className: editor.isActive('italic') ? 'is-active' : ''
+  });
+
+  const ulButton = createButton({
+    label: 'UL',
+    onClick: () => editor.chain().focus().toggleBulletList().run(),
+    className: editor.isActive('bulletList') ? 'is-active' : ''
+  });
+
+  const olButton = createButton({
+    label: 'OL',
+    onClick: () => editor.chain().focus().toggleOrderedList().run(),
+    className: editor.isActive('orderedList') ? 'is-active' : ''
+  });
+
+  editor.on('transaction', () => {
+    boldButton.className = editor.isActive('bold') ? 'is-active' : '';
+    italicButton.className = editor.isActive('italic') ? 'is-active' : '';
+    ulButton.className = editor.isActive('bulletList') ? 'is-active' : '';
+    olButton.className = editor.isActive('orderedList') ? 'is-active' : '';
+  });
+
+  toolbar.appendChild(boldButton);
+  toolbar.appendChild(italicButton);
+  toolbar.appendChild(ulButton);
+  toolbar.appendChild(olButton);
+  
+  editorWrapper.appendChild(titleInput);
+  editorWrapper.appendChild(toolbar);
+  editorWrapper.appendChild(editorEl);
+  editorWrapper.appendChild(buttonContainer);
+
+  const saveButton = createButton({
+    label: 'Save',
+    onClick: () => {
+      updateNote(currentNoteId, {
+        title: titleInput.value,
+        content: editor.getHTML(),
+      });
+    },
+    className: 'btn-primary'
+  });
+
+  const closeButton = createButton({
+    label: 'Close',
+    onClick: () => {
+      setCurrentNote(undefined);
+    },
+    className: 'btn-secondary'
   });
 
   buttonContainer.appendChild(saveButton);
+  buttonContainer.appendChild(closeButton);
 
-  return editor;
+  return editorWrapper;
 }
+
