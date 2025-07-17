@@ -1,11 +1,11 @@
 // src/ui-rewrite/Dashboard.ts
 import { useAppStore } from '../store';
 import { createButton } from './Button';
-import { createNotesList } from './NotesList';
 
 export function createDashboard(): HTMLElement {
-  const { notes, createNote, setCurrentNote } = useAppStore.getState();
+  const { notes, contacts, createNote, setCurrentNote, setSidebarTab } = useAppStore.getState();
   const notesArray = Object.values(notes);
+  const contactsArray = Object.values(contacts);
 
   const dashboard = document.createElement('div');
   dashboard.className = 'dashboard';
@@ -43,7 +43,7 @@ export function createDashboard(): HTMLElement {
   contactsStat.className = 'stat-card';
   contactsStat.innerHTML = `
     <h3>Contacts</h3>
-    <p>0</p>
+    <p>${contactsArray.length}</p>
   `;
   statsContainer.appendChild(contactsStat);
 
@@ -53,29 +53,17 @@ export function createDashboard(): HTMLElement {
   const quickActions = document.createElement('div');
   quickActions.className = 'dashboard-quick-actions';
 
-  const quickNoteContainer = document.createElement('div');
-  quickNoteContainer.className = 'quick-note-container';
-
-  const quickNoteTitle = document.createElement('h3');
-  quickNoteTitle.textContent = 'Quick Note';
-  quickNoteContainer.appendChild(quickNoteTitle);
-
-  const quickNoteTextarea = document.createElement('textarea');
-  quickNoteTextarea.placeholder = 'Jot down a quick note...';
-  quickNoteContainer.appendChild(quickNoteTextarea);
-
-  const addQuickNoteButton = createButton({
-    label: 'Add Note',
+  const newNoteButton = createButton({
+    label: 'New Note',
     onClick: () => {
-      const content = quickNoteTextarea.value;
-      if (content) {
-        createNote({ content });
-        quickNoteTextarea.value = '';
-      }
-    }
+      const newNote = createNote({ title: 'New Note', content: ''});
+      setCurrentNote(newNote.id);
+      setSidebarTab('notes');
+    },
+    variant: 'primary'
   });
-  quickNoteContainer.appendChild(addQuickNoteButton);
-  quickActions.appendChild(quickNoteContainer);
+  quickActions.appendChild(newNoteButton);
+
   dashboard.appendChild(quickActions);
 
   // Recent Notes
