@@ -5,17 +5,26 @@ import StarterKit from '@tiptap/starter-kit';
 import { SemanticTag } from '../extensions/SemanticTag';
 import './NoteEditor.css';
 import { createButton } from './Button';
+import { createTagModal } from './TagModal';
+import { createMetadataSidebar } from './MetadataSidebar';
+import { templates } from '../lib/templates';
+import { AIService } from '../services/AIService';
 
 export function createNoteEditor(): HTMLElement {
-  const { currentNoteId, notes, updateNote } = useAppStore.getState();
+  const { currentNoteId, notes, updateNote, settings } = useAppStore.getState();
   const note = currentNoteId ? notes[currentNoteId] : null;
+  const aiService = new AIService(settings.ai);
 
-  const container = document.createElement('div');
-  container.className = 'note-editor-container';
+  const editorLayout = document.createElement('div');
+  editorLayout.className = 'note-editor-layout';
+
+  const mainEditorContainer = document.createElement('div');
+  mainEditorContainer.className = 'note-editor-main';
 
   if (!note) {
-    container.textContent = 'No note selected.';
-    return container;
+    mainEditorContainer.textContent = 'No note selected.';
+    editorLayout.appendChild(mainEditorContainer);
+    return editorLayout;
   }
 
   // Title Input
@@ -26,12 +35,12 @@ export function createNoteEditor(): HTMLElement {
   titleInput.oninput = (e) => {
     updateNote(note.id, { title: (e.target as HTMLInputElement).value });
   };
-  container.appendChild(titleInput);
+  mainEditorContainer.appendChild(titleInput);
 
   // Tiptap Editor
   const editorElement = document.createElement('div');
   editorElement.className = 'tiptap-editor';
-  container.appendChild(editorElement);
+  mainEditorContainer.appendChild(editorElement);
 
   const editor = new Editor({
     element: editorElement,
@@ -48,6 +57,32 @@ export function createNoteEditor(): HTMLElement {
   // Toolbar
   const toolbar = document.createElement('div');
   toolbar.className = 'editor-toolbar';
+
+  // Template Selector
+  const templateSelector = document.createElement('select');
+  templateSelector.className = 'template-selector';
+  const defaultOption = document.createElement('option');
+  defaultOption.textContent = 'Select a template';
+  defaultOption.value = '';
+  templateSelector.appendChild(defaultOption);
+
+  templates.forEach(template => {
+    const option = document.createElement('option');
+    option.value = template.id;
+    option.textContent = template.name;
+    templateSelector.appendChild(option);
+  });
+
+  templateSelector.onchange = (e) => {
+    const selectedTemplateId = (e.target as HTMLSelectElement).value;
+    const selectedTemplate = templates.find(t => t.id === selectedTemplateId);
+    if (selectedTemplate) {
+      editor.commands.setContent(selectedTemplate.content);
+      updateNote(note.id, { fields: selectedTemplate.fields });
+    }
+  };
+  toolbar.appendChild(templateSelector);
+
 
   const boldButton = createButton({
     label: 'Bold',
@@ -72,12 +107,48 @@ export function createNoteEditor(): HTMLElement {
 
   const tagButton = createButton({
     label: 'Tag',
-    onClick: () => editor.chain().focus().setSemanticTag('Example').run(),
+    onClick: () => {
+      const modal = createTagModal({
+        onSelect: (tag) => {
+          editor.chain().focus().setSemanticTag(tag).run();
+          document.body.removeChild(modal);
+        },
+        onClose: () => {
+          document.body.removeChild(modal);
+        }
+      });
+      document.body.appendChild(modal);
+    },
     variant: 'secondary'
   });
   toolbar.appendChild(tagButton);
 
-  container.insertBefore(toolbar, editorElement);
+  // AI Buttons
+  const autoTagButton = createButton({
+    label: 'Auto-tag',
+    onClick: async () => {
+      const tags = await aiService.suggestTags(editor.getText());
+      tags.forEach(tag => editor.chain().focus().insertContent(`#${tag} `).run());
+    },
+    variant: 'secondary',
+    disabled: !settings.ai.enabled
+  });
+  toolbar.appendChild(autoTagButton);
+
+  const summarizeButton = createButton({
+    label: 'Summarize',
+    onClick: async () => {
+      const summary = await aiService.summarize(editor.getText());
+      // Maybe show summary in a modal before inserting? For now, just insert it.
+      editor.chain().focus().insertContent(`<h2>Summary</h2><p>${summary}</p>`).run();
+    },
+    variant: 'secondary',
+    disabled: !settings.ai.enabled
+  });
+  toolbar.appendChild(summarizeButton);
+
+
+  mainEditorContainer.insertBefore(toolbar, editorElement);
   
   // Save Button
   const saveButton = createButton({
@@ -89,7 +160,14 @@ export function createNoteEditor(): HTMLElement {
     },
     variant: 'primary'
     });
-    container.appendChild(saveButton)
+    mainEditorContainer.appendChild(saveButton)
 
-  return container;
+  // Metadata Sidebar
+  const metadataSidebar = createMetadataSidebar();
+
+  editorLayout.appendChild(mainEditorContainer);
+  editorLayout.appendChild(metadataSidebar);
+
+
+  return editorLayout;
 }

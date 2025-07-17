@@ -3,6 +3,17 @@ import { useAppStore } from '../store';
 import { createButton } from './Button';
 import './Dashboard.css';
 
+function getUpcomingEventsCount(notes: any[]): number {
+  const now = new Date();
+  return notes.filter(note => {
+    if (note.values && note.values.due) {
+      const dueDate = new Date(note.values.due);
+      return dueDate > now;
+    }
+    return false;
+  }).length;
+}
+
 export function createDashboard(): HTMLElement {
   const { notes, contacts, createNote, setCurrentNote, setSidebarTab, matches } = useAppStore.getState();
   const notesArray = Object.values(notes);
@@ -61,7 +72,7 @@ export function createDashboard(): HTMLElement {
   const totalNotesStat = createStatCard('Total Notes', `${notesArray.length}`);
   statsContainer.appendChild(totalNotesStat);
 
-  const upcomingEventsStat = createStatCard('Upcoming Events', '0');
+  const upcomingEventsStat = createStatCard('Upcoming Events', `${getUpcomingEventsCount(notesArray)}`);
   statsContainer.appendChild(upcomingEventsStat);
 
   const contactsStat = createStatCard('Contacts', `${contactsArray.length}`);

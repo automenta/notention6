@@ -1,0 +1,30 @@
+/* src/ui-rewrite/MetadataSidebar.css */
+.metadata-sidebar {
+  padding: 16px;
+  border-left: 1px solid #eee;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.metadata-section {
+  margin-bottom: 24px;
+}
+
+.metadata-section h3 {
+  margin-top: 0;
+}
+
+.metadata-items .metadata-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.metadata-items .metadata-item input {
+  margin-right: 8px;
+}
+
+.metadata-items .metadata-item label {
+  font-weight: bold;
+  margin-right: 8px;
+}
