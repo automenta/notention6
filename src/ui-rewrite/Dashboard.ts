@@ -2,8 +2,9 @@
 import { useAppStore } from '../store';
 import { createButton } from './Button';
 import './Dashboard.css';
+import { Note, Match } from '../../shared/types';
 
-function getUpcomingEventsCount(notes: any[]): number {
+function getUpcomingEventsCount(notes: Note[]): number {
   const now = new Date();
   return notes.filter(note => {
     if (note.values && note.values.due) {
@@ -109,7 +110,7 @@ function createStatCard(title: string, value: string): HTMLElement {
   return statCard;
 }
 
-function createRecentNotes(notes: any[], onNoteClick: (id: string) => void): HTMLElement {
+function createRecentNotes(notes: Note[], onNoteClick: (id: string) => void): HTMLElement {
   const container = document.createElement('div');
   container.className = 'dashboard-recent-notes';
 
@@ -138,7 +139,7 @@ function createRecentNotes(notes: any[], onNoteClick: (id: string) => void): HTM
   return container;
 }
 
-function createRecentActivity(matches: any[]): HTMLElement {
+function createRecentActivity(matches: Match[]): HTMLElement {
   const container = document.createElement('div');
   container.className = 'dashboard-recent-activity';
 

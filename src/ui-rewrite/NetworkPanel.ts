@@ -2,6 +2,7 @@
 import { useAppStore } from '../store';
 import { createButton } from './Button';
 import './NetworkPanel.css';
+import { Match } from '../../shared/types';
 
 export function createNetworkPanel(): HTMLElement {
   const { matches, nostrRelays, addNostrRelay, removeNostrRelay } = useAppStore.getState();

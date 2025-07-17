@@ -1,6 +1,7 @@
 // src/ui-rewrite/Sidebar.ts
 import { useAppStore } from '../store';
 import { createButton } from './Button';
+import './Sidebar.css';
 
 type AppView = 'dashboard' | 'notes' | 'ontology' | 'network' | 'contacts' | 'chats' | 'settings';
 

@@ -2,10 +2,11 @@
 import { useAppStore } from '../store';
 import { createButton } from './Button';
 import './NotesList.css';
+import { Note } from '../../shared/types';
 
 export function createNotesList(): HTMLElement {
   const { notes, searchQuery, setSearchQuery, setCurrentNote, noteView, setNoteView } = useAppStore.getState();
-  let notesArray = Object.values(notes);
+  let notesArray: Note[] = Object.values(notes);
 
   const container = document.createElement('div');
   container.className = 'notes-list-container';

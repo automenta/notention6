@@ -1,7 +1,6 @@
 // src/ui-rewrite/NotentionApp.ts
 import { useAppStore } from '../store';
 import { createButton } from './Button';
-import './Dashboard.css';
 import { createSidebar } from './Sidebar';
 import { createAccountWizard } from './AccountWizard';
 import { createDashboard } from './Dashboard';
@@ -13,6 +12,7 @@ import { createContactsView } from './ContactsView';
 import { createChatPanel } from './ChatPanel';
 import { createSettings } from './Settings';
 import { createNotificationBar } from './NotificationBar';
+import './NotentionApp.css';
 
 // A type guard to check if a profile exists and has a public key
 function profileExists(profile: any): profile is { nostrPubkey: string } {
@@ -52,7 +52,8 @@ export function renderApp(rootElement: HTMLElement) {
             header.className = 'app-header';
             const toggleButton = createButton({
                 label: '☰',
-                onClick: () => useAppStore.getState().toggleSidebar()
+                onClick: () => useAppStore.getState().toggleSidebar(),
+                variant: 'secondary'
             });
             const title = document.createElement('h1');
             title.textContent = 'Notention';

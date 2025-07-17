@@ -1,6 +1,7 @@
 // src/ui-rewrite/NotificationBar.ts
 import { useAppStore } from '../store';
 import { Notification } from '../../shared/types';
+import './NotificationBar.css';
 
 export function createNotificationBar(): HTMLElement {
     const notificationBar = document.createElement('div');

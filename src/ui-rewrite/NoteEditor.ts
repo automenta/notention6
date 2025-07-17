@@ -9,10 +9,11 @@ import { createTagModal } from './TagModal';
 import { createMetadataSidebar } from './MetadataSidebar';
 import { templates } from '../lib/templates';
 import { AIService } from '../services/AIService';
+import { Note } from '../../shared/types';
 
 export function createNoteEditor(): HTMLElement {
   const { currentNoteId, notes, updateNote, settings } = useAppStore.getState();
-  const note = currentNoteId ? notes[currentNoteId] : null;
+  const note: Note | null = currentNoteId ? notes[currentNoteId] : null;
   const aiService = new AIService(settings.ai);
 
   const editorLayout = document.createElement('div');
