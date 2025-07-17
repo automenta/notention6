@@ -25,11 +25,54 @@ function renderMatchedNotes(notes: Note[], container: HTMLElement) {
 }
 
 export function createNetworkPanel(): HTMLElement {
-  const el = document.createElement('div');
-  el.innerHTML = '<h1>Network Matches</h1>';
+  const { relays, addRelay, removeRelay } = useAppStore.getState();
 
+  const el = document.createElement('div');
+  el.className = 'network-panel';
+  el.innerHTML = '<h1>Network</h1>';
+
+  // Relay Management Section
+  const relaySection = document.createElement('section');
+  relaySection.innerHTML = '<h2>Relays</h2>';
+
+  const relayList = document.createElement('ul');
+  relays.forEach(relay => {
+    const li = document.createElement('li');
+    li.textContent = relay;
+    const removeBtn = document.createElement('button');
+    removeBtn.textContent = 'Remove';
+    removeBtn.onclick = () => removeRelay(relay);
+    li.appendChild(removeBtn);
+    relayList.appendChild(li);
+  });
+  relaySection.appendChild(relayList);
+
+  const addRelayForm = document.createElement('form');
+  const newRelayInput = document.createElement('input');
+  newRelayInput.type = 'text';
+  newRelayInput.placeholder = 'wss://your-relay.com';
+  addRelayForm.appendChild(newRelayInput);
+  const addRelayBtn = document.createElement('button');
+  addRelayBtn.textContent = 'Add Relay';
+  addRelayBtn.type = 'submit';
+  addRelayForm.appendChild(addRelayBtn);
+  addRelayForm.onsubmit = (e) => {
+    e.preventDefault();
+    const newRelay = newRelayInput.value.trim();
+    if (newRelay) {
+      addRelay(newRelay);
+      newRelayInput.value = '';
+    }
+  };
+  relaySection.appendChild(addRelayForm);
+  el.appendChild(relaySection);
+
+  // Matched Notes Section
+  const matchesSection = document.createElement('section');
+  matchesSection.innerHTML = '<h2>Matched Notes</h2>';
   const resultsContainer = document.createElement('div');
-  el.appendChild(resultsContainer);
+  matchesSection.appendChild(resultsContainer);
+  el.appendChild(matchesSection);
 
   let matchedNotes: Note[] = [];
   let renderTimeout: number | undefined;

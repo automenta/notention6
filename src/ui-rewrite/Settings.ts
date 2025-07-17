@@ -1,7 +1,9 @@
 // src/ui-rewrite/Settings.ts
+import './Settings.css';
 import { DBService } from '../services/db';
 import { nostrService } from '../services/NostrService';
 import { useAppStore } from '../store';
+import { createButton } from './Button';
 
 function createDataSection(onUpdate: () => void): HTMLElement {
     const section = document.createElement('div');
@@ -81,6 +83,7 @@ function renderRelayList(relays: string[], onUpdate: () => void): HTMLElement {
 
 function createNostrSection(): HTMLElement {
     const el = document.createElement('div');
+    el.className = 'settings-section';
     el.innerHTML = '<h3>Nostr Relays</h3>';
 
     const render = () => {
@@ -128,6 +131,7 @@ function createNostrSection(): HTMLElement {
 
 export function createSettings(): HTMLElement {
   const el = document.createElement('div');
+  el.className = 'settings-view';
   el.innerHTML = '<h1>Settings</h1>';
 
   const sections = {
@@ -135,6 +139,7 @@ export function createSettings(): HTMLElement {
         const { userProfile, logout } = useAppStore.getState();
 
         const content = document.createElement('div');
+        content.className = 'settings-section';
         content.innerHTML = '<h3>Profile</h3>';
 
         if (userProfile?.nostrPubkey) {
@@ -143,23 +148,26 @@ export function createSettings(): HTMLElement {
             content.appendChild(pubkeyDisplay);
         }
 
-        const logoutButton = document.createElement('button');
-        logoutButton.textContent = 'Logout';
-        logoutButton.className = 'btn btn-danger';
-        logoutButton.onclick = () => {
-            if(confirm('Are you sure you want to logout? This will clear your local data.')) {
-                logout();
-            }
-        };
+        const logoutButton = createButton({
+            label: 'Logout & Clear Data',
+            onClick: () => {
+                if(confirm('Are you sure you want to logout? This will clear all local data.')) {
+                    logout();
+                }
+            },
+            variant: 'danger'
+        });
         content.appendChild(logoutButton);
 
         return content;
     },
     appearance: () => {
         const content = document.createElement('div');
+        content.className = 'settings-section';
         content.innerHTML = '<h3>Appearance</h3>';
 
         const themeSwitcher = document.createElement('div');
+        themeSwitcher.className = 'form-group';
         themeSwitcher.innerHTML = `
             <label for="theme-select">Theme:</label>
             <select id="theme-select">
@@ -183,8 +191,11 @@ export function createSettings(): HTMLElement {
         const { aiConfig, setAiConfig } = useAppStore.getState();
 
         const content = document.createElement('div');
+        content.className = 'settings-section';
         content.innerHTML = '<h3>AI Features</h3>';
 
+        const ollamaGroup = document.createElement('div');
+        ollamaGroup.className = 'form-group';
         const ollamaEnabled = document.createElement('input');
         ollamaEnabled.type = 'checkbox';
         ollamaEnabled.id = 'ollama-enabled';
@@ -202,24 +213,88 @@ export function createSettings(): HTMLElement {
         ollamaUrl.placeholder = 'Ollama URL';
         content.appendChild(ollamaUrl);
 
+        ollamaGroup.appendChild(ollamaEnabled);
+        const ollamaLabel = document.createElement('label');
+        ollamaLabel.textContent = 'Enable Ollama';
+        ollamaLabel.htmlFor = 'ollama-enabled';
+        ollamaGroup.appendChild(ollamaLabel);
+
+        const ollamaUrl = document.createElement('input');
+        ollamaUrl.type = 'text';
+        ollamaUrl.id = 'ollama-url';
+        ollamaUrl.value = aiConfig.ollama.url;
+        ollamaUrl.placeholder = 'Ollama URL (e.g., http://localhost:11434)';
+        ollamaGroup.appendChild(ollamaUrl);
+        content.appendChild(ollamaGroup);
+
+        const geminiGroup = document.createElement('div');
+        geminiGroup.className = 'form-group';
         const geminiEnabled = document.createElement('input');
         geminiEnabled.type = 'checkbox';
         geminiEnabled.id = 'gemini-enabled';
         geminiEnabled.checked = aiConfig.gemini.enabled;
-        content.appendChild(geminiEnabled);
+        geminiGroup.appendChild(geminiEnabled);
         const geminiLabel = document.createElement('label');
         geminiLabel.textContent = 'Enable Gemini';
         geminiLabel.htmlFor = 'gemini-enabled';
-        content.appendChild(geminiLabel);
+        geminiGroup.appendChild(geminiLabel);
 
         const geminiApiKey = document.createElement('input');
         geminiApiKey.type = 'password';
         geminiApiKey.id = 'gemini-api-key';
         geminiApiKey.value = aiConfig.gemini.apiKey;
         geminiApiKey.placeholder = 'Gemini API Key';
-        content.appendChild(geminiApiKey);
+        geminiGroup.appendChild(geminiApiKey);
+        content.appendChild(geminiGroup);
 
-        const saveButton = document.createElement('button');
+        const saveButton = createButton({
+            label: 'Save AI Config',
+            onClick: () => {
+                setAiConfig({
+                    ollama: {
+                        enabled: ollamaEnabled.checked,
+                        url: ollamaUrl.value,
+                    },
+                    gemini: {
+                        enabled: geminiEnabled.checked,
+                        apiKey: geminiApiKey.value,
+                    }
+                });
+            },
+            variant: 'primary'
+        });
+        content.appendChild(saveButton);
+
+        return content;
+    },
+    data: () => createDataSection(() => useAppStore.getState().initializeApp()),
+  };
+
+  const nav = document.createElement('nav');
+  nav.className = 'settings-nav';
+  const content = document.createElement('div');
+  content.className = 'settings-content';
+
+  Object.keys(sections).forEach(key => {
+    const button = createButton({
+        label: key.charAt(0).toUpperCase() + key.slice(1),
+        onClick: () => {
+            content.innerHTML = '';
+            content.appendChild(sections[key as keyof typeof sections]());
+        },
+        variant: 'secondary'
+    });
+    nav.appendChild(button);
+  });
+
+  el.appendChild(nav);
+  el.appendChild(content);
+
+  // Load profile section by default
+  content.appendChild(sections.profile());
+
+  return el;
+}
         saveButton.textContent = 'Save AI Config';
         saveButton.className = 'btn btn-primary';
         saveButton.onclick = () => {

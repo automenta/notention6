@@ -4,7 +4,6 @@ import StarterKit from '@tiptap/starter-kit';
 import { useAppStore } from '../store';
 import { createButton } from './Button';
 import Mention from '@tiptap/extension-mention';
-import { Editor } from '@tiptap/core';
 
 export function createNoteEditor(): HTMLElement | null {
   const { notes, currentNoteId, updateNote, setCurrentNote } = useAppStore.getState();
@@ -74,13 +73,47 @@ export function createNoteEditor(): HTMLElement | null {
               },
 
               onUpdate(props) {
-                // Not implemented
+                // This is where you would update the component's items
+                // and positioning. For simplicity, we'll just re-render.
+                // A more advanced implementation would diff the items.
+                component.innerHTML = '';
+                props.items.forEach((item: OntologyNode, index: number) => {
+                    const itemEl = document.createElement('div');
+                    itemEl.textContent = item.label;
+                    itemEl.onclick = () => props.command({ id: item.id, label: item.label });
+                    if (index === 0) { // Highlight the first item
+                        itemEl.classList.add('is-selected');
+                    }
+                    component.appendChild(itemEl);
+                });
               },
 
               onKeyDown(props) {
                 if (props.event.key === 'Escape') {
                   popup?.destroy();
                   return true;
+                }
+                // Basic keyboard navigation
+                const selected = component.querySelector('.is-selected');
+                if (props.event.key === 'ArrowUp') {
+                    const prev = selected?.previousElementSibling;
+                    if (prev) {
+                        selected?.classList.remove('is-selected');
+                        prev.classList.add('is-selected');
+                    }
+                    return true;
+                }
+                if (props.event.key === 'ArrowDown') {
+                    const next = selected?.nextElementSibling;
+                    if (next) {
+                        selected?.classList.remove('is-selected');
+                        next.classList.add('is-selected');
+                    }
+                    return true;
+                }
+                if (props.event.key === 'Enter') {
+                    selected?.click();
+                    return true;
                 }
                 return false;
               },
@@ -113,7 +146,7 @@ export function createNoteEditor(): HTMLElement | null {
 
   const olButton = createButton({
     label: 'OL',
-    onClick: () => editor.chain().focus().toggleOrderedList()..run(),
+    onClick: () => editor.chain().focus().toggleOrderedList().run(),
   });
 
   editor.on('transaction', () => {
@@ -123,16 +156,25 @@ export function createNoteEditor(): HTMLElement | null {
     olButton.classList.toggle('is-active', editor.isActive('orderedList'));
   });
 
-  toolbar.appendChild(boldButton);
-  toolbar.appendChild(italicButton);
-  toolbar.appendChild(ulButton);
-  toolbar.appendChild(olButton);
+  // Group buttons for better organization
+  const formattingGroup = document.createElement('div');
+  formattingGroup.className = 'toolbar-group';
+  formattingGroup.appendChild(boldButton);
+  formattingGroup.appendChild(italicButton);
+
+  const listGroup = document.createElement('div');
+  listGroup.className = 'toolbar-group';
+  listGroup.appendChild(ulButton);
+  listGroup.appendChild(olButton);
+
+  toolbar.appendChild(formattingGroup);
+  toolbar.appendChild(listGroup);
   
   editorWrapper.appendChild(titleInput);
   editorWrapper.appendChild(toolbar);
   editorWrapper.appendChild(editorEl);
-  editorWrapper.appendChild(buttonContainer);
 
+  // Action Buttons
   const saveButton = createButton({
     label: 'Save',
     onClick: () => {
@@ -141,6 +183,7 @@ export function createNoteEditor(): HTMLElement | null {
         content: editor.getHTML(),
       });
     },
+    variant: 'primary'
   });
 
   const closeButton = createButton({
@@ -148,18 +191,27 @@ export function createNoteEditor(): HTMLElement | null {
     onClick: () => {
       setCurrentNote(undefined);
     },
+    variant: 'secondary'
   });
 
   buttonContainer.appendChild(saveButton);
   buttonContainer.appendChild(closeButton);
+  editorWrapper.appendChild(buttonContainer);
 
   // Metadata Sidebar
   const sidebar = document.createElement('aside');
   sidebar.className = 'note-editor-sidebar';
-  sidebar.innerHTML = '<h3>Metadata</h3>';
 
+  const metadataHeader = document.createElement('h3');
+  metadataHeader.textContent = 'Metadata';
+  sidebar.appendChild(metadataHeader);
+
+  // Tags Section
   const tagsContainer = document.createElement('div');
-  tagsContainer.innerHTML = '<h4>Tags</h4>';
+  tagsContainer.className = 'metadata-section';
+  const tagsHeader = document.createElement('h4');
+  tagsHeader.textContent = 'Tags';
+  tagsContainer.appendChild(tagsHeader);
 
   const tagsList = document.createElement('div');
   tagsList.className = 'tags-list';
@@ -167,12 +219,14 @@ export function createNoteEditor(): HTMLElement | null {
     const tagEl = document.createElement('span');
     tagEl.className = 'tag';
     tagEl.textContent = tag;
-    const removeBtn = document.createElement('button');
-    removeBtn.textContent = 'x';
-    removeBtn.onclick = () => {
-        const newTags = note.tags.filter(t => t !== tag);
-        updateNote(note.id, { tags: newTags });
-    };
+    const removeBtn = createButton({
+        label: 'x',
+        onClick: () => {
+            const newTags = note.tags.filter(t => t !== tag);
+            updateNote(note.id, { tags: newTags });
+        },
+        variant: 'icon'
+    });
     tagEl.appendChild(removeBtn);
     tagsList.appendChild(tagEl);
   });
