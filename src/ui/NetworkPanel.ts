@@ -155,7 +155,17 @@ export class NetworkPanel extends HTMLElement {
             ${repeat(
               this.matches,
               (match) => match.id,
-              (match) => html`<!-- TODO: Implement match item -->`,
+              (match) => html`
+                <div class="match-item">
+                  <div class="match-header">
+                    <span class="match-author">${match.targetAuthor.substring(0, 8)}...</span>
+                    <span class="match-similarity">Similarity: ${Math.round(match.similarity * 100)}%</span>
+                  </div>
+                  <div class="match-body">
+                    <p>Shared Tags: ${match.sharedTags.join(", ")}</p>
+                  </div>
+                </div>
+              `,
             )}
           </div>
         `,
@@ -181,7 +191,17 @@ export class NetworkPanel extends HTMLElement {
             ${repeat(
               this.publicEvents,
               (event) => event.id,
-              (event) => html`<!-- TODO: Implement public event item -->`,
+              (event) => html`
+                <div class="public-event-item">
+                  <div class="event-header">
+                    <span class="event-author">${event.pubkey.substring(0, 8)}...</span>
+                    <span class="event-date">${new Date(event.created_at * 1000).toLocaleString()}</span>
+                  </div>
+                  <div class="event-body">
+                    <p>${event.content}</p>
+                  </div>
+                </div>
+              `,
             )}
           </div>
         `,

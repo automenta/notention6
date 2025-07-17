@@ -1,0 +1,21 @@
+.contacts-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: var(--space-6);
+}
+
+.contacts-header {
+  margin-bottom: var(--space-5);
+}
+
+.contacts-title {
+  font-size: 2rem;
+  font-weight: var(--font-weight-bold);
+  margin: 0;
+}
+
+.contacts-content {
+  flex-grow: 1;
+  overflow-y: auto;
+}

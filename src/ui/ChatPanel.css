@@ -2,42 +2,51 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: var(--space-6);
 }
 
 .message-list {
-  flex: 1;
+  flex-grow: 1;
   overflow-y: auto;
+  padding: var(--space-4);
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
 }
 
 .message {
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-lg);
-  max-width: 80%;
+  max-width: 70%;
 }
 
-.incoming {
-  background-color: var(--color-surface-hover);
+.message.incoming {
+  background-color: var(--color-surface-light);
   align-self: flex-start;
   border-bottom-left-radius: var(--radius-sm);
 }
 
-.outgoing {
-  background-color: var(--color-accent-light);
+.message.outgoing {
+  background-color: var(--color-primary);
+  color: var(--color-light);
   align-self: flex-end;
   border-bottom-right-radius: var(--radius-sm);
 }
 
-.message-input {
-  display: flex;
-  gap: var(--space-4);
-  margin-top: var(--space-6);
+.message p {
+  margin: 0;
 }
 
-#new-message {
-  flex: 1;
-  resize: none;
+.message-input {
+  display: flex;
+  padding: var(--space-4);
+  border-top: 1px solid var(--color-border);
+  gap: var(--space-3);
+}
+
+.empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--color-text-secondary);
 }

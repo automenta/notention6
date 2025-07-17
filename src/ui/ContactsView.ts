@@ -1,27 +1,39 @@
-import { LitElement, html, css } from "lit";
-import { customElement } from "lit/decorators.js";
-import { contactService } from "../services/ContactService";
-import { store } from "../store";
+import { useAppStore } from "../store";
+import { html, render } from "lit-html";
 import "./ContactList";
+import { logger } from "../lib/utils";
 
-@customElement("contacts-view")
-export class ContactsView extends LitElement {
+const log = logger("contacts-view");
+
+export class ContactsView extends HTMLElement {
   constructor() {
     super();
-    contactService.getContacts();
+    this.attachShadow({ mode: "open" });
+    log("Component constructed");
+  }
+
+  connectedCallback() {
+    log("Component connected");
+    this.render();
   }
 
   render() {
-    return html`
-      <div class="contacts-view">
-        <notention-contact-list></notention-contact-list>
+    if (!this.shadowRoot) return;
+    log("Rendering contacts view");
+
+    const template = html`
+      <link rel="stylesheet" href="src/ui/ContactsView.css" />
+      <div class="contacts-container">
+        <header class="contacts-header">
+          <h1 class="contacts-title">Contacts</h1>
+        </header>
+        <div class="contacts-content">
+          <notention-contact-list></notention-contact-list>
+        </div>
       </div>
     `;
+    render(template, this.shadowRoot);
   }
-
-  static styles = css`
-    .contacts-view {
-      padding: 16px;
-    }
-  `;
 }
+
+customElements.define("contacts-view", ContactsView);

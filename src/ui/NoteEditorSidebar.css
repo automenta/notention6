@@ -1,0 +1,67 @@
+.sidebar-container {
+  padding: var(--space-4);
+  background-color: var(--color-surface-light);
+  border-left: 1px solid var(--color-border);
+  width: 280px;
+  overflow-y: auto;
+}
+
+.sidebar-title {
+  font-size: 1.2rem;
+  font-weight: var(--font-weight-bold);
+  margin-bottom: var(--space-4);
+}
+
+.metadata-section {
+  margin-bottom: var(--space-4);
+}
+
+.metadata-section label {
+  display: block;
+  font-weight: var(--font-weight-medium);
+  margin-bottom: var(--space-2);
+}
+
+.tag-list,
+.value-list,
+.field-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.tag-item,
+.value-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+  border-radius: var(--radius-md);
+  padding: var(--space-1) var(--space-2);
+  font-size: 0.9rem;
+}
+
+.tag-item button,
+.value-item button {
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+.add-tag,
+.add-value {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.field-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}

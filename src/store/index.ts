@@ -40,6 +40,10 @@ interface AppActions {
 
   // Ontology actions
   setOntology: (ontology: OntologyTree) => Promise<void>;
+  setSelectedOntologyNodeId: (nodeId: string | null) => void;
+  addOntologyNode: (node: Partial<OntologyNode>) => Promise<void>;
+  updateOntologyNode: (nodeId: string, updates: Partial<OntologyNode>) => Promise<void>;
+  deleteOntologyNode: (nodeId: string) => Promise<void>;
 
   // User profile actions
   updateUserProfile: (profileUpdates: Partial<UserProfile>) => Promise<void>;
@@ -70,6 +74,7 @@ interface AppActions {
 
   // UI actions
   setSidebarTab: (tab: AppState["sidebarTab"]) => void;
+  setCurrentContactPubkey: (pubkey: string | null) => void;
   setEditorContent: (content: string) => void;
   setIsEditing: (editing: boolean) => void;
 
@@ -206,6 +211,8 @@ export const useAppStore = create<AppStore>((set, get) => ({
   templates: {},
 
   currentNoteId: undefined,
+  selectedOntologyNodeId: undefined,
+  currentContactPubkey: undefined,
   sidebarTab: "notes" as
     | "notes"
     | "ontology"
@@ -218,6 +225,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
   matches: [],
   directMessages: [],
+  publicEvents: [],
   embeddingMatches: [], // New state for embedding-based matches
   // Default relays, user can override via settings
   nostrRelays: [
@@ -699,7 +707,11 @@ export const useAppStore = create<AppStore>((set, get) => ({
   },
 
   setSearchFilters: (filters: Partial<SearchFilters>) => {
-    set((state) => ({ searchFilters: { ...state.searchFilters, ...filters } }));
+    const newFilters = { ...get().searchFilters, ...filters };
+    if (typeof newFilters.tags === 'string') {
+      newFilters.tags = (newFilters.tags as string).split(',').map(t => t.trim()).filter(t => t);
+    }
+    set({ searchFilters: newFilters });
   },
 
   setOntology: async (ontologyData: OntologyTree) => {
@@ -900,6 +912,10 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
   setSidebarTab: (tab: AppState["sidebarTab"]) => {
     set({ sidebarTab: tab });
+  },
+
+  setCurrentContactPubkey: (pubkey: string | null) => {
+    set({ currentContactPubkey: pubkey });
   },
 
   setEditorContent: (content: string) => {
@@ -2325,6 +2341,28 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
     // setOntology will update the state and persist to DB
     setOntology(newOntology);
+  },
+
+  setSelectedOntologyNodeId: (nodeId: string | null) => {
+    set({ selectedOntologyNodeId: nodeId });
+  },
+
+  addOntologyNode: async (node: Partial<OntologyNode>) => {
+    const { ontology, setOntology } = get();
+    const newOntology = OntologyService.addNode(ontology, node);
+    await setOntology(newOntology);
+  },
+
+  updateOntologyNode: async (nodeId: string, updates: Partial<OntologyNode>) => {
+    const { ontology, setOntology } = get();
+    const newOntology = OntologyService.updateNode(ontology, nodeId, updates);
+    await setOntology(newOntology);
+  },
+
+  deleteOntologyNode: async (nodeId: string) => {
+    const { ontology, setOntology } = get();
+    const newOntology = OntologyService.deleteNode(ontology, nodeId);
+    await setOntology(newOntology);
   },
 
   updateUserProfile: async (profileUpdates: Partial<UserProfile>) => {

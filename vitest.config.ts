@@ -16,8 +16,8 @@ export default defineConfig({
         "@": path.resolve(__dirname, "./src"),
       },
     },
-    testTimeout: 600000, // 10 minutes per test file
-    hookTimeout: 600000, // 10 minutes for hooks per test file
+    testTimeout: 10000, // 10 seconds per test file
+    hookTimeout: 10000, // 10 seconds for hooks per test file
     // Explicitly define where to find tests and what to exclude
     include: ["src/**/*.{test,spec}.?(c|m)[jt]s?(x)"],
     exclude: [

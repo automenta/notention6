@@ -7,6 +7,7 @@ import { logger, debounce } from "../lib/utils";
 import "./Button";
 import "./Input";
 import "./Icon";
+import "./FilterModal";
 
 const log = logger("notention-notes-list");
 
@@ -16,6 +17,8 @@ export class NotesList extends HTMLElement {
   private searchQuery = "";
   private currentFolderId: string | null = "root";
   private currentNoteId: string | null = null;
+  private sortOption = "updatedAt-desc";
+  private isFilterModalOpen = false;
 
   constructor() {
     super();
@@ -104,21 +107,69 @@ export class NotesList extends HTMLElement {
     return date.toLocaleDateString();
   }
 
+  private handleSortChange(value: string) {
+    this.sortOption = value;
+    this.render();
+  }
+
+  private openFilterModal() {
+    this.isFilterModalOpen = true;
+    this.render();
+  }
+
+  private closeFilterModal() {
+    this.isFilterModalOpen = false;
+    this.render();
+  }
+
   private getFilteredNotes(): Note[] {
+    const { searchFilters } = useAppStore.getState();
+
     const filtered = this.notes.filter((note) => {
       const inFolder =
         !this.currentFolderId || note.folderId === this.currentFolderId;
+
       const matchesSearch =
         !this.searchQuery ||
         note.title.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
         note.content.toLowerCase().includes(this.searchQuery.toLowerCase());
-      return inFolder && matchesSearch;
+
+      const matchesTags =
+        !searchFilters.tags ||
+        searchFilters.tags.every((tag) => note.tags.includes(tag));
+
+      return inFolder && matchesSearch && matchesTags;
     });
 
-    return filtered.sort(
-      (a, b) =>
-        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-    );
+    const [sortBy, sortOrder] = this.sortOption.split("-");
+
+    return filtered.sort((a, b) => {
+      let valA, valB;
+
+      switch (sortBy) {
+        case "title":
+          valA = a.title.toLowerCase();
+          valB = b.title.toLowerCase();
+          break;
+        case "createdAt":
+          valA = new Date(a.createdAt).getTime();
+          valB = new Date(b.createdAt).getTime();
+          break;
+        case "updatedAt":
+        default:
+          valA = new Date(a.updatedAt).getTime();
+          valB = new Date(b.updatedAt).getTime();
+          break;
+      }
+
+      if (valA < valB) {
+        return sortOrder === "asc" ? -1 : 1;
+      }
+      if (valA > valB) {
+        return sortOrder === "asc" ? 1 : -1;
+      }
+      return 0;
+    });
   }
 
   private stripHtml(html: string): string {
@@ -135,6 +186,13 @@ export class NotesList extends HTMLElement {
     const template = html`
       <link rel="stylesheet" href="src/ui/NotesList.css" />
       <div class="notes-list-container">
+        ${when(
+          this.isFilterModalOpen,
+          () =>
+            html`<filter-modal
+              @close=${() => this.closeFilterModal()}
+            ></filter-modal>`,
+        )}
         <header class="notes-list-header">
           <div class="search-container">
             <ui-input
@@ -149,10 +207,21 @@ export class NotesList extends HTMLElement {
               <ui-icon name="search" slot="icon-left"></ui-icon>
             </ui-input>
           </div>
-          <ui-button variant="primary" @click=${() => this.handleNewNote()}>
-            <ui-icon name="plus" slot="icon-left"></ui-icon>
-            New Note
-          </ui-button>
+          <div class="notes-list-actions">
+            <select @change=${(e: Event) => this.handleSortChange((e.target as HTMLSelectElement).value)} class="sort-select">
+              <option value="updatedAt-desc">Last Modified</option>
+              <option value="createdAt-desc">Created Date</option>
+              <option value="title-asc">Title</option>
+            </select>
+            <ui-button variant="secondary" @click=${() => this.openFilterModal()}>
+              <ui-icon name="filter" slot="icon-left"></ui-icon>
+              Filter
+            </ui-button>
+            <ui-button variant="primary" @click=${() => this.handleNewNote()}>
+              <ui-icon name="plus" slot="icon-left"></ui-icon>
+              New Note
+            </ui-button>
+          </div>
         </header>
 
         <div class="notes-list-content">

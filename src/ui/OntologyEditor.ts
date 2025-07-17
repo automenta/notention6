@@ -84,6 +84,35 @@ export class OntologyEditor extends HTMLElement {
     }
   }
 
+  private handleAddAttribute() {
+    if (!this.selectedNodeId) return;
+    const keyInput = this.shadowRoot?.querySelector("#add-attribute-key") as HTMLInputElement;
+    const valueInput = this.shadowRoot?.querySelector("#add-attribute-value") as HTMLInputElement;
+    if (keyInput && valueInput && keyInput.value) {
+      const selectedNode = this.nodes[this.selectedNodeId];
+      const newAttributes = {
+        ...selectedNode.attributes,
+        [keyInput.value]: valueInput.value,
+      };
+      useAppStore.getState().updateOntologyNode(this.selectedNodeId, { attributes: newAttributes });
+      keyInput.value = "";
+      valueInput.value = "";
+    }
+  }
+
+  private handleRemoveAttribute(key: string) {
+    if (!this.selectedNodeId) return;
+    const selectedNode = this.nodes[this.selectedNodeId];
+    const newAttributes = { ...selectedNode.attributes };
+    delete newAttributes[key];
+    useAppStore.getState().updateOntologyNode(this.selectedNodeId, { attributes: newAttributes });
+  }
+
+  private async handleAISuggest() {
+    log("AI Suggest clicked");
+    // AI Service integration goes here
+  }
+
   private renderNodeTree(parentId: string | null = null) {
     const children = Object.values(this.nodes).filter(
       (node) => node.parentId === parentId,
@@ -136,7 +165,27 @@ export class OntologyEditor extends HTMLElement {
                   .value=${selectedNode!.label}
                 ></ui-input>
               </div>
-              <!-- TODO: Add attributes editor -->
+              <div class="attributes-section">
+                <h4>Attributes</h4>
+                ${repeat(
+                  Object.entries(selectedNode!.attributes || {}),
+                  ([key]) => key,
+                  ([key, value]) => html`
+                    <div class="attribute-item">
+                      <span>${key}:</span>
+                      <span>${value}</span>
+                      <button @click=${() => this.handleRemoveAttribute(key)}>
+                        <ui-icon name="x"></ui-icon>
+                      </button>
+                    </div>
+                  `
+                )}
+                <div class="add-attribute">
+                  <ui-input id="add-attribute-key" placeholder="Key"></ui-input>
+                  <ui-input id="add-attribute-value" placeholder="Value"></ui-input>
+                  <ui-button @click=${() => this.handleAddAttribute()}>Add</ui-button>
+                </div>
+              </div>
               <div class="form-actions">
                 <ui-button type="submit" variant="primary">Save</ui-button>
                 <ui-button
@@ -168,10 +217,16 @@ export class OntologyEditor extends HTMLElement {
       <div class="ontology-container">
         <header class="ontology-header">
           <h1 class="ontology-title">Ontology</h1>
-          <ui-button variant="primary" @click=${() => this.handleAddNode(null)}>
-            <ui-icon name="plus" slot="icon-left"></ui-icon>
-            Add Root Concept
-          </ui-button>
+          <div class="header-actions">
+            <ui-button variant="secondary" @click=${() => this.handleAISuggest()}>
+              <ui-icon name="sparkles" slot="icon-left"></ui-icon>
+              AI Suggest
+            </ui-button>
+            <ui-button variant="primary" @click=${() => this.handleAddNode(null)}>
+              <ui-icon name="plus" slot="icon-left"></ui-icon>
+              Add Root Concept
+            </ui-button>
+          </div>
         </header>
         <div class="ontology-body">
           <div class="tree-panel">

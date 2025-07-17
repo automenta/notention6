@@ -24,6 +24,35 @@
   margin: 0;
 }
 
+.header-actions {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.attributes-section {
+  margin-top: var(--space-5);
+}
+
+.attributes-section h4 {
+  font-size: 1.1rem;
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--space-3);
+}
+
+.attribute-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.add-attribute {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
 .ontology-body {
   display: grid;
   grid-template-columns: 1fr 1fr;

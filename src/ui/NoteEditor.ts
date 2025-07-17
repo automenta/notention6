@@ -11,6 +11,7 @@ import { logger, debounce } from "../lib/utils";
 import "./Button";
 import "./Input";
 import "./Icon";
+import "./NoteEditorSidebar";
 
 const log = logger("notention-note-editor");
 
@@ -240,8 +241,31 @@ export class NoteEditor extends HTMLElement {
       >
         <ui-icon name="italic"></ui-icon>
       </button>
-      <!-- ... other buttons -->
+      <button class="toolbar-button" @click=${() => this.handleAutoTag()}>
+        <ui-icon name="tag"></ui-icon>
+      </button>
+      <button class="toolbar-button" @click=${() => this.handleSummarize()}>
+        <ui-icon name="align-left"></ui-icon>
+      </button>
     `;
+  }
+
+  private async handleAutoTag() {
+    if (!this.currentNote || !this.editor) return;
+    log("Auto-tagging note");
+    // AI Service integration goes here
+  }
+
+  private async handleSummarize() {
+    if (!this.currentNote || !this.editor) return;
+    log("Summarizing note");
+    // AI Service integration goes here
+  }
+
+  private async handleShare() {
+    if (!this.currentNote) return;
+    log("Sharing note");
+    // Nostr Service integration goes here
   }
 
   render() {
@@ -283,65 +307,85 @@ export class NoteEditor extends HTMLElement {
     if (!this.currentNote) return;
 
     return html`
-      <div class="editor-container">
-        <header class="editor-header">
-          <div class="editor-toolbar">${this.toolbarTemplate()}</div>
-          <div class="editor-actions">
-            <div class="save-status-container">
-              ${this.saveStatusTemplate()}
-            </div>
-            <ui-button
-              variant="danger"
-              size="sm"
-              @click=${() => this.deleteNote()}
-            >
-              <ui-icon name="trash-2" slot="icon-left"></ui-icon>
-              Delete
-            </ui-button>
-          </div>
-        </header>
-        <div class="editor-content">
-          <div class="note-meta">
-            <div class="meta-row">
-              <label class="meta-label" for="note-title">Title</label>
-              <ui-input
-                id="note-title"
-                type="text"
-                .value=${this.currentNote.title || ""}
-                @input=${this.handleInput}
-                placeholder="Untitled Note"
-              ></ui-input>
-            </div>
-            <div class="meta-row">
-              <label class="meta-label" for="note-folder">Folder</label>
-              <select
-                id="note-folder"
-                @change=${this.handleInput}
-                class="folder-select"
+      <div class="editor-layout">
+        <div class="editor-container">
+          <header class="editor-header">
+            <div class="editor-toolbar">${this.toolbarTemplate()}</div>
+            <div class="editor-actions">
+              <div class="save-status-container">
+                ${this.saveStatusTemplate()}
+              </div>
+              <ui-button
+                variant="primary"
+                size="sm"
+                @click=${() => this.handleShare()}
               >
-                <option
-                  value="root"
-                  ?selected=${this.currentNote.folderId === "root"}
-                >
-                  Root
-                </option>
-                ${repeat(
-                  this.folders,
-                  (f) => f.id,
-                  (f) => html`
-                    <option
-                      value="${f.id}"
-                      ?selected=${this.currentNote?.folderId === f.id}
-                    >
-                      ${f.name}
-                    </option>
-                  `,
-                )}
-              </select>
+                <ui-icon name="share-2" slot="icon-left"></ui-icon>
+                Share
+              </ui-button>
+              <ui-button
+                variant="danger"
+                size="sm"
+                @click=${() => this.deleteNote()}
+              >
+                <ui-icon name="trash-2" slot="icon-left"></ui-icon>
+                Delete
+              </ui-button>
             </div>
+          </header>
+          <div class="editor-content">
+            <div class="note-meta">
+              <div class="meta-row">
+                <label class="meta-label" for="note-title">Title</label>
+                <ui-input
+                  id="note-title"
+                  type="text"
+                  .value=${this.currentNote.title || ""}
+                  @input=${this.handleInput}
+                  placeholder="Untitled Note"
+                ></ui-input>
+              </div>
+              <div class="meta-row">
+                <label class="meta-label" for="note-folder">Folder</label>
+                <select
+                  id="note-folder"
+                  @change=${this.handleInput}
+                  class="folder-select"
+                >
+                  <option
+                    value="root"
+                    ?selected=${this.currentNote.folderId === "root"}
+                  >
+                    Root
+                  </option>
+                  ${repeat(
+                    this.folders,
+                    (f) => f.id,
+                    (f) => html`
+                      <option
+                        value="${f.id}"
+                        ?selected=${this.currentNote?.folderId === f.id}
+                      >
+                        ${f.name}
+                      </option>
+                    `,
+                  )}
+                </select>
+              </div>
+            </div>
+            <div class="editor-body"></div>
           </div>
-          <div class="editor-body"></div>
         </div>
+        <note-editor-sidebar
+          .note=${JSON.stringify(this.currentNote)}
+          @update-note=${(e: CustomEvent) => {
+            if (this.currentNote) {
+              useAppStore
+                .getState()
+                .updateNote(this.currentNote.id, e.detail);
+            }
+          }}
+        ></note-editor-sidebar>
       </div>
     `;
   }

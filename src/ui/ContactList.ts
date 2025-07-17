@@ -2,89 +2,92 @@ import { useAppStore } from "../store";
 import { Contact } from "../../shared/types";
 import { html, render } from "lit-html";
 import { repeat } from "lit-html/directives/repeat.js";
-import { contactService } from "../services/ContactService";
-import "./Card";
+import { logger } from "../lib/utils";
 import "./Button";
-import "./Input";
+
+const log = logger("contact-list");
 
 export class ContactList extends HTMLElement {
   private unsubscribe: () => void = () => {};
   private contacts: Contact[] = [];
+  private currentContactPubkey: string | null = null;
 
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
+    log("Component constructed");
   }
 
   connectedCallback() {
+    log("Component connected");
     this.unsubscribe = useAppStore.subscribe(
-      (state) => state.userProfile?.contacts,
-      (contacts) => {
-        if (contacts) {
-          this.contacts = contacts;
-          this.render();
-        }
+      (state) => ({
+        contacts: state.userProfile?.contacts || [],
+        currentContactPubkey: state.currentContactPubkey,
+      }),
+      ({ contacts, currentContactPubkey }) => {
+        this.contacts = contacts;
+        this.currentContactPubkey = currentContactPubkey;
+        this.render();
       },
-      { equalityFn: (a, b) => a === b },
+      {
+        equalityFn: (a, b) =>
+          a.contacts === b.contacts &&
+          a.currentContactPubkey === b.currentContactPubkey,
+      },
     );
+
+    const initialState = useAppStore.getState();
+    this.contacts = initialState.userProfile?.contacts || [];
+    this.currentContactPubkey = initialState.currentContactPubkey;
     this.render();
   }
 
   disconnectedCallback() {
+    log("Component disconnected");
     this.unsubscribe();
   }
 
-  private async addContact() {
-    const pubkey = this.shadowRoot?.querySelector<HTMLInputElement>(
-      "#new-contact-pubkey",
-    )?.value;
-    const name =
-      this.shadowRoot?.querySelector<HTMLInputElement>(
-        "#new-contact-name",
-      )?.value;
-    if (pubkey && name) {
-      await contactService.addContact({ pubkey, alias: name });
+  private handleContactClick(pubkey: string) {
+    log(`Contact clicked: ${pubkey}`);
+    useAppStore.getState().setCurrentContactPubkey(pubkey);
+  }
+
+  private async handleAddContact() {
+    const pubkey = prompt("Enter contact's public key:");
+    if (pubkey) {
+      await useAppStore.getState().addContact({ pubkey });
     }
   }
 
   render() {
     if (!this.shadowRoot) return;
+    log("Rendering contact list");
 
     const template = html`
       <link rel="stylesheet" href="src/ui/ContactList.css" />
       <div class="contact-list-container">
-        <h1>Contacts</h1>
-        <div class="add-contact-form">
-          <ui-input id="new-contact-name" placeholder="Name"></ui-input>
-          <ui-input id="new-contact-pubkey" placeholder="Public Key"></ui-input>
-          <ui-button @click=${() => this.addContact()}>Add Contact</ui-button>
+        <div class="contact-list-actions">
+          <ui-button @click=${() => this.handleAddContact()}>Add Contact</ui-button>
         </div>
-        <div class="contact-list">
+        <ul class="contact-list">
           ${repeat(
             this.contacts,
             (contact) => contact.pubkey,
             (contact) => html`
-              <ui-card class="contact-card">
-                <div class="contact-info">
-                  <span class="contact-name">${contact.alias}</span>
-                  <span class="contact-pubkey">${contact.pubkey}</span>
-                </div>
-                <ui-button
-                  variant="ghost"
-                  size="sm"
-                  @click=${() => contactService.removeContact(contact.pubkey)}
-                >
-                  Remove
-                </ui-button>
-              </ui-card>
+              <li
+                class="contact-item ${this.currentContactPubkey === contact.pubkey ? "active" : ""}"
+                @click=${() => this.handleContactClick(contact.pubkey)}
+              >
+                <span class="contact-alias">${contact.alias || `${contact.pubkey.substring(0, 8)}...`}</span>
+              </li>
             `,
           )}
-        </div>
+        </ul>
       </div>
     `;
-
     render(template, this.shadowRoot);
   }
 }
 
-customElements.define("contact-list", ContactList);
+customElements.define("notention-contact-list", ContactList);

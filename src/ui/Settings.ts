@@ -134,6 +134,9 @@ export class Settings extends HTMLElement {
 
   private renderAISection() {
     const aiEnabled = this.userProfile?.preferences?.aiEnabled || false;
+    const ollamaApiEndpoint = this.userProfile?.preferences?.ollamaApiEndpoint || "";
+    const geminiApiKey = this.userProfile?.preferences?.geminiApiKey || "";
+
     return html`
       <div class="settings-section">
         <h2 class="section-title">AI Features</h2>
@@ -153,13 +156,114 @@ export class Settings extends HTMLElement {
             </ui-button>
           </div>
         </div>
+        ${when(
+          aiEnabled,
+          () => html`
+            <div class="setting-row">
+              <div class="setting-info">
+                <div class="setting-label">Ollama API Endpoint</div>
+              </div>
+              <div class="setting-control">
+                <ui-input
+                  name="ollamaApiEndpoint"
+                  .value=${ollamaApiEndpoint}
+                  @input=${(e: Event) => this.handlePreferenceChange(e)}
+                  placeholder="http://localhost:11434"
+                ></ui-input>
+              </div>
+            </div>
+            <div class="setting-row">
+              <div class="setting-info">
+                <div class="setting-label">Google Gemini API Key</div>
+              </div>
+              <div class="setting-control">
+                <ui-input
+                  name="geminiApiKey"
+                  type="password"
+                  .value=${geminiApiKey}
+                  @input=${(e: Event) => this.handlePreferenceChange(e)}
+                ></ui-input>
+              </div>
+            </div>
+          `,
+        )}
       </div>
     `;
   }
 
+  private handlePreferenceChange(e: Event) {
+    const target = e.target as HTMLInputElement;
+    const { name, value } = target;
+    useAppStore.getState().updateUserProfile({
+      ...this.userProfile,
+      preferences: {
+        ...this.userProfile?.preferences,
+        [name]: value,
+      },
+    });
+  }
+
   private renderPrivacySection() {
-    // Add privacy settings when available in the store
-    return html``;
+    const privacySettings = this.userProfile?.privacySettings;
+    return html`
+      <div class="settings-section">
+        <h2 class="section-title">Privacy</h2>
+        <p class="section-description">
+          Control how your data is shared on the Nostr network.
+        </p>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Share Public Notes Globally</div>
+          </div>
+          <div class="setting-control">
+            <ui-button
+              variant=${privacySettings?.sharePublicNotesGlobally ? "primary" : "secondary"}
+              @click=${() => this.handlePrivacyToggle("sharePublicNotesGlobally")}
+            >
+              ${privacySettings?.sharePublicNotesGlobally ? "Enabled" : "Disabled"}
+            </ui-button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Share Tags with Public Notes</div>
+          </div>
+          <div class="setting-control">
+            <ui-button
+              variant=${privacySettings?.shareTagsWithPublicNotes ? "primary" : "secondary"}
+              @click=${() => this.handlePrivacyToggle("shareTagsWithPublicNotes")}
+            >
+              ${privacySettings?.shareTagsWithPublicNotes ? "Enabled" : "Disabled"}
+            </ui-button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Share Values with Public Notes</div>
+          </div>
+          <div class="setting-control">
+            <ui-button
+              variant=${privacySettings?.shareValuesWithPublicNotes ? "primary" : "secondary"}
+              @click=${() => this.handlePrivacyToggle("shareValuesWithPublicNotes")}
+            >
+              ${privacySettings?.shareValuesWithPublicNotes ? "Enabled" : "Disabled"}
+            </ui-button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  private handlePrivacyToggle(key: keyof UserProfile["privacySettings"]) {
+    log(`Toggling privacy setting: ${key}`);
+    const currentValue = this.userProfile?.privacySettings?.[key];
+    useAppStore.getState().updateUserProfile({
+      ...this.userProfile,
+      privacySettings: {
+        ...this.userProfile?.privacySettings,
+        [key]: !currentValue,
+      },
+    });
   }
 
   private renderDataSection() {
