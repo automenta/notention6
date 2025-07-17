@@ -1,7 +1,6 @@
 import { Note, OntologyTree, SearchFilters } from "../../shared/types";
 import { DBService } from "./db";
 import { OntologyService } from "./ontology";
-import { aiService } from "./AIService"; // Import AIService
 import { useAppStore } from "../store"; // To access AI settings
 
 export class NoteService {
@@ -51,7 +50,8 @@ export class NoteService {
     const trimmedQuery = query.trim();
     const normalizedQuery = trimmedQuery.toLowerCase();
 
-    const { userProfile } = useAppStore.getState();
+    const { userProfile, getAIService } = useAppStore.getState();
+    const aiService = getAIService();
     const aiEnabled = userProfile?.preferences.aiEnabled ?? false;
     const aiMatchingSensitivity =
       userProfile?.preferences.aiMatchingSensitivity ?? 0.7;
@@ -241,7 +241,8 @@ export class NoteService {
   }
 
   private static async generateAndSetEmbedding(note: Note): Promise<Note> {
-    const { userProfile } = useAppStore.getState();
+    const { userProfile, getAIService } = useAppStore.getState();
+    const aiService = getAIService();
     if (userProfile?.preferences.aiEnabled && aiService.isAIEnabled()) {
       // Combine title and content for a richer embedding
       const textToEmbed = `${note.title}\n${note.content}`;

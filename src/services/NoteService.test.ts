@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NoteService } from "./NoteService";
 import { DBService } from "./db";
 import { OntologyService } from "./ontology";
-import { aiService } from "./AIService";
+import { AIService } from "./AIService";
 import { useAppStore } from "../store";
 import {
   Note,
@@ -26,13 +26,6 @@ vi.mock("./ontology", () => ({
   },
 }));
 
-vi.mock("./AIService", () => ({
-  aiService: {
-    isAIEnabled: vi.fn(),
-    getEmbeddingVector: vi.fn(),
-  },
-}));
-
 const mockUserProfile: UserProfile = {
   nostrPubkey: "test-pubkey",
   sharedTags: [],
@@ -51,10 +44,14 @@ const mockUserProfile: UserProfile = {
   },
 };
 
+const mockAIService = new AIService(mockUserProfile.preferences);
+vi.spyOn(mockAIService, "getEmbeddingVector").mockResolvedValue([0.1, 0.2, 0.3]);
+
 vi.mock("../store", () => ({
   useAppStore: {
     getState: vi.fn(() => ({
       userProfile: mockUserProfile,
+      getAIService: () => mockAIService,
     })),
   },
 }));
@@ -102,15 +99,12 @@ describe("NoteService", () => {
     (OntologyService.getSemanticMatches as vi.Mock).mockImplementation(
       (ontology, tag) => (tag === "#AI" ? ["#AI", "#NLP"] : [tag]),
     );
-    (aiService.isAIEnabled as vi.Mock).mockReturnValue(true);
-    (aiService.getEmbeddingVector as vi.Mock).mockResolvedValue([
-      0.1, 0.2, 0.3,
-    ]);
     (useAppStore.getState as vi.Mock).mockReturnValue({
       userProfile: {
         ...mockUserProfile,
         preferences: { ...mockUserProfile.preferences, aiEnabled: true },
       },
+      getAIService: () => mockAIService,
     });
   });
 
@@ -130,7 +124,7 @@ describe("NoteService", () => {
   describe("CRUD operations", () => {
     it("createNote should save a new note with defaults and generate embedding", async () => {
       const partialNote: Partial<Note> = { title: "New Test Note" };
-      await NoteService.createNote(partialNote);
+      const newNote = await NoteService.createNote(partialNote);
 
       expect(DBService.saveNote).toHaveBeenCalled();
       const savedArg = (DBService.saveNote as vi.Mock).mock.calls[0][0] as Note;
@@ -139,17 +133,20 @@ describe("NoteService", () => {
     });
 
     it("createNote should not generate embedding if AI is disabled", async () => {
+      const disabledAIService = new AIService({ ...mockUserProfile.preferences, aiEnabled: false });
+      vi.spyOn(disabledAIService, "getEmbeddingVector");
       (useAppStore.getState as vi.Mock).mockReturnValue({
         userProfile: {
           ...mockUserProfile,
           preferences: { ...mockUserProfile.preferences, aiEnabled: false },
         },
+        getAIService: () => disabledAIService,
       });
 
       const partialNote: Partial<Note> = { title: "No AI Note" };
       await NoteService.createNote(partialNote);
 
-      expect(aiService.getEmbeddingVector).not.toHaveBeenCalled();
+      expect(disabledAIService.getEmbeddingVector).not.toHaveBeenCalled();
       const savedArg = (DBService.saveNote as vi.Mock).mock.calls[0][0] as Note;
       expect(savedArg.embedding).toBeUndefined();
     });
