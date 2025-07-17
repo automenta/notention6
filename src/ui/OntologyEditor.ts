@@ -1,138 +1,188 @@
 import { useAppStore } from "../store";
 import { OntologyNode } from "../../shared/types";
+import { html, render } from "lit-html";
+import { repeat } from "lit-html/directives/repeat.js";
+import { when } from "lit-html/directives/when.js";
+import { logger } from "../lib/utils";
 import "./Button";
+import "./Input";
+import "./Icon";
+
+const log = logger("notention-ontology-editor");
 
 export class OntologyEditor extends HTMLElement {
   private unsubscribe: () => void = () => {};
-  private ontologyNodes: { [id: string]: OntologyNode } = {};
+  private nodes: { [id: string]: OntologyNode } = {};
+  private selectedNodeId: string | null = null;
 
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
+    log("Component constructed");
   }
 
   connectedCallback() {
-    this.unsubscribe = useAppStore.subscribe((state) => {
-      this.ontologyNodes = state.ontology.nodes;
-      this.render();
-    });
+    log("Component connected");
+    this.unsubscribe = useAppStore.subscribe(
+      (state) => ({
+        nodes: state.ontology.nodes,
+        selectedNodeId: state.selectedOntologyNodeId,
+      }),
+      ({ nodes, selectedNodeId }) => {
+        this.nodes = nodes;
+        this.selectedNodeId = selectedNodeId;
+        this.render();
+      },
+      {
+        equalityFn: (a, b) =>
+          a.nodes === b.nodes && a.selectedNodeId === b.selectedNodeId,
+      },
+    );
 
+    const initialState = useAppStore.getState();
+    this.nodes = initialState.ontology.nodes;
+    this.selectedNodeId = initialState.selectedOntologyNodeId;
     this.render();
   }
 
   disconnectedCallback() {
+    log("Component disconnected");
     this.unsubscribe();
+  }
+
+  private handleSelectNode(nodeId: string) {
+    log(`Node selected: ${nodeId}`);
+    useAppStore.getState().setSelectedOntologyNodeId(nodeId);
+  }
+
+  private handleUpdateNode(e: Event) {
+    e.preventDefault();
+    if (!this.selectedNodeId) return;
+
+    const formData = new FormData(e.target as HTMLFormElement);
+    const label = formData.get("label") as string;
+    // TODO: Add support for attributes
+    log(`Updating node ${this.selectedNodeId} with label: ${label}`);
+    useAppStore.getState().updateOntologyNode(this.selectedNodeId, { label });
+  }
+
+  private handleAddNode(parentId: string | null = null) {
+    const label = prompt("Enter new concept label:");
+    if (label) {
+      log(`Adding new node with label: ${label}`);
+      useAppStore.getState().addOntologyNode({ label, parentId });
+    }
+  }
+
+  private handleDeleteNode() {
+    if (
+      this.selectedNodeId &&
+      confirm("Are you sure you want to delete this concept?")
+    ) {
+      log(`Deleting node: ${this.selectedNodeId}`);
+      useAppStore.getState().deleteOntologyNode(this.selectedNodeId);
+    }
+  }
+
+  private renderNodeTree(parentId: string | null = null) {
+    const children = Object.values(this.nodes).filter(
+      (node) => node.parentId === parentId,
+    );
+    if (children.length === 0) return null;
+
+    return html`
+      <ul class="node-group">
+        ${repeat(
+          children,
+          (node) => node.id,
+          (node) => html`
+            <li
+              class="node-item ${this.selectedNodeId === node.id
+                ? "selected"
+                : ""}"
+            >
+              <div
+                class="node-label"
+                @click=${() => this.handleSelectNode(node.id)}
+              >
+                <ui-icon name="corner-down-right" class="node-icon"></ui-icon>
+                <span>${node.label}</span>
+              </div>
+              ${this.renderNodeTree(node.id)}
+            </li>
+          `,
+        )}
+      </ul>
+    `;
+  }
+
+  private renderEditorPanel() {
+    const selectedNode = this.selectedNodeId
+      ? this.nodes[this.selectedNodeId]
+      : null;
+
+    return html`
+      <div class="editor-panel">
+        ${when(
+          selectedNode,
+          () => html`
+            <h3 class="panel-title">Edit Concept</h3>
+            <form @submit=${(e: Event) => this.handleUpdateNode(e)}>
+              <div class="form-group">
+                <label for="node-label">Label</label>
+                <ui-input
+                  id="node-label"
+                  name="label"
+                  .value=${selectedNode!.label}
+                ></ui-input>
+              </div>
+              <!-- TODO: Add attributes editor -->
+              <div class="form-actions">
+                <ui-button type="submit" variant="primary">Save</ui-button>
+                <ui-button
+                  type="button"
+                  variant="danger"
+                  @click=${() => this.handleDeleteNode()}
+                  >Delete</ui-button
+                >
+              </div>
+            </form>
+          `,
+          () => html`
+            <div class="empty-panel">
+              <ui-icon name="mouse-pointer-2" class="empty-icon"></ui-icon>
+              <p>Select a concept to edit its properties.</p>
+            </div>
+          `,
+        )}
+      </div>
+    `;
   }
 
   render() {
     if (!this.shadowRoot) return;
+    log("Rendering ontology editor");
 
-    this.shadowRoot.innerHTML = `
-      <style>
-        :host {
-          display: block;
-          height: 100%;
-        }
-
-        .ontology-container {
-          display: flex;
-          flex-direction: column;
-          height: 100%;
-          max-width: 1000px;
-          margin: 0 auto;
-        }
-
-        .ontology-header {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          margin-bottom: var(--space-6);
-        }
-
-        .ontology-title {
-          font-size: var(--font-size-2xl);
-          font-weight: var(--font-weight-bold);
-          color: var(--color-text-primary);
-          margin: 0;
-        }
-
-        .ontology-description {
-          color: var(--color-text-secondary);
-          margin-bottom: var(--space-6);
-          line-height: var(--line-height-relaxed);
-        }
-
-        .ontology-content {
-          flex: 1;
-          background: var(--color-surface);
-          border: 1px solid var(--color-border);
-          border-radius: var(--radius-lg);
-          padding: var(--space-6);
-          overflow-y: auto;
-        }
-
-        .coming-soon {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          padding: var(--space-16);
-          text-align: center;
-        }
-
-        .coming-soon-icon {
-          width: 64px;
-          height: 64px;
-          margin-bottom: var(--space-4);
-          color: var(--color-text-muted);
-        }
-
-        .coming-soon-title {
-          font-size: var(--font-size-xl);
-          font-weight: var(--font-weight-semibold);
-          color: var(--color-text-primary);
-          margin-bottom: var(--space-2);
-        }
-
-        .coming-soon-description {
-          color: var(--color-text-muted);
-          max-width: 400px;
-          line-height: var(--line-height-relaxed);
-        }
-      </style>
-
+    const template = html`
+      <link rel="stylesheet" href="src/ui/OntologyEditor.css" />
       <div class="ontology-container">
-        <div class="ontology-header">
+        <header class="ontology-header">
           <h1 class="ontology-title">Ontology</h1>
-          <ui-button variant="primary" disabled>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 5v14m-7-7h14"></path>
-            </svg>
-            Add Concept
+          <ui-button variant="primary" @click=${() => this.handleAddNode(null)}>
+            <ui-icon name="plus" slot="icon-left"></ui-icon>
+            Add Root Concept
           </ui-button>
-        </div>
-
-        <p class="ontology-description">
-          Define and organize semantic concepts to enhance note categorization and discovery. 
-          Build relationships between ideas to enable intelligent tagging and search.
-        </p>
-
-        <div class="ontology-content">
-          <div class="coming-soon">
-            <svg class="coming-soon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="2"></circle>
-              <path d="m16.24 7.76-1.42 1.42M8.18 8.18l-1.42-1.42M21 12h-2M5 12H3M16.24 16.24l-1.42-1.42M8.18 15.82l-1.42 1.42"></path>
-            </svg>
-            <h3 class="coming-soon-title">Ontology Editor Coming Soon</h3>
-            <p class="coming-soon-description">
-              The visual ontology editor with drag-and-drop functionality is currently under development. 
-              You'll be able to create hierarchical concept trees and define semantic relationships 
-              to power intelligent note organization and discovery.
-            </p>
+        </header>
+        <div class="ontology-body">
+          <div class="tree-panel">
+            <h2 class="panel-title">Concept Hierarchy</h2>
+            <div class="tree-container">${this.renderNodeTree(null)}</div>
           </div>
+          ${this.renderEditorPanel()}
         </div>
       </div>
     `;
+    render(template, this.shadowRoot);
   }
 }
 

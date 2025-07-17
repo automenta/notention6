@@ -42,7 +42,8 @@ vi.mock("@langchain/core/prompts", async () => {
 });
 
 let mockStoreState: any;
-let storeSubscribeCallback: ((state: any, prevState: any) => void) | null = null;
+let storeSubscribeCallback: ((state: any, prevState: any) => void) | null =
+  null;
 
 vi.mock("../store", () => ({
   useAppStore: {
@@ -98,10 +99,18 @@ describe("AIService", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     (Ollama as vi.Mock).mockImplementation(() => mockOllamaInstance);
-    (OllamaEmbeddings as vi.Mock).mockImplementation(() => mockOllamaEmbeddingsInstance);
-    (ChatGoogleGenerativeAI as vi.Mock).mockImplementation(() => mockGeminiInstance);
-    (GoogleGenerativeAIEmbeddings as vi.Mock).mockImplementation(() => mockGeminiEmbeddingsInstance);
-    (StringOutputParser as vi.Mock).mockImplementation(() => mockStringOutputParserInstance);
+    (OllamaEmbeddings as vi.Mock).mockImplementation(
+      () => mockOllamaEmbeddingsInstance,
+    );
+    (ChatGoogleGenerativeAI as vi.Mock).mockImplementation(
+      () => mockGeminiInstance,
+    );
+    (GoogleGenerativeAIEmbeddings as vi.Mock).mockImplementation(
+      () => mockGeminiEmbeddingsInstance,
+    );
+    (StringOutputParser as vi.Mock).mockImplementation(
+      () => mockStringOutputParserInstance,
+    );
 
     vi.mocked(mockOllamaInstance.invoke).mockReset();
     vi.mocked(mockOllamaInstance.pipe).mockClear().mockReturnThis();

@@ -81,7 +81,9 @@ export class AIService {
     }
   }
 
-  private getActiveChatModel(method: string): Ollama | ChatGoogleGenerativeAI | null {
+  private getActiveChatModel(
+    method: string,
+  ): Ollama | ChatGoogleGenerativeAI | null {
     const preferredProvider = this.preferences?.aiProviderPreference;
     let model: Ollama | ChatGoogleGenerativeAI | null = null;
     if (preferredProvider === "gemini" && this.gemini) {

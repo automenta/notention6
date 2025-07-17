@@ -69,7 +69,9 @@ describe("FolderTree Component", () => {
     useAppStore.getState().setSidebarTab("notes");
 
     await waitFor(() => {
-      folderTreeElement = app.shadowRoot!.querySelector("notention-folder-tree")!;
+      folderTreeElement = app.shadowRoot!.querySelector(
+        "notention-folder-tree",
+      )!;
       expect(folderTreeElement).not.toBeNull();
     });
   });
@@ -147,9 +149,7 @@ describe("FolderTree Component", () => {
       const folderItem = folderTreeElement.shadowRoot!.querySelector(
         `[data-folder-id="${folderId}"]`,
       );
-      const editButton = folderItem!.querySelector(
-        ".edit-folder-button",
-      );
+      const editButton = folderItem!.querySelector(".edit-folder-button");
       expect(editButton).not.toBeNull();
       fireEvent.click(editButton!);
     });
@@ -180,9 +180,7 @@ describe("FolderTree Component", () => {
       const folderItem = folderTreeElement.shadowRoot!.querySelector(
         `[data-folder-id="${folderId}"]`,
       );
-      const deleteButton = folderItem!.querySelector(
-        ".delete-folder-button",
-      );
+      const deleteButton = folderItem!.querySelector(".delete-folder-button");
       expect(deleteButton).not.toBeNull();
       fireEvent.click(deleteButton!);
     });

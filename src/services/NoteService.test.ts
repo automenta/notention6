@@ -103,7 +103,9 @@ describe("NoteService", () => {
       (ontology, tag) => (tag === "#AI" ? ["#AI", "#NLP"] : [tag]),
     );
     (aiService.isAIEnabled as vi.Mock).mockReturnValue(true);
-    (aiService.getEmbeddingVector as vi.Mock).mockResolvedValue([0.1, 0.2, 0.3]);
+    (aiService.getEmbeddingVector as vi.Mock).mockResolvedValue([
+      0.1, 0.2, 0.3,
+    ]);
     (useAppStore.getState as vi.Mock).mockReturnValue({
       userProfile: {
         ...mockUserProfile,

@@ -87,7 +87,7 @@ describe("Sidebar Component", () => {
 
     await waitFor(() => {
       const newNoteButton =
-        sidebarElement.shadowRoot!.querySelector('.new-note-button');
+        sidebarElement.shadowRoot!.querySelector(".new-note-button");
       expect(newNoteButton).not.toBeNull();
       fireEvent.click(newNoteButton!);
     });

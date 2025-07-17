@@ -29,7 +29,8 @@ export class ChatPanel extends HTMLElement {
           this.currentContactPubkey = currentContactPubkey;
           this.messages = directMessages.filter(
             (dm) =>
-              dm.from === currentContactPubkey || dm.to === currentContactPubkey,
+              dm.from === currentContactPubkey ||
+              dm.to === currentContactPubkey,
           );
           this.render();
         }
@@ -48,7 +49,8 @@ export class ChatPanel extends HTMLElement {
   }
 
   private async sendMessage() {
-    const textarea = this.shadowRoot?.querySelector<HTMLTextAreaElement>("#new-message");
+    const textarea =
+      this.shadowRoot?.querySelector<HTMLTextAreaElement>("#new-message");
     const content = textarea?.value;
     if (content && this.currentContactPubkey) {
       await ChatService.sendMessage(this.currentContactPubkey, content);
@@ -60,7 +62,10 @@ export class ChatPanel extends HTMLElement {
     if (!this.shadowRoot) return;
 
     if (!this.currentContactPubkey) {
-      render(html`<div>Select a contact to start chatting</div>`, this.shadowRoot);
+      render(
+        html`<div>Select a contact to start chatting</div>`,
+        this.shadowRoot,
+      );
       return;
     }
 
@@ -83,7 +88,10 @@ export class ChatPanel extends HTMLElement {
           )}
         </div>
         <div class="message-input">
-          <ui-textarea id="new-message" placeholder="Type a message"></ui-textarea>
+          <ui-textarea
+            id="new-message"
+            placeholder="Type a message"
+          ></ui-textarea>
           <ui-button @click=${() => this.sendMessage()}>Send</ui-button>
         </div>
       </div>

@@ -1,5 +1,6 @@
 :host {
-  display: block;
+  display: flex;
+  flex-direction: column;
   height: 100%;
   background: var(--color-surface);
   border-right: 1px solid var(--color-border);
@@ -9,31 +10,34 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  overflow: hidden;
 }
 
 .sidebar-header {
-  padding: var(--space-6) var(--space-4) var(--space-4) var(--space-4);
+  padding: var(--space-5) var(--space-4);
   border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
 }
 
 .sidebar-title {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
   margin: 0 0 var(--space-4) 0;
+  text-align: center;
 }
 
 .new-note-button {
   width: 100%;
-  background: var(--color-accent);
-  color: var(--color-text-inverse);
+  background: var(--color-primary);
+  color: white;
   border: none;
   border-radius: var(--radius-md);
   padding: var(--space-3) var(--space-4);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
   cursor: pointer;
-  transition: var(--transition-base);
+  transition: background-color var(--transition-base);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -41,12 +45,12 @@
 }
 
 .new-note-button:hover {
-  background: var(--color-accent-hover);
+  background: var(--color-primary-dark);
 }
 
 .sidebar-nav {
-  flex: 1;
-  padding: var(--space-4) 0;
+  flex-grow: 1;
+  padding: var(--space-2) 0;
   overflow-y: auto;
 }
 
@@ -57,7 +61,7 @@
 }
 
 .nav-item {
-  margin-bottom: var(--space-1);
+  margin: 0 var(--space-2);
 }
 
 .nav-button {
@@ -67,13 +71,13 @@
   padding: var(--space-3) var(--space-4);
   text-align: left;
   cursor: pointer;
-  transition: var(--transition-base);
-  border-radius: 0;
+  transition: all var(--transition-base);
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   gap: var(--space-3);
   color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-base);
   font-weight: var(--font-weight-medium);
   position: relative;
 }
@@ -84,25 +88,16 @@
 }
 
 .nav-button.active {
-  background: var(--color-accent-light);
-  color: var(--color-accent);
-  border-right: 2px solid var(--color-accent);
-}
-
-.nav-button.active::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  background: var(--color-accent);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  font-weight: var(--font-weight-semibold);
 }
 
 .nav-icon {
   width: 20px;
   height: 20px;
   flex-shrink: 0;
+  stroke-width: 2;
 }
 
 .nav-label {
@@ -110,20 +105,26 @@
 }
 
 .nav-badge {
-  background: var(--color-error-500);
-  color: var(--color-text-inverse);
+  background: var(--color-danger);
+  color: white;
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
   padding: 2px 6px;
   border-radius: var(--radius-full);
-  min-width: 18px;
+  min-width: 20px;
   text-align: center;
   line-height: 1.2;
 }
 
-.sidebar-footer {
-  padding: var(--space-4);
+.sidebar-folders {
+  padding: 0 var(--space-4);
   border-top: 1px solid var(--color-border);
+}
+
+.sidebar-footer {
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--color-border);
+  flex-shrink: 0;
 }
 
 .user-info {
@@ -132,7 +133,8 @@
   gap: var(--space-3);
   padding: var(--space-2);
   border-radius: var(--radius-md);
-  transition: var(--transition-base);
+  transition: background-color var(--transition-base);
+  cursor: pointer;
 }
 
 .user-info:hover {
@@ -140,16 +142,17 @@
 }
 
 .user-avatar {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border-radius: var(--radius-full);
-  background: var(--color-accent);
+  background: var(--color-primary);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-text-inverse);
-  font-size: var(--font-size-sm);
+  color: white;
+  font-size: var(--font-size-lg);
   font-weight: var(--font-weight-semibold);
+  flex-shrink: 0;
 }
 
 .user-details {
@@ -158,8 +161,8 @@
 }
 
 .user-name {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-text-primary);
   margin: 0;
   white-space: nowrap;
@@ -168,21 +171,7 @@
 }
 
 .user-status {
-  font-size: var(--font-size-xs);
-  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
   margin: 0;
-}
-
-@media (max-width: 768px) {
-  .sidebar-header {
-    padding: var(--space-4) var(--space-3);
-  }
-
-  .nav-button {
-    padding: var(--space-3);
-  }
-
-  .sidebar-footer {
-    padding: var(--space-3);
-  }
 }

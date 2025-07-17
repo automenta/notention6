@@ -131,6 +131,9 @@ interface AppActions {
 
   // AI Service
   getAIService: () => AIService;
+
+  // Theme
+  setTheme: (theme: "light" | "dark" | "system") => void;
 }
 
 type AppStore = AppState & AppActions;
@@ -2351,5 +2354,13 @@ export const useAppStore = create<AppStore>((set, get) => ({
   getAIService: () => {
     const { userProfile } = get();
     return new AIService(userProfile?.preferences);
+  },
+
+  setTheme: (theme: "light" | "dark" | "system") => {
+    const { userProfile, updateUserProfile } = get();
+    if (userProfile) {
+      const newPreferences = { ...userProfile.preferences, theme };
+      updateUserProfile({ ...userProfile, preferences: newPreferences });
+    }
   },
 }));

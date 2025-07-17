@@ -25,7 +25,7 @@ export class ContactList extends HTMLElement {
           this.render();
         }
       },
-      { equalityFn: (a, b) => a === b }
+      { equalityFn: (a, b) => a === b },
     );
     this.render();
   }
@@ -35,8 +35,13 @@ export class ContactList extends HTMLElement {
   }
 
   private async addContact() {
-    const pubkey = this.shadowRoot?.querySelector<HTMLInputElement>("#new-contact-pubkey")?.value;
-    const name = this.shadowRoot?.querySelector<HTMLInputElement>("#new-contact-name")?.value;
+    const pubkey = this.shadowRoot?.querySelector<HTMLInputElement>(
+      "#new-contact-pubkey",
+    )?.value;
+    const name =
+      this.shadowRoot?.querySelector<HTMLInputElement>(
+        "#new-contact-name",
+      )?.value;
     if (pubkey && name) {
       await contactService.addContact({ pubkey, alias: name });
     }

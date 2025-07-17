@@ -5,7 +5,7 @@
 }
 
 .dashboard-title {
-  font-size: 2rem;
+  font-size: 2.5rem;
   font-weight: var(--font-weight-bold);
   margin-bottom: var(--space-6);
   color: var(--color-text-primary);
@@ -13,16 +13,18 @@
 
 .dashboard-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: var(--space-6);
 }
 
 .card-title {
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   font-weight: var(--font-weight-semibold);
   margin-top: 0;
   margin-bottom: var(--space-4);
   color: var(--color-text-primary);
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: var(--space-3);
 }
 
 .note-list {
@@ -36,18 +38,24 @@
   justify-content: space-between;
   align-items: center;
   padding: var(--space-3) 0;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border-light);
+  transition: background-color var(--transition-base);
 }
 
 .note-item:last-child {
   border-bottom: none;
 }
 
+.note-item:hover {
+  background-color: var(--color-surface-hover);
+}
+
 .note-item a {
-  font-weight: var(--font-weight-semibold);
+  font-weight: var(--font-weight-medium);
   color: var(--color-text-primary);
   text-decoration: none;
   transition: color var(--transition-base);
+  flex-grow: 1;
 }
 
 .note-item a:hover {
@@ -57,4 +65,14 @@
 .note-date {
   font-size: 0.875rem;
   color: var(--color-text-muted);
+  flex-shrink: 0;
+  margin-left: var(--space-4);
+}
+
+.loading-indicator,
+.empty-message {
+  text-align: center;
+  padding: var(--space-8);
+  font-size: 1.125rem;
+  color: var(--color-text-secondary);
 }
