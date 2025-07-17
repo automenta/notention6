@@ -73,6 +73,7 @@ interface AppActions {
   toggleSidebar: () => void;
   setEditorContent: (content: string) => void;
   setIsEditing: (editing: boolean) => void;
+  setNoteView: (view: AppState["noteView"]) => void;
 
   // Loading and error actions
   setLoading: (key: keyof AppState["loading"], loading: boolean) => void;
@@ -221,6 +222,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
   sidebarCollapsed: false,
   searchQuery: "",
   searchFilters: {},
+  noteView: "all",
 
   matches: [],
   directMessages: [],
@@ -925,6 +927,10 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
   setIsEditing: (editing: boolean) => {
     set({ isEditing: editing });
+  },
+
+  setNoteView: (view: AppState["noteView"]) => {
+    set({ noteView: view });
   },
 
   setLoading: (key: keyof AppState["loading"], loading: boolean) => {

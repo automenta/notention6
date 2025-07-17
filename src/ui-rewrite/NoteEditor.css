@@ -1,50 +1,47 @@
-.note-editor-layout {
-    display: flex;
+/* src/ui-rewrite/NoteEditor.css */
+
+.note-editor-container {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
-.note-editor {
-    flex-grow: 1;
+.note-title-input {
+  font-size: 1.5rem;
+  font-weight: bold;
+  border: none;
+  padding: 0.5rem 0;
+  background-color: transparent;
+  border-bottom: 1px solid var(--border-color);
 }
 
-.note-editor-sidebar {
-    width: 280px;
-    padding: 16px;
-    border-left: 1px solid var(--border-color);
-    background-color: var(--secondary-color);
+.note-title-input:focus {
+  outline: none;
+  border-bottom-color: var(--primary-color);
 }
 
-.tags-list .tag {
-    display: inline-block;
-    background-color: var(--primary-color);
-    color: white;
-    padding: 2px 8px;
-    border-radius: 4px;
-    margin-right: 5px;
-    margin-bottom: 5px;
+.editor-toolbar {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background-color: var(--card-background-color);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
 }
 
-.tags-list .tag button {
-    margin-left: 5px;
-    background: none;
-    border: none;
-    color: white;
-    cursor: pointer;
+.tiptap-editor .ProseMirror {
+  min-height: 300px;
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background-color: var(--card-background-color);
 }
 
-.suggestion {
-    background-color: var(--background-color);
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    padding: 8px;
-    position: absolute;
-    z-index: 10;
+.tiptap-editor .ProseMirror:focus {
+  outline: none;
+  border-color: var(--primary-color);
 }
-
-.suggestion div {
-    cursor: pointer;
-    padding: 4px;
-}
-
-.suggestion div:hover {
-    background-color: var(--secondary-color);
+.tiptap-editor p {
+  margin: 0;
 }

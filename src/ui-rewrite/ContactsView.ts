@@ -1,88 +1,108 @@
 // src/ui-rewrite/ContactsView.ts
 import { useAppStore } from '../store';
 import { createButton } from './Button';
+import './ContactsView.css';
 import { Contact } from '../../shared/types';
 
 export function createContactsView(): HTMLElement {
-  const { contacts, addContact } = useAppStore.getState();
-  const contactsArray = Object.values(contacts);
+  const { userProfile, addContact, removeContact, updateContactAlias } = useAppStore.getState();
+  const contacts = userProfile?.contacts || [];
 
   const container = document.createElement('div');
-  container.className = 'contacts-view';
+  container.className = 'contacts-view-container';
 
   // Header
   const header = document.createElement('header');
-  header.className = 'contacts-header';
+  header.className = 'contacts-view-header';
   const title = document.createElement('h1');
   title.textContent = 'Contacts';
   header.appendChild(title);
   container.appendChild(header);
 
   // Add Contact Form
-  const addContactForm = document.createElement('div');
+  const addContactForm = document.createElement('form');
   addContactForm.className = 'add-contact-form';
+  addContactForm.onsubmit = (e) => {
+    e.preventDefault();
+    const pubkeyInput = (e.target as HTMLFormElement).elements.namedItem('pubkey') as HTMLInputElement;
+    const aliasInput = (e.target as HTMLFormElement).elements.namedItem('alias') as HTMLInputElement;
+    const newContact: Contact = {
+      pubkey: pubkeyInput.value.trim(),
+      alias: aliasInput.value.trim(),
+    };
+    if (newContact.pubkey) {
+      addContact(newContact);
+      pubkeyInput.value = '';
+      aliasInput.value = '';
+    }
+  };
 
   const pubkeyInput = document.createElement('input');
   pubkeyInput.type = 'text';
-  pubkeyInput.placeholder = 'Enter Nostr public key (npub)...';
+  pubkeyInput.name = 'pubkey';
+  pubkeyInput.placeholder = 'Nostr public key (npub...)';
   addContactForm.appendChild(pubkeyInput);
 
   const aliasInput = document.createElement('input');
   aliasInput.type = 'text';
-  aliasInput.placeholder = 'Enter alias (optional)';
+  aliasInput.name = 'alias';
+  aliasInput.placeholder = 'Alias (optional)';
   addContactForm.appendChild(aliasInput);
 
-  const addButton = createButton({
+  const addContactButton = createButton({
     label: 'Add Contact',
-    onClick: () => {
-      const pubkey = pubkeyInput.value;
-      const alias = aliasInput.value;
-      if (pubkey) {
-        addContact({ pubkey, alias });
-        pubkeyInput.value = '';
-        aliasInput.value = '';
-      }
-    },
+    onClick: () => addContactForm.requestSubmit(),
     variant: 'primary'
-  });
-  addContactForm.appendChild(addButton);
+    });
+  addContactForm.appendChild(addContactButton);
+
   container.appendChild(addContactForm);
 
-  // Contact List
-  const list = document.createElement('ul');
-  list.className = 'contacts-list';
+  // Contacts List
+  const contactsList = document.createElement('ul');
+  contactsList.className = 'contacts-list';
 
-  if (contactsArray.length > 0) {
-    contactsArray.forEach(contact => {
+  if (contacts.length > 0) {
+    contacts.forEach(contact => {
       const listItem = document.createElement('li');
       listItem.className = 'contact-item';
 
       const alias = document.createElement('span');
-      alias.className = 'contact-alias';
-      alias.textContent = contact.alias || 'No alias';
-
-      const pubkey = document.createElement('span');
-      pubkey.className = 'contact-pubkey';
-      pubkey.textContent = contact.pubkey;
-
+      alias.textContent = contact.alias || contact.pubkey.substring(0, 12) + '...';
       listItem.appendChild(alias);
-      listItem.appendChild(pubkey);
 
-      listItem.onclick = () => {
-        // Navigate to chat with this contact
-        useAppStore.getState().setSidebarTab('chats');
-        // In a real implementation, we would also set the current chat partner
-      };
+      const actions = document.createElement('div');
+      actions.className = 'contact-actions';
 
-      list.appendChild(listItem);
+      const editButton = createButton({
+          label: 'Edit',
+          onClick: () => {
+              const newAlias = prompt('Enter new alias:', contact.alias);
+              if (newAlias !== null) {
+                updateContactAlias(contact.pubkey, newAlias);
+              }
+          },
+          variant: 'secondary'
+      });
+      actions.appendChild(editButton);
+
+      const removeButton = createButton({
+          label: 'Remove',
+          onClick: () => removeContact(contact.pubkey),
+          variant: 'danger'
+      });
+      actions.appendChild(removeButton);
+
+      listItem.appendChild(actions);
+      contactsList.appendChild(listItem);
     });
   } else {
     const noContactsMessage = document.createElement('p');
-    noContactsMessage.textContent = 'No contacts yet. Add one above!';
-    list.appendChild(noContactsMessage);
+    noContactsMessage.textContent = 'No contacts found.';
+    contactsList.appendChild(noContactsMessage);
   }
 
-  container.appendChild(list);
+  container.appendChild(contactsList);
 
   return container;
 }

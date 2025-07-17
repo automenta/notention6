@@ -148,14 +148,17 @@ export interface AppState {
   // UI state
   currentNoteId?: string;
   sidebarTab:
+    | "dashboard"
     | "notes"
     | "ontology"
     | "network"
     | "settings"
     | "contacts"
-    | "chats"; // Added 'contacts' and 'chats'
+    | "chats";
+  sidebarCollapsed: boolean;
   searchQuery: string;
   searchFilters: SearchFilters;
+  noteView: 'all' | 'favorites' | 'archived';
 
   // Network state
   matches: Match[];

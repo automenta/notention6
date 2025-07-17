@@ -1,72 +1,108 @@
 /* src/ui-rewrite/ChatPanel.css */
 
-.chat-panel {
+.chat-panel-container {
+  padding: 1rem;
   display: flex;
   flex-direction: column;
+  gap: 1.5rem;
   height: 100%;
-  background-color: var(--background-color);
-  color: var(--text-color);
 }
 
-.chat-header {
-  padding: 1rem;
+.chat-panel-header {
   border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.5rem;
 }
 
-.chat-container {
-  display: flex;
-  flex-grow: 1;
+.chat-panel-header h1 {
+  font-size: 1.5rem;
+  margin: 0;
+}
+
+.chat-layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 1.5rem;
+  height: 100%;
   overflow: hidden;
 }
 
-.chat-list {
-  width: 250px;
-  border-right: 1px solid var(--border-color);
+.contact-list-container {
+  background-color: var(--card-background-color);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
   padding: 1rem;
   overflow-y: auto;
-  background-color: var(--secondary-color);
 }
 
-.chat-list-item {
+.chat-contact-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.chat-contact-list li {
   padding: 0.75rem;
-  cursor: pointer;
   border-radius: 4px;
+  cursor: pointer;
 }
 
-.chat-list-item:hover {
-  background-color: var(--primary-color);
-  color: white;
+.chat-contact-list li:hover {
+  background-color: var(--hover-background-color);
 }
 
-.message-view {
-  flex-grow: 1;
+.message-view-container {
   display: flex;
   flex-direction: column;
+  background-color: var(--card-background-color);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .message-view-header {
-  padding: 1rem;
-  border-bottom: 1px solid var(--border-color);
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    font-weight: bold;
 }
 
-.message-list {
+.messages-list {
   flex-grow: 1;
   padding: 1rem;
   overflow-y: auto;
+  list-style: none;
+  margin: 0;
 }
 
-.message-input {
+.messages-list li {
+  padding: 0.5rem 1rem;
+  border-radius: 1rem;
+  margin-bottom: 0.5rem;
+  max-width: 70%;
+}
+
+.messages-list .sent {
+  background-color: var(--primary-color);
+  color: white;
+  align-self: flex-end;
+  margin-left: auto;
+}
+
+.messages-list .received {
+  background-color: #e5e5ea;
+  color: black;
+  align-self: flex-start;
+}
+
+.message-form {
   display: flex;
   padding: 1rem;
   border-top: 1px solid var(--border-color);
 }
 
-.message-input input {
+.message-form input {
   flex-grow: 1;
   padding: 0.5rem;
   border: 1px solid var(--border-color);
-  background-color: var(--background-color);
-  color: var(--text-color);
   border-radius: 4px;
-  margin-right: 0.5rem;
+  margin-right: 1rem;
 }

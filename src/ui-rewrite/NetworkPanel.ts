@@ -1,81 +1,104 @@
 // src/ui-rewrite/NetworkPanel.ts
 import { useAppStore } from '../store';
-import { nostrService } from '../services/NostrService';
-import { OntologyService } from '../services/ontology';
-import { Note } from '../../shared/types';
-
-function renderMatchedNotes(notes: Note[], container: HTMLElement) {
-    container.innerHTML = ''; // Clear previous notes
-    if (notes.length === 0) {
-        container.innerHTML = '<p>No matched notes found.</p>';
-        return;
-    }
-
-    const list = document.createElement('ul');
-    notes.forEach(note => {
-        const listItem = document.createElement('li');
-        listItem.innerHTML = `
-            <h4>${note.title}</h4>
-            <div>${note.content.substring(0, 150)}...</div>
-            <small>Author: ${note.pubkey?.substring(0, 10)}...</small>
-        `;
-        list.appendChild(listItem);
-    });
-    container.appendChild(list);
-}
+import { createButton } from './Button';
+import './NetworkPanel.css';
 
 export function createNetworkPanel(): HTMLElement {
-  const el = document.createElement('div');
-  el.innerHTML = '<h1>Network Matches</h1>';
+  const { matches, nostrRelays, addNostrRelay, removeNostrRelay } = useAppStore.getState();
 
-  const resultsContainer = document.createElement('div');
-  el.appendChild(resultsContainer);
+  const container = document.createElement('div');
+  container.className = 'network-panel-container';
 
-  let matchedNotes: Note[] = [];
-  let renderTimeout: number | undefined;
+  // Header
+  const header = document.createElement('header');
+  header.className = 'network-panel-header';
+  const title = document.createElement('h1');
+  title.textContent = 'Network';
+  header.appendChild(title);
+  container.appendChild(header);
 
-  const render = () => {
-    renderMatchedNotes(matchedNotes, resultsContainer);
-  };
+  // Matches Section
+  const matchesContainer = document.createElement('div');
+  matchesContainer.className = 'matches-container';
+  const matchesTitle = document.createElement('h2');
+  matchesTitle.textContent = 'Matches';
+  matchesContainer.appendChild(matchesTitle);
 
-  const fetchAndDisplayMatches = async () => {
-    resultsContainer.innerHTML = '<p>Fetching notes from the network...</p>';
-    try {
-        const { ontology } = useAppStore.getState();
-    const tagsToSearch = Object.values(ontology.nodes).map(n => n.label);
+  const matchesList = document.createElement('ul');
+  matchesList.className = 'matches-list';
 
-    const filters = tagsToSearch.map(tag => ({
-        kinds: [1],
-        '#t': [tag.substring(1)], // remove # from tag
-        limit: 10
-    }));
-
-    const events = nostrService.subscribeToEvents(filters, (event) => {
-        const matchedNote: Note = {
-            id: event.id,
-            title: event.tags.find(t => t[0] === 'title')?.[1] || 'Untitled',
-            content: event.content,
-            tags: event.tags.filter(t => t[0] === 't').map(t => `#${t[1]}`),
-            createdAt: new Date(event.created_at * 1000),
-            updatedAt: new Date(event.created_at * 1000),
-            pubkey: event.pubkey,
-        };
-
-        if (!matchedNotes.some(n => n.id === matchedNote.id)) {
-            matchedNotes = [matchedNote, ...matchedNotes].slice(0, 20); // Add to beginning, limit to 20
-        }
-
-        if (renderTimeout) {
-            clearTimeout(renderTimeout);
-        }
-        renderTimeout = setTimeout(render, 500); // Batch renders every 500ms
+  if (matches.length > 0) {
+    matches.forEach(match => {
+      const listItem = document.createElement('li');
+      listItem.className = 'match-item';
+      listItem.innerHTML = `
+        <p>Match for note: <strong>${match.localNoteId}</strong> with <strong>${match.targetNoteId}</strong></p>
+        <span>Similarity: ${match.similarity.toFixed(2)}</span>
+      `;
+      matchesList.appendChild(listItem);
     });
-    } catch (error) {
-        resultsContainer.innerHTML = `<p style="color: red;">Error fetching notes: ${error.message}</p>`;
+  } else {
+    const noMatchesMessage = document.createElement('p');
+    noMatchesMessage.textContent = 'No matches found.';
+    matchesList.appendChild(noMatchesMessage);
+  }
+  matchesContainer.appendChild(matchesList);
+  container.appendChild(matchesContainer);
+
+  // Relays Section
+  const relaysContainer = document.createElement('div');
+  relaysContainer.className = 'relays-container';
+  const relaysTitle = document.createElement('h2');
+  relaysTitle.textContent = 'Nostr Relays';
+  relaysContainer.appendChild(relaysTitle);
+
+  const relaysList = document.createElement('ul');
+  relaysList.className = 'relays-list';
+
+  nostrRelays.forEach(relay => {
+    const listItem = document.createElement('li');
+    listItem.className = 'relay-item';
+    const relayUrl = document.createElement('span');
+    relayUrl.textContent = relay;
+    listItem.appendChild(relayUrl);
+
+    const removeButton = createButton({
+      label: 'Remove',
+      onClick: () => removeNostrRelay(relay),
+      variant: 'danger'
+    });
+    listItem.appendChild(removeButton);
+    relaysList.appendChild(listItem);
+  });
+  relaysContainer.appendChild(relaysList);
+
+  const addRelayForm = document.createElement('form');
+  addRelayForm.className = 'add-relay-form';
+  addRelayForm.onsubmit = (e) => {
+    e.preventDefault();
+    const input = (e.target as HTMLFormElement).elements.namedItem('relayUrl') as HTMLInputElement;
+    const newRelay = input.value.trim();
+    if (newRelay) {
+      addNostrRelay(newRelay);
+      input.value = '';
     }
   };
 
-  fetchAndDisplayMatches();
+  const relayUrlInput = document.createElement('input');
+  relayUrlInput.type = 'text';
+  relayUrlInput.name = 'relayUrl';
+  relayUrlInput.placeholder = 'wss://relay.example.com';
+  addRelayForm.appendChild(relayUrlInput);
 
-  return el;
+  const addRelayButton = createButton({
+    label: 'Add Relay',
+    onClick: () => addRelayForm.requestSubmit(),
+    variant: 'primary'
+  });
+  addRelayForm.appendChild(addRelayButton);
+
+  relaysContainer.appendChild(addRelayForm);
+  container.appendChild(relaysContainer);
+
+  return container;
 }
