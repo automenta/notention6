@@ -1,2 +1,7 @@
-@import url("./ui/styles/variables.css");
-@import url("./ui/styles/base.css");
+/* Reset and base styles can be added here if needed */
+body {
+  font-family: sans-serif;
+  margin: 0;
+  background-color: #f0f2f5;
+  color: #1c1e21;
+}
