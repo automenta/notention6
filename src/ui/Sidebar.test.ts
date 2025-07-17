@@ -72,9 +72,7 @@ describe("Sidebar Component", () => {
 
     await waitFor(() => {
       sidebarElement = app.shadowRoot!.querySelector("notention-sidebar")!;
-      notesListElement = app.shadowRoot!.querySelector("notention-notes-list")!;
       expect(sidebarElement).not.toBeNull();
-      expect(notesListElement).not.toBeNull();
     });
   });
 

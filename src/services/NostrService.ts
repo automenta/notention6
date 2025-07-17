@@ -533,7 +533,7 @@ export class NostrService {
       },
     ];
 
-    const events = await this.pool.list(relaysToUse, filters);
+    const events = await this.pool.get(relaysToUse, filters);
     const syncedNotes: Note[] = [];
 
     for (const event of events) {
@@ -655,8 +655,8 @@ export class NostrService {
       },
     ];
 
-    // .list() should return the most recent event first for replaceable kinds if relays behave.
-    const events = await this.pool.list(relaysToUse, filters);
+    // .get() should return the most recent event first for replaceable kinds if relays behave.
+    const events = await this.pool.get(relaysToUse, filters);
     if (events.length === 0) return null;
 
     // Sort by created_at descending to be sure we get the latest, as pool.list might return from multiple relays.
@@ -804,7 +804,7 @@ export class NostrService {
       filters,
     );
     try {
-      const events = await this.pool.list(relaysToUse, filters);
+      const events = await this.pool.get(relaysToUse, filters);
       if (!events) {
         return [];
       }
@@ -842,7 +842,7 @@ export class NostrService {
       },
     ];
 
-    const events = await this.pool.list(relaysToUse, filters);
+    const events = await this.pool.get(relaysToUse, filters);
     if (events.length === 0) return null;
 
     events.sort((a, b) => b.created_at - a.created_at);

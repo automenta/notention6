@@ -118,7 +118,7 @@ export class Sidebar extends HTMLElement {
       const noteId = await useAppStore.getState().createNote();
       log(`New note created with id: ${noteId}`);
       useAppStore.getState().setSidebarTab("notes");
-      useAppStore.getState().setCurrentNoteId(noteId);
+      useAppStore.getState().setCurrentNote(noteId);
     } catch (error) {
       log.error("Error creating new note:", error);
     }
