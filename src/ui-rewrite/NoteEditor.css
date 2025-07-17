@@ -1,26 +1,50 @@
-/* src/ui-rewrite/NoteEditor.css */
-
-.editor-toolbar {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 8px;
+.note-editor-layout {
+    display: flex;
 }
 
-.editor-toolbar button {
-  font-weight: bold;
-  padding: 4px 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background-color: #f0f0f0;
-  cursor: pointer;
+.note-editor {
+    flex-grow: 1;
 }
 
-.editor-toolbar button:hover {
-  background-color: #e0e0e0;
+.note-editor-sidebar {
+    width: 280px;
+    padding: 16px;
+    border-left: 1px solid var(--border-color);
+    background-color: var(--secondary-color);
 }
 
-#tiptap-editor {
-  border: 1px solid #ccc;
-  padding: 8px;
-  min-height: 200px;
+.tags-list .tag {
+    display: inline-block;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+
+.tags-list .tag button {
+    margin-left: 5px;
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+}
+
+.suggestion {
+    background-color: var(--background-color);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 8px;
+    position: absolute;
+    z-index: 10;
+}
+
+.suggestion div {
+    cursor: pointer;
+    padding: 4px;
+}
+
+.suggestion div:hover {
+    background-color: var(--secondary-color);
 }

@@ -3,6 +3,8 @@ import { Editor } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import { useAppStore } from '../store';
 import { createButton } from './Button';
+import Mention from '@tiptap/extension-mention';
+import { Editor } from '@tiptap/core';
 
 export function createNoteEditor(): HTMLElement | null {
   const { notes, currentNoteId, updateNote, setCurrentNote } = useAppStore.getState();
@@ -15,6 +17,9 @@ export function createNoteEditor(): HTMLElement | null {
   if (!note) {
     return null;
   }
+
+  const editorLayout = document.createElement('div');
+  editorLayout.className = 'note-editor-layout';
 
   const editorWrapper = document.createElement("div");
   editorWrapper.className = "note-editor";
@@ -38,6 +43,55 @@ export function createNoteEditor(): HTMLElement | null {
     element: editorEl,
     extensions: [
       StarterKit,
+      Mention.configure({
+        HTMLAttributes: {
+          class: 'mention',
+        },
+        suggestion: {
+          items: ({ query }) => {
+            const { ontology } = useAppStore.getState();
+            return Object.values(ontology.nodes)
+              .filter(node => node.label.toLowerCase().startsWith(query.toLowerCase()))
+              .slice(0, 5);
+          },
+          render: () => {
+            let component: any;
+            let popup: any;
+
+            return {
+              onStart: props => {
+                component = document.createElement('div');
+                component.className = 'suggestion';
+
+                props.items.forEach((item: OntologyNode) => {
+                    const itemEl = document.createElement('div');
+                    itemEl.textContent = item.label;
+                    itemEl.onclick = () => props.command({ id: item.id, label: item.label });
+                    component.appendChild(itemEl);
+                });
+
+                popup = editor.view.dom.parentElement?.appendChild(component);
+              },
+
+              onUpdate(props) {
+                // Not implemented
+              },
+
+              onKeyDown(props) {
+                if (props.event.key === 'Escape') {
+                  popup?.destroy();
+                  return true;
+                }
+                return false;
+              },
+
+              onExit() {
+                popup?.destroy();
+              },
+            }
+          },
+        },
+      }),
     ],
     content: note.content,
   });
@@ -45,32 +99,28 @@ export function createNoteEditor(): HTMLElement | null {
   const boldButton = createButton({
     label: 'B',
     onClick: () => editor.chain().focus().toggleBold().run(),
-    className: editor.isActive('bold') ? 'is-active' : ''
   });
   
   const italicButton = createButton({
     label: 'I',
     onClick: () => editor.chain().focus().toggleItalic().run(),
-    className: editor.isActive('italic') ? 'is-active' : ''
   });
 
   const ulButton = createButton({
     label: 'UL',
     onClick: () => editor.chain().focus().toggleBulletList().run(),
-    className: editor.isActive('bulletList') ? 'is-active' : ''
   });
 
   const olButton = createButton({
     label: 'OL',
-    onClick: () => editor.chain().focus().toggleOrderedList().run(),
-    className: editor.isActive('orderedList') ? 'is-active' : ''
+    onClick: () => editor.chain().focus().toggleOrderedList()..run(),
   });
 
   editor.on('transaction', () => {
-    boldButton.className = editor.isActive('bold') ? 'is-active' : '';
-    italicButton.className = editor.isActive('italic') ? 'is-active' : '';
-    ulButton.className = editor.isActive('bulletList') ? 'is-active' : '';
-    olButton.className = editor.isActive('orderedList') ? 'is-active' : '';
+    boldButton.classList.toggle('is-active', editor.isActive('bold'));
+    italicButton.classList.toggle('is-active', editor.isActive('italic'));
+    ulButton.classList.toggle('is-active', editor.isActive('bulletList'));
+    olButton.classList.toggle('is-active', editor.isActive('orderedList'));
   });
 
   toolbar.appendChild(boldButton);
@@ -91,7 +141,6 @@ export function createNoteEditor(): HTMLElement | null {
         content: editor.getHTML(),
       });
     },
-    className: 'btn-primary'
   });
 
   const closeButton = createButton({
@@ -99,12 +148,55 @@ export function createNoteEditor(): HTMLElement | null {
     onClick: () => {
       setCurrentNote(undefined);
     },
-    className: 'btn-secondary'
   });
 
   buttonContainer.appendChild(saveButton);
   buttonContainer.appendChild(closeButton);
 
-  return editorWrapper;
+  // Metadata Sidebar
+  const sidebar = document.createElement('aside');
+  sidebar.className = 'note-editor-sidebar';
+  sidebar.innerHTML = '<h3>Metadata</h3>';
+
+  const tagsContainer = document.createElement('div');
+  tagsContainer.innerHTML = '<h4>Tags</h4>';
+
+  const tagsList = document.createElement('div');
+  tagsList.className = 'tags-list';
+  note.tags.forEach(tag => {
+    const tagEl = document.createElement('span');
+    tagEl.className = 'tag';
+    tagEl.textContent = tag;
+    const removeBtn = document.createElement('button');
+    removeBtn.textContent = 'x';
+    removeBtn.onclick = () => {
+        const newTags = note.tags.filter(t => t !== tag);
+        updateNote(note.id, { tags: newTags });
+    };
+    tagEl.appendChild(removeBtn);
+    tagsList.appendChild(tagEl);
+  });
+  tagsContainer.appendChild(tagsList);
+
+  const tagsInput = document.createElement('input');
+  tagsInput.type = 'text';
+  tagsInput.placeholder = 'Add a tag...';
+  tagsInput.onkeydown = (e) => {
+    if (e.key === 'Enter') {
+        const newTag = tagsInput.value.trim();
+        if (newTag && !note.tags.includes(newTag)) {
+            const newTags = [...note.tags, newTag];
+            updateNote(note.id, { tags: newTags });
+            tagsInput.value = '';
+        }
+    }
+  };
+  tagsContainer.appendChild(tagsInput);
+  sidebar.appendChild(tagsContainer);
+
+  editorLayout.appendChild(editorWrapper);
+  editorLayout.appendChild(sidebar);
+
+  return editorLayout;
 }
 

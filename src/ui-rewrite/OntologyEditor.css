@@ -1,16 +1,17 @@
-/* src/ui-rewrite/OntologyEditor.css */
-
-.ontology-tree {
-  list-style-type: none;
-  padding-left: 20px;
+.ontology-editor .ontology-tree {
+    list-style: none;
+    padding-left: 20px;
 }
 
-.ontology-tree li {
-  padding: 4px;
-  border-left: 1px solid #ccc;
+.ontology-editor .ontology-tree li {
+    padding: 5px;
+    border-left: 1px solid var(--border-color);
 }
 
-.ontology-tree li:hover {
-  background-color: #f0f0f0;
-  cursor: grab;
+.ontology-editor .btn-delete-node {
+    margin-left: 10px;
+    background: none;
+    border: none;
+    color: var(--text-color);
+    cursor: pointer;
 }

@@ -7,11 +7,11 @@
 
 .notes-list li {
   padding: 16px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .notes-list li:hover {
-  background-color: #f9f9f9;
+  background-color: var(--secondary-color);
 }
 
 .notes-list h3 {

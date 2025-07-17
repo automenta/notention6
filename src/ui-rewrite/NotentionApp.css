@@ -1,5 +1,26 @@
 /* src/ui-rewrite/NotentionApp.css */
 
+:root {
+  --primary-color: #6366f1;
+  --secondary-color: #f0f0f0;
+  --background-color: #ffffff;
+  --text-color: #333333;
+  --border-color: #dddddd;
+}
+
+[data-theme="dark"] {
+    --primary-color: #818cf8;
+    --secondary-color: #374151;
+    --background-color: #1f2937;
+    --text-color: #f3f4f6;
+    --border-color: #4b5563;
+}
+
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
 .app-container {
   display: flex;
   height: 100vh;
@@ -7,9 +28,10 @@
 
 .sidebar-container {
   width: 280px;
-  border-right: 1px solid #eee;
+  border-right: 1px solid var(--border-color);
   padding: 8px;
   transition: width 0.3s ease;
+  background-color: var(--secondary-color);
 }
 
 .sidebar-container.collapsed {
@@ -29,7 +51,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 8px 16px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--background-color);
 }
 
 .main-content {

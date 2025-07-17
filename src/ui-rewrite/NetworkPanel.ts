@@ -1,72 +1,81 @@
 // src/ui-rewrite/NetworkPanel.ts
+import { useAppStore } from '../store';
 import { nostrService } from '../services/NostrService';
+import { OntologyService } from '../services/ontology';
+import { Note } from '../../shared/types';
 
-function renderRelayList(relays: string[], onUpdate: () => void): HTMLElement {
+function renderMatchedNotes(notes: Note[], container: HTMLElement) {
+    container.innerHTML = ''; // Clear previous notes
+    if (notes.length === 0) {
+        container.innerHTML = '<p>No matched notes found.</p>';
+        return;
+    }
+
     const list = document.createElement('ul');
-    list.className = 'relay-list';
-
-    relays.forEach(relayUrl => {
+    notes.forEach(note => {
         const listItem = document.createElement('li');
-        listItem.textContent = relayUrl;
-
-        const removeButton = document.createElement('button');
-        removeButton.textContent = 'Remove';
-        removeButton.className = 'btn btn-secondary';
-        removeButton.onclick = async () => {
-            await nostrService.removeRelay(relayUrl);
-            onUpdate();
-        };
-
-        listItem.appendChild(removeButton);
+        listItem.innerHTML = `
+            <h4>${note.title}</h4>
+            <div>${note.content.substring(0, 150)}...</div>
+            <small>Author: ${note.pubkey?.substring(0, 10)}...</small>
+        `;
         list.appendChild(listItem);
     });
-
-    return list;
+    container.appendChild(list);
 }
 
 export function createNetworkPanel(): HTMLElement {
   const el = document.createElement('div');
-  el.innerHTML = '<h1>Network Matches</h1><p>Notes from the network that match your interests will appear here.</p>';
+  el.innerHTML = '<h1>Network Matches</h1>';
+
+  const resultsContainer = document.createElement('div');
+  el.appendChild(resultsContainer);
+
+  let matchedNotes: Note[] = [];
+  let renderTimeout: number | undefined;
 
   const render = () => {
-    const currentRelays = nostrService.getRelays();
-
-    // Clear existing content
-    const existingRelaySection = el.querySelector('.relay-management');
-    if (existingRelaySection) {
-        el.removeChild(existingRelaySection);
-    }
-
-    const relaySection = document.createElement('div');
-    relaySection.className = 'relay-management';
-    relaySection.innerHTML = '<h2>Relay Management</h2>';
-    
-    const relayList = renderRelayList(currentRelays, render);
-    relaySection.appendChild(relayList);
-
-    const addRelayInput = document.createElement('input');
-    addRelayInput.type = 'text';
-    addRelayInput.placeholder = 'wss://your-relay.com';
-    
-    const addRelayButton = document.createElement('button');
-    addRelayButton.textContent = 'Add Relay';
-    addRelayButton.className = 'btn btn-primary';
-    addRelayButton.onclick = async () => {
-        const newRelayUrl = addRelayInput.value.trim();
-        if (newRelayUrl) {
-            await nostrService.addRelay(newRelayUrl);
-            addRelayInput.value = '';
-            render();
-        }
-    };
-
-    relaySection.appendChild(addRelayInput);
-    relaySection.appendChild(addRelayButton);
-    el.appendChild(relaySection);
+    renderMatchedNotes(matchedNotes, resultsContainer);
   };
 
-  // Initial render
-  render();
+  const fetchAndDisplayMatches = async () => {
+    resultsContainer.innerHTML = '<p>Fetching notes from the network...</p>';
+    try {
+        const { ontology } = useAppStore.getState();
+    const tagsToSearch = Object.values(ontology.nodes).map(n => n.label);
+
+    const filters = tagsToSearch.map(tag => ({
+        kinds: [1],
+        '#t': [tag.substring(1)], // remove # from tag
+        limit: 10
+    }));
+
+    const events = nostrService.subscribeToEvents(filters, (event) => {
+        const matchedNote: Note = {
+            id: event.id,
+            title: event.tags.find(t => t[0] === 'title')?.[1] || 'Untitled',
+            content: event.content,
+            tags: event.tags.filter(t => t[0] === 't').map(t => `#${t[1]}`),
+            createdAt: new Date(event.created_at * 1000),
+            updatedAt: new Date(event.created_at * 1000),
+            pubkey: event.pubkey,
+        };
+
+        if (!matchedNotes.some(n => n.id === matchedNote.id)) {
+            matchedNotes = [matchedNote, ...matchedNotes].slice(0, 20); // Add to beginning, limit to 20
+        }
+
+        if (renderTimeout) {
+            clearTimeout(renderTimeout);
+        }
+        renderTimeout = setTimeout(render, 500); // Batch renders every 500ms
+    });
+    } catch (error) {
+        resultsContainer.innerHTML = `<p style="color: red;">Error fetching notes: ${error.message}</p>`;
+    }
+  };
+
+  fetchAndDisplayMatches();
 
   return el;
 }
