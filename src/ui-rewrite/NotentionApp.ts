@@ -1,118 +1,111 @@
 // src/ui-rewrite/NotentionApp.ts
+import { useAppStore } from '../store';
+import { createButton } from './Button';
+import { createSidebar } from './Sidebar';
+import { createAccountWizard } from './AccountWizard';
+import { createDashboard } from './Dashboard';
+import { createNotesList } from './NotesList';
+import { createOntologyEditor } from './OntologyEditor';
+import { createNetworkPanel } from './NetworkPanel';
+import { createContactsView } from './ContactsView';
+import { createChatPanel } from './ChatPanel';
+import { createSettings } from './Settings';
 
-import { createButton } from "./Button";
-import { createNoteEditor } from "./NoteEditor";
-import { createNotesList } from "./NotesList";
-import { createOntologyEditor } from "./OntologyEditor";
-
-interface Note {
-  id: string;
-  title: string;
-  content: string;
+// A type guard to check if a profile exists and has a public key
+function profileExists(profile: any): profile is { nostrPubkey: string } {
+    return profile && typeof profile.nostrPubkey === 'string' && profile.nostrPubkey.length > 0;
 }
 
 export function renderApp(rootElement: HTMLElement) {
-  let sidebarCollapsed = false;
-  let notes: Note[] = [];
-  let ontology: any = {};
-  let currentView: "notes" | "ontology" = "notes";
+    // Initial render function
+    const render = () => {
+        const state = useAppStore.getState();
+        const { userProfile, sidebarTab, sidebarCollapsed } = state;
 
-  function toggleSidebar() {
-    sidebarCollapsed = !sidebarCollapsed;
-    render();
-  }
+        // Clear the root element
+        rootElement.innerHTML = '';
 
-  function addNote(note: { title: string; content: string }) {
-    notes.push({ ...note, id: Date.now().toString() });
-    render();
-  }
+        if (!profileExists(userProfile)) {
+            // If no profile, show the wizard
+            const wizard = createAccountWizard();
+            rootElement.appendChild(wizard);
+        } else {
+            // If profile exists, show the main app
+            const appContainer = document.createElement('div');
+            appContainer.className = 'app-container';
 
-  function deleteNote(noteId: string) {
-    notes = notes.filter(note => note.id !== noteId);
-    render();
-  }
+            // Sidebar
+            const sidebarContainer = document.createElement('aside');
+            sidebarContainer.className = `sidebar-container ${sidebarCollapsed ? 'collapsed' : ''}`;
+            const sidebar = createSidebar(sidebarTab);
+            sidebarContainer.appendChild(sidebar);
 
-  function saveOntology(newOntology: any) {
-    ontology = newOntology;
-    render();
-  }
+            // Main Content
+            const mainContainer = document.createElement('div');
+            mainContainer.className = 'main-container';
 
-  function switchView(view: "notes" | "ontology") {
-    currentView = view;
-    render();
-  }
+            // Header
+            const header = document.createElement('header');
+            header.className = 'app-header';
+            const toggleButton = createButton({
+                label: '☰',
+                onClick: () => {
+                    // This is a temporary solution. A proper action should be created in the store.
+                    useAppStore.setState({ sidebarCollapsed: !sidebarCollapsed });
+                }
+            });
+            const title = document.createElement('h1');
+            title.textContent = 'Notention';
+            header.appendChild(toggleButton);
+            header.appendChild(title);
 
-  function render() {
-    rootElement.innerHTML = `
-      <div class="app-container">
-        <aside class="sidebar-container ${sidebarCollapsed ? "collapsed" : ""}">
-          <div id="notes-list-container"></div>
-        </aside>
-        <div class="main-container">
-          <header class="app-header">
-            <div id="toggle-button-container"></div>
-            <h1 class="app-title">Notention</h1>
-            <div id="view-switcher-container"></div>
-          </header>
-          <main class="main-content">
-            <div id="main-view-container"></div>
-          </main>
-        </div>
-      </div>
-    `;
+            // Main View
+            const mainViewContainer = document.createElement('main');
+            mainViewContainer.className = 'main-content';
+            
+            let currentView: HTMLElement;
+            switch (sidebarTab) {
+                case 'dashboard':
+                    currentView = createDashboard();
+                    break;
+                case 'notes':
+                    currentView = createNotesList({ notes: [], onDelete: () => {} });
+                    break;
+                case 'ontology':
+                    currentView = createOntologyEditor({ onSave: () => {} });
+                    break;
+                case 'network':
+                    currentView = createNetworkPanel();
+                    break;
+                case 'contacts':
+                    currentView = createContactsView();
+                    break;
+                case 'chats':
+                    currentView = createChatPanel();
+                    break;
+                case 'settings':
+                    currentView = createSettings();
+                    break;
+                default:
+                    currentView = createDashboard();
+            }
+            mainViewContainer.appendChild(currentView);
 
-    const toggleButtonContainer = rootElement.querySelector("#toggle-button-container") as HTMLElement;
-    const viewSwitcherContainer = rootElement.querySelector("#view-switcher-container") as HTMLElement;
-    const mainViewContainer = rootElement.querySelector("#main-view-container") as HTMLElement;
-    const notesListContainer = rootElement.querySelector("#notes-list-container") as HTMLElement;
+            mainContainer.appendChild(header);
+            mainContainer.appendChild(mainViewContainer);
+            
+            appContainer.appendChild(sidebarContainer);
+            appContainer.appendChild(mainContainer);
+            
+            rootElement.appendChild(appContainer);
+        }
+    };
 
-    const toggleButton = createButton({
-      label: "Toggle Sidebar",
-      onClick: toggleSidebar,
+    // Subscribe to the store
+    useAppStore.subscribe(render);
+
+    // Initial call to initialize and render the app
+    useAppStore.getState().initializeApp().then(() => {
+        render();
     });
-
-    const notesViewButton = createButton({
-      label: "Notes",
-      onClick: () => switchView("notes"),
-      variant: currentView === "notes" ? "primary" : "secondary",
-    });
-
-    const ontologyViewButton = createButton({
-      label: "Ontology",
-      onClick: () => switchView("ontology"),
-      variant: currentView === "ontology" ? "primary" : "secondary",
-    });
-
-    const noteEditor = createNoteEditor({
-      onSave: addNote,
-    });
-
-    const ontologyEditor = createOntologyEditor({
-      onSave: saveOntology,
-    });
-
-    const notesList = createNotesList({
-      notes: notes,
-      onDelete: deleteNote,
-    });
-
-    toggleButtonContainer.innerHTML = "";
-    toggleButtonContainer.appendChild(toggleButton);
-
-    viewSwitcherContainer.innerHTML = "";
-    viewSwitcherContainer.appendChild(notesViewButton);
-    viewSwitcherContainer.appendChild(ontologyViewButton);
-
-    mainViewContainer.innerHTML = "";
-    if (currentView === "notes") {
-      mainViewContainer.appendChild(noteEditor);
-    } else {
-      mainViewContainer.appendChild(ontologyEditor);
-    }
-
-    notesListContainer.innerHTML = "";
-    notesListContainer.appendChild(notesList);
-  }
-
-  render();
 }
