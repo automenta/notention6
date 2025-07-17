@@ -1,5 +1,8 @@
 import { useAppStore } from "../store";
 import { html, render } from "lit-html";
+import "./styles/variables.css";
+import "./styles/base.css";
+import "./NotentionApp.css";
 import { choose } from "lit-html/directives/choose.js";
 import { when } from "lit-html/directives/when.js";
 import "./Sidebar";
@@ -156,10 +159,6 @@ export class NotentionApp extends HTMLElement {
     this.dataset.theme = this.theme;
 
     const template = html`
-      <link rel="stylesheet" href="src/ui/styles/variables.css" />
-      <link rel="stylesheet" href="src/ui/styles/base.css" />
-      <link rel="stylesheet" href="src/ui/NotentionApp.css" />
-
       ${when(
         !this.initialized,
         () => html`<div class="loading-overlay"><h1>Loading...</h1></div>`,
