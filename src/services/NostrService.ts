@@ -206,13 +206,6 @@ export class NostrService {
       // The UI/store should ideally prevent calling this if sharePublicNotesGlobally is false for a public note.
     }
 
-    const relaysToPublish =
-      targetRelays && targetRelays.length > 0 ? targetRelays : this.relays;
-    if (relaysToPublish.length === 0) {
-      console.warn("No relays configured or provided to publish note.");
-      return [];
-    }
-
     const tags: string[][] = [];
     // Basic tags like 'd' (identifier) and 'title' might always be included if the note itself is shared.
     tags.push(["d", note.id]); // Identifier for the note
@@ -253,22 +246,8 @@ export class NostrService {
       }
     }
 
-    // Internal metadata like folderId or templateId should typically not be shared publicly unless intended.
-    // For encrypted notes, they are part of the encrypted payload if included in content, or could be specific tags.
-    // For this example, we are not adding folderId/templateId as tags to public notes by default.
-    // if (note.folderId) {
-    //   tags.push(['folderId', note.folderId]);
-    // }
-    // if (note.templateId) {
-    //   tags.push(['templateId', note.templateId]);
-    // }
-
     let contentToPublish = note.content;
     let eventKind: number = 1; // Default to kind 1 (short text note / reference to long-form)
-    // Consider using Kind 30023 for long-form content if note.content is substantial
-    // For this example, we'll stick to Kind 1 for simplicity of public notes,
-    // or Kind 4 for encrypted notes.
-    // A more advanced setup might use Kind 1 as a "pointer" to a Kind 30023.
 
     if (encrypt) {
       const targetPk = recipientPublicKey || this.publicKey;
@@ -293,16 +272,39 @@ export class NostrService {
       }
     }
 
+    return this.publishEvent(
+      eventKind,
+      contentToPublish,
+      tags,
+      targetRelays,
+    );
+  }
+
+  public async publishEvent(
+    kind: number,
+    content: string,
+    tags: string[][],
+    targetRelays?: string[],
+  ): Promise<string[]> {
+    if (!this.isLoggedIn() || !this.privateKey || !this.publicKey) {
+      throw new Error("User not logged in. Cannot publish event.");
+    }
+
+    const relaysToPublish =
+      targetRelays && targetRelays.length > 0 ? targetRelays : this.relays;
+    if (relaysToPublish.length === 0) {
+      console.warn("No relays configured or provided to publish event.");
+      return [];
+    }
+
     const unsignedEvent: UnsignedEvent = {
-      kind: eventKind,
+      kind,
       pubkey: this.publicKey,
       created_at: Math.floor(Date.now() / 1000),
-      tags: tags,
-      content: contentToPublish,
+      tags,
+      content,
     };
 
-    // finalizeEvent will compute the id, add pubkey, and sign.
-    // It mutates the unsignedEvent and returns it as a signed Event.
     const signedEvent: Event = finalizeEvent(unsignedEvent, this.privateKey);
 
     console.log(
@@ -315,12 +317,6 @@ export class NostrService {
         relaysToPublish,
         signedEvent,
       );
-      // publicationPromises is an array of promises, one for each relay.
-      // Each promise resolves when the relay acknowledges the event or rejects on error/timeout.
-      // For simplicity, we'll just log success/failure.
-      // A more robust implementation would handle individual relay successes/failures.
-
-      // Let's wait for all to settle and collect results
       const results = await Promise.allSettled(publicationPromises);
       const successfulEventIds: string[] = [];
       results.forEach((result, index) => {
@@ -328,8 +324,6 @@ export class NostrService {
           console.log(
             `Event ${signedEvent.id} published successfully to ${relaysToPublish[index]}`,
           );
-          // The fulfilled value might be the event id or void, depending on relay/nostr-tools version.
-          // Assuming it's void or the event id, we push the original signedEvent.id
           successfulEventIds.push(signedEvent.id);
         } else {
           console.error(
@@ -338,10 +332,10 @@ export class NostrService {
           );
         }
       });
-      return successfulEventIds; // Return array of event IDs for successfully published relays
+      return successfulEventIds;
     } catch (error) {
       console.error("Error during pool.publish:", error);
-      return []; // Return empty if the publish call itself fails
+      return [];
     }
   }
 
@@ -918,6 +912,41 @@ export class NostrService {
     } catch (error) {
       console.error("Error during contact list pool.publish:", error);
       return [];
+    }
+  }
+
+  public async fetchOntologyByPubkey(
+    pubkey: string,
+    targetRelays?: string[],
+  ): Promise<OntologyTree | null> {
+    const relaysToUse =
+      targetRelays && targetRelays.length > 0 ? targetRelays : this.relays;
+    if (relaysToUse.length === 0) return null;
+
+    const filters: Filter[] = [
+      {
+        kinds: [ONTOLOGY_KIND],
+        authors: [pubkey],
+        "#d": ["ontology"],
+        limit: 1,
+      },
+    ];
+
+    const events = await this.pool.querySync(relaysToUse, filters);
+    if (!events || events.length === 0) return null;
+
+    events.sort((a, b) => b.created_at - a.created_at);
+
+    const latestEvent = events[0];
+    try {
+      const ontology = JSON.parse(latestEvent.content);
+      if (ontology.updatedAt && typeof ontology.updatedAt === "string") {
+        ontology.updatedAt = new Date(ontology.updatedAt);
+      }
+      return ontology;
+    } catch (error) {
+      console.error("Error parsing fetched ontology:", error, latestEvent);
+      return null;
     }
   }
 

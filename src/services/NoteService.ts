@@ -85,8 +85,67 @@ export class NoteService {
     const matchedNotes: Array<Note & { searchScore?: number }> = [];
 
     for (const note of sourceNotes) {
-      if (!this.noteMatchesFilters(note, filters, filterSemanticTagsSet)) {
-        continue;
+      let matchesFilters = true;
+      // Apply structured filters first
+      if (filters.status && note.status !== filters.status) {
+        matchesFilters = false;
+      }
+      if (
+        matchesFilters &&
+        filters.folderId &&
+        note.folderId !== filters.folderId
+      ) {
+        matchesFilters = false;
+      }
+      if (matchesFilters && filterSemanticTagsSet.size > 0) {
+        if (
+          !note.tags ||
+          !note.tags.some((noteTag) =>
+            filterSemanticTagsSet.has(noteTag.toLowerCase()),
+          )
+        ) {
+          matchesFilters = false;
+        }
+      }
+      if (matchesFilters && filters.values) {
+        for (const [key, value] of Object.entries(filters.values)) {
+          if (value === undefined || value === null || value === "") continue;
+          const filterKeyLower = key.toLowerCase();
+          const filterValueLower = value.toLowerCase();
+          if (
+            !note.values ||
+            !Object.entries(note.values).some(
+              ([noteValKey, noteVal]) =>
+                noteValKey.toLowerCase() === filterKeyLower &&
+                noteVal.toLowerCase().includes(filterValueLower),
+            )
+          ) {
+            matchesFilters = false;
+            break;
+          }
+        }
+      }
+      if (matchesFilters && filters.fields) {
+        for (const [key, value] of Object.entries(filters.fields)) {
+          if (value === undefined || value === null || value === "") continue;
+          const filterKeyLower = key.toLowerCase();
+          const filterValueLower = String(value).toLowerCase();
+          if (
+            !note.fields ||
+            !Object.entries(note.fields).some(
+              ([noteFieldKey, noteFieldValue]) =>
+                noteFieldKey.toLowerCase() === filterKeyLower &&
+                String(noteFieldValue).toLowerCase().includes(filterValueLower),
+            )
+          ) {
+            matchesFilters = false;
+            break;
+          }
+        }
+      }
+
+      if (!matchesFilters) {
+        continue; // Skip to next note if it doesn't pass strict filters
       }
 
       // If no full-text query after passing structured filters, it's a match
@@ -95,18 +154,58 @@ export class NoteService {
         continue;
       }
 
-      // Score the note based on the query
-      const { textScore, embeddingScore } = this.scoreNote(
-        note,
-        normalizedQuery,
-        textSearchSemanticTagsSet,
-        queryEmbedding,
-        aiMatchingSensitivity,
-      );
+      let textMatchScore = 0;
+      if (note.title.toLowerCase().includes(normalizedQuery))
+        textMatchScore += 2; // Higher weight for title
+      if (note.content.toLowerCase().includes(normalizedQuery))
+        textMatchScore += 1;
+      if (
+        textSearchSemanticTagsSet.size > 0 &&
+        note.tags &&
+        note.tags.some((tag) =>
+          textSearchSemanticTagsSet.has(tag.toLowerCase()),
+        )
+      ) {
+        textMatchScore += 1.5; // Semantic tag match
+      }
+      if (
+        note.values &&
+        Object.entries(note.values).some(
+          ([key, value]) =>
+            key.toLowerCase().includes(normalizedQuery) ||
+            value.toLowerCase().includes(normalizedQuery),
+        )
+      ) {
+        textMatchScore += 0.5;
+      }
+      if (
+        note.fields &&
+        Object.entries(note.fields).some(
+          ([key, value]) =>
+            key.toLowerCase().includes(normalizedQuery) ||
+            String(value).toLowerCase().includes(normalizedQuery),
+        )
+      ) {
+        textMatchScore += 0.5;
+      }
 
-      const totalScore = textScore + embeddingScore;
+      let embeddingSimilarityScore = 0;
+      if (queryEmbedding && note.embedding && note.embedding.length > 0) {
+        const similarity = this.cosineSimilarity(
+          queryEmbedding,
+          note.embedding,
+        );
+        if (similarity >= aiMatchingSensitivity) {
+          embeddingSimilarityScore = similarity * 2; // Weight embedding similarity
+        }
+      }
+
+      // Combine scores: A note is included if it has any text match OR a strong embedding match.
+      // The score helps in ranking.
+      const totalScore = textMatchScore + embeddingSimilarityScore;
 
       if (totalScore > 0) {
+        // Check if note is already added to avoid duplicates if logic changes
         if (!matchedNotes.find((n) => n.id === note.id)) {
           matchedNotes.push({ ...note, searchScore: totalScore });
         }
@@ -118,131 +217,6 @@ export class NoteService {
 
     // Remove searchScore before returning
     return matchedNotes.map(({ searchScore, ...note }) => note);
-  }
-
-  private static scoreNote(
-    note: Note,
-    normalizedQuery: string,
-    textSearchSemanticTagsSet: Set<string>,
-    queryEmbedding: number[] | null,
-    aiMatchingSensitivity: number,
-  ): { textScore: number; embeddingScore: number } {
-    const weights = {
-      title: 2,
-      content: 1,
-      semanticTag: 1.5,
-      value: 0.5,
-      field: 0.5,
-      embedding: 2,
-    };
-
-    let textScore = 0;
-    if (note.title.toLowerCase().includes(normalizedQuery)) {
-      textScore += weights.title;
-    }
-    if (note.content.toLowerCase().includes(normalizedQuery)) {
-      textScore += weights.content;
-    }
-    if (
-      textSearchSemanticTagsSet.size > 0 &&
-      note.tags &&
-      note.tags.some((tag) =>
-        textSearchSemanticTagsSet.has(tag.toLowerCase()),
-      )
-    ) {
-      textScore += weights.semanticTag;
-    }
-    if (
-      note.values &&
-      Object.entries(note.values).some(
-        ([key, value]) =>
-          key.toLowerCase().includes(normalizedQuery) ||
-          value.toLowerCase().includes(normalizedQuery),
-      )
-    ) {
-      textScore += weights.value;
-    }
-    if (
-      note.fields &&
-      Object.entries(note.fields).some(
-        ([key, value]) =>
-          key.toLowerCase().includes(normalizedQuery) ||
-          String(value).toLowerCase().includes(normalizedQuery),
-      )
-    ) {
-      textScore += weights.field;
-    }
-
-    let embeddingScore = 0;
-    if (queryEmbedding && note.embedding && note.embedding.length > 0) {
-      const similarity = this.cosineSimilarity(
-        queryEmbedding,
-        note.embedding,
-      );
-      if (similarity >= aiMatchingSensitivity) {
-        embeddingScore = similarity * weights.embedding;
-      }
-    }
-
-    return { textScore, embeddingScore };
-  }
-
-  private static noteMatchesFilters(
-    note: Note,
-    filters: SearchFilters,
-    filterSemanticTagsSet: Set<string>,
-  ): boolean {
-    if (filters.status && note.status !== filters.status) {
-      return false;
-    }
-    if (filters.folderId && note.folderId !== filters.folderId) {
-      return false;
-    }
-    if (filterSemanticTagsSet.size > 0) {
-      if (
-        !note.tags ||
-        !note.tags.some((noteTag) =>
-          filterSemanticTagsSet.has(noteTag.toLowerCase()),
-        )
-      ) {
-        return false;
-      }
-    }
-    if (filters.values) {
-      for (const [key, value] of Object.entries(filters.values)) {
-        if (value === undefined || value === null || value === "") continue;
-        const filterKeyLower = key.toLowerCase();
-        const filterValueLower = value.toLowerCase();
-        if (
-          !note.values ||
-          !Object.entries(note.values).some(
-            ([noteValKey, noteVal]) =>
-              noteValKey.toLowerCase() === filterKeyLower &&
-              noteVal.toLowerCase().includes(filterValueLower),
-          )
-        ) {
-          return false;
-        }
-      }
-    }
-    if (filters.fields) {
-      for (const [key, value] of Object.entries(filters.fields)) {
-        if (value === undefined || value === null || value === "") continue;
-        const filterKeyLower = key.toLowerCase();
-        const filterValueLower = String(value).toLowerCase();
-        if (
-          !note.fields ||
-          !Object.entries(note.fields).some(
-            ([noteFieldKey, noteFieldValue]) =>
-              noteFieldKey.toLowerCase() === filterKeyLower &&
-              String(noteFieldValue).toLowerCase().includes(filterValueLower),
-          )
-        ) {
-          return false;
-        }
-      }
-    }
-    return true;
   }
 
   // Basic CRUD operations
@@ -316,6 +290,10 @@ export class NoteService {
     id: string,
     updates: Partial<Note>,
   ): Promise<Note | null> {
+    const { userProfile } = useAppStore.getState();
+    if (id === userProfile?.profileNoteId && updates.hasOwnProperty('tags')) {
+      throw new Error("Cannot change the tags of a profile note.");
+    }
     const note = await DBService.getNote(id);
     if (!note) return null;
 
@@ -335,6 +313,10 @@ export class NoteService {
   }
 
   static async deleteNote(id: string): Promise<void> {
+    const { userProfile } = useAppStore.getState();
+    if (id === userProfile?.profileNoteId) {
+      throw new Error("Cannot delete a profile note.");
+    }
     await DBService.deleteNote(id);
   }
 

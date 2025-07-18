@@ -4,6 +4,7 @@ import { Editor } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
 import Mention from "@tiptap/extension-mention";
 import { SemanticTag } from "../extensions/SemanticTag";
+import { Property } from "../extensions/Property";
 import { suggestion } from "../lib/suggestion";
 import "./NoteEditor.css";
 import { createButton } from "./Button";
@@ -13,12 +14,18 @@ import { templates } from "../lib/templates";
 import { AIService } from "../services/AIService";
 import { Note } from "../../shared/types";
 
-export function createNoteEditor(): HTMLElement {
+export function createNoteEditor(noteId?: string): HTMLElement {
   const { currentNoteId, notes, updateNote, userProfile } =
     useAppStore.getState();
-  const note: Note | null = currentNoteId ? notes[currentNoteId] : null;
+  const id = noteId || currentNoteId;
+  if (!id) {
+    const container = document.createElement("div");
+    container.textContent = "No note selected.";
+    return container;
+  }
+  const note: Note | null = notes[id]
+  const aiEnabled = userProfile?.preferences?.aiEnabled || false;
   const aiService = useAppStore.getState().getAIService();
-  const aiEnabled = aiService.isAIEnabled();
 
   const editorLayout = document.createElement("div");
   editorLayout.className = "note-editor-layout";
@@ -31,6 +38,17 @@ export function createNoteEditor(): HTMLElement {
     editorLayout.appendChild(mainEditorContainer);
     return editorLayout;
   }
+
+  let metadataSidebar = createMetadataSidebar();
+  metadataSidebar.classList.add("hidden");
+
+  const toggleSidebarButton = createButton({
+    label: "Metadata",
+    onClick: () => {
+      metadataSidebar.classList.toggle("hidden");
+    },
+    variant: "secondary",
+  });
 
   // Title Input
   const titleInput = document.createElement("input");
@@ -52,6 +70,7 @@ export function createNoteEditor(): HTMLElement {
     extensions: [
       StarterKit,
       SemanticTag,
+      Property,
       Mention.configure({
         HTMLAttributes: {
           class: "mention",
@@ -85,68 +104,116 @@ export function createNoteEditor(): HTMLElement {
         },
       }),
     ],
-    content: note.content,
+    content: {
+      type: "doc",
+      content: [
+        ...Object.entries(note.values || {}).map(([key, value]) => ({
+          type: "property",
+          attrs: { key },
+          content: [{ type: "text", text: String(value) }],
+        })),
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: note.content }],
+        },
+      ],
+    },
     onUpdate: ({ editor }) => {
-      updateNote(note.id, { content: editor.getHTML() });
+      const json = editor.getJSON();
+      const properties: { [key: string]: any } = {};
+      let content = "";
+
+      const html = editor.getHTML();
+      const tempDiv = document.createElement("div");
+      tempDiv.innerHTML = html;
+
+      const properties: { [key: string]: any } = {};
+      const contentNodes = [];
+
+      tempDiv.childNodes.forEach((node) => {
+        if (
+          node.nodeType === Node.ELEMENT_NODE &&
+          (node as HTMLElement).dataset.property
+        ) {
+          const key = (node as HTMLElement).dataset.property;
+          properties[key] = node.textContent?.split(":: ")[1] || "";
+        } else {
+          contentNodes.push(node.cloneNode(true));
+        }
+      });
+
+      const contentDiv = document.createElement("div");
+      contentNodes.forEach((node) => contentDiv.appendChild(node));
+
+      updateNote(note.id, {
+        content: contentDiv.innerHTML,
+        values: properties,
+      });
     },
   });
+
+  useAppStore.subscribe(
+    (state) => state.notes[state.currentNoteId as string],
+    (newNote, oldNote) => {
+      if (newNote?.content !== oldNote?.content && newNote?.content !== editor.getHTML()) {
+        editor.commands.setContent(newNote.content, false);
+      }
+      if (newNote?.values !== oldNote?.values || newNote?.fields !== oldNote?.fields) {
+        const newSidebar = createMetadataSidebar();
+        newSidebar.classList.toggle("hidden", metadataSidebar.classList.contains("hidden"));
+        editorLayout.replaceChild(newSidebar, metadataSidebar);
+        metadataSidebar = newSidebar;
+      }
+    },
+  );
 
   // Toolbar
   const toolbar = document.createElement("div");
   toolbar.className = "editor-toolbar";
 
-  // Template Selector
-  const templateSelector = document.createElement("select");
-  templateSelector.className = "template-selector";
-  const defaultOption = document.createElement("option");
-  defaultOption.textContent = "Select a template";
-  defaultOption.value = "";
-  templateSelector.appendChild(defaultOption);
+  // Template Buttons
+  const templateButtons = document.createElement("div");
+  templateButtons.className = "template-buttons";
 
   templates.forEach((template) => {
-    const option = document.createElement("option");
-    option.value = template.id;
-    option.textContent = template.name;
-    templateSelector.appendChild(option);
+    const button = createButton({
+      label: template.name,
+      onClick: () => {
+        let templateContent = `<h1>${template.name}</h1>`;
+        templateContent += `<p><em>${template.description}</em></p>`;
+
+        // Add default content based on template type
+        if (template.id === "meeting-note") {
+          templateContent +=
+            "<h2>Meeting Agenda</h2><ul><li></li></ul><h2>Attendees</h2><ul><li></li></ul><h2>Notes</h2><p></p>";
+        } else if (template.id === "project-plan") {
+          templateContent +=
+            "<h2>Project Overview</h2><p></p><h2>Goals</h2><ul><li></li></ul><h2>Timeline</h2><p></p>";
+        } else if (template.id === "daily-note") {
+          templateContent +=
+            "<h2>Today's Highlights</h2><p></p><h2>Tasks</h2><ul><li></li></ul><h2>Reflections</h2><p></p>";
+        }
+
+        editor.commands.insertContent(templateContent);
+
+        // Create fields object from template fields
+        const fields: { [key: string]: string } = {};
+        template.fields.forEach((field) => {
+          fields[field.name] = field.defaultValue || "";
+        });
+
+        // Apply template data
+        updateNote(note.id, {
+          fields,
+          tags: [...note.tags, ...template.defaultTags],
+          values: { ...note.values, ...template.defaultValues },
+        });
+      },
+      variant: "secondary",
+    });
+    templateButtons.appendChild(button);
   });
-
-  templateSelector.onchange = (e) => {
-    const selectedTemplateId = (e.target as HTMLSelectElement).value;
-    const selectedTemplate = templates.find((t) => t.id === selectedTemplateId);
-    if (selectedTemplate) {
-      // Apply template content based on template structure
-      let templateContent = `<h1>${selectedTemplate.name}</h1>`;
-      templateContent += `<p><em>${selectedTemplate.description}</em></p>`;
-
-      // Add default content based on template type
-      if (selectedTemplate.id === "meeting-note") {
-        templateContent +=
-          "<h2>Meeting Agenda</h2><ul><li></li></ul><h2>Attendees</h2><ul><li></li></ul><h2>Notes</h2><p></p>";
-      } else if (selectedTemplate.id === "project-plan") {
-        templateContent +=
-          "<h2>Project Overview</h2><p></p><h2>Goals</h2><ul><li></li></ul><h2>Timeline</h2><p></p>";
-      } else if (selectedTemplate.id === "daily-note") {
-        templateContent +=
-          "<h2>Today's Highlights</h2><p></p><h2>Tasks</h2><ul><li></li></ul><h2>Reflections</h2><p></p>";
-      }
-
-      editor.commands.setContent(templateContent);
-
-      // Create fields object from template fields
-      const fields: { [key: string]: string } = {};
-      selectedTemplate.fields.forEach((field) => {
-        fields[field.name] = field.defaultValue || "";
-      });
-
-      // Apply template data
-      updateNote(note.id, {
-        fields,
-        tags: [...note.tags, ...selectedTemplate.defaultTags],
-        values: { ...note.values, ...selectedTemplate.defaultValues },
-      });
-    }
-  };
-  toolbar.appendChild(templateSelector);
+  toolbar.appendChild(templateButtons);
 
   const boldButton = createButton({
     label: "Bold",
@@ -312,6 +379,7 @@ export function createNoteEditor(): HTMLElement {
     disabled: !aiEnabled,
   });
   toolbar.appendChild(generateContentButton);
+  toolbar.appendChild(toggleSidebarButton);
 
   mainEditorContainer.insertBefore(toolbar, editorElement);
 
@@ -352,9 +420,6 @@ export function createNoteEditor(): HTMLElement {
   toolbar.appendChild(shareButton);
 
   mainEditorContainer.insertBefore(toolbar, editorElement);
-
-  // Metadata Sidebar
-  const metadataSidebar = createMetadataSidebar();
 
   editorLayout.appendChild(mainEditorContainer);
   editorLayout.appendChild(metadataSidebar);

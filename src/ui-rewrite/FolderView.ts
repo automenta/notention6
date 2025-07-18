@@ -6,32 +6,46 @@ import { Folder } from "../../shared/types";
 import { FolderService } from "../services/FolderService";
 
 function renderFolder(folder: Folder, allFolders: { [id: string]: Folder }): HTMLElement {
-    const { updateFolder, deleteFolder, getNotesByFolder, setSelectedFolder } = useAppStore.getState();
+    const { updateFolder, deleteFolder, getNotesByFolder, moveFolder } = useAppStore.getState();
 
     const listItem = document.createElement("li");
     listItem.className = "folder-list-item";
     listItem.setAttribute("data-folder-id", folder.id);
+    listItem.setAttribute("draggable", "true");
 
-    const folderContent = document.createElement("div");
-    folderContent.className = "folder-content";
-    folderContent.addEventListener('click', () => {
-        setSelectedFolder(folder.id);
+    listItem.addEventListener("dragstart", (e) => {
+        e.dataTransfer!.setData("text/plain", folder.id);
+        e.dataTransfer!.effectAllowed = "move";
+    });
+
+    listItem.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        listItem.classList.add("drag-over");
+    });
+
+    listItem.addEventListener("dragleave", () => {
+        listItem.classList.remove("drag-over");
+    });
+
+    listItem.addEventListener("drop", (e) => {
+        e.preventDefault();
+        listItem.classList.remove("drag-over");
+        const draggedFolderId = e.dataTransfer!.getData("text/plain");
+        const targetFolderId = folder.id;
+        if (draggedFolderId !== targetFolderId) {
+            moveFolder(draggedFolderId, targetFolderId);
+        }
     });
 
     const folderName = document.createElement("span");
     folderName.textContent = folder.name;
-    folderContent.appendChild(folderName);
+    listItem.appendChild(folderName);
 
     const noteCount = document.createElement("span");
     noteCount.className = "note-count";
     const notesInFolder = getNotesByFolder ? getNotesByFolder(folder.id) : [];
     noteCount.textContent = `(${notesInFolder.length})`;
-    folderContent.appendChild(noteCount);
-
-    listItem.appendChild(folderContent);
-
-    const controls = document.createElement("div");
-    controls.className = "folder-controls";
+    listItem.appendChild(noteCount);
 
     const editButton = createButton({
         label: "Edit",
@@ -43,7 +57,7 @@ function renderFolder(folder: Folder, allFolders: { [id: string]: Folder }): HTM
         },
         variant: "secondary",
     });
-    controls.appendChild(editButton);
+    listItem.appendChild(editButton);
 
     const deleteButton = createButton({
         label: "Delete",
@@ -54,16 +68,16 @@ function renderFolder(folder: Folder, allFolders: { [id: string]: Folder }): HTM
         },
         variant: "danger",
     });
-    controls.appendChild(deleteButton);
+    listItem.appendChild(deleteButton);
 
-    listItem.appendChild(controls);
-
-    const childNodes = (folder as any).childrenNodes;
-    if (childNodes && childNodes.length > 0) {
+    if (folder.children && folder.children.length > 0) {
         const childList = document.createElement("ul");
-        childList.className = "folder-list-nested";
-        childNodes.forEach((childFolder: Folder) => {
-            childList.appendChild(renderFolder(childFolder, allFolders));
+        childList.className = "folder-list";
+        folder.children.forEach(childId => {
+            const childFolder = allFolders[childId];
+            if (childFolder) {
+                childList.appendChild(renderFolder(childFolder, allFolders));
+            }
         });
         listItem.appendChild(childList);
     }
@@ -72,7 +86,7 @@ function renderFolder(folder: Folder, allFolders: { [id: string]: Folder }): HTM
 }
 
 export function createFolderView(): HTMLElement {
-    const { folders, createFolder, setSelectedFolder } = useAppStore.getState();
+    const { folders, createFolder } = useAppStore.getState();
 
     const container = document.createElement("div");
     container.className = "folder-view-container";
@@ -82,16 +96,6 @@ export function createFolderView(): HTMLElement {
     const title = document.createElement("h1");
     title.textContent = "Folders";
     header.appendChild(title);
-
-    const allNotesButton = createButton({
-        label: "All Notes",
-        onClick: () => {
-            setSelectedFolder(undefined);
-        },
-        variant: "secondary",
-    });
-    header.appendChild(allNotesButton);
-
     container.appendChild(header);
 
     const folderList = document.createElement("ul");

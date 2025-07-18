@@ -6,9 +6,11 @@ import { createAccountWizard } from "./AccountWizard";
 import { createDashboard } from "./Dashboard";
 import { createNotesList } from "./NotesList";
 import { createNoteEditor } from "./NoteEditor";
+import { createProfileEditor } from "./ProfileEditor";
 import { createOntologyEditor } from "./OntologyEditor";
 import { createFolderView } from "./FolderView";
 import { createNetworkPanel } from "./NetworkPanel";
+import { createMatchesPanel } from "./MatchesPanel";
 import { createContactsView } from "./ContactsView";
 import { createChatPanel } from "./ChatPanel";
 import { createSettings } from "./Settings";
@@ -24,11 +26,28 @@ function profileExists(profile: any): profile is { nostrPubkey: string } {
   );
 }
 
+function applyTheme() {
+  const { userProfile } = useAppStore.getState();
+  const theme = userProfile?.preferences.theme || "system";
+  if (
+    theme === "dark" ||
+    (theme === "system" &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches)
+  ) {
+    document.documentElement.setAttribute("data-theme", "dark");
+  } else {
+    document.documentElement.removeAttribute("data-theme");
+  }
+}
+
 export function renderApp(rootElement: HTMLElement) {
   // Initial render function
   const render = () => {
     const state = useAppStore.getState();
     const { userProfile, sidebarTab, sidebarCollapsed, currentNoteId } = state;
+
+    // Apply the theme
+    applyTheme();
 
     // Clear the root element
     rootElement.innerHTML = "";
@@ -81,6 +100,9 @@ export function renderApp(rootElement: HTMLElement) {
           case "notes":
             currentView = createNotesList();
             break;
+          case "profile":
+            currentView = createProfileEditor();
+            break;
           case "folders":
             currentView = createFolderView();
             break;
@@ -89,6 +111,9 @@ export function renderApp(rootElement: HTMLElement) {
             break;
           case "network":
             currentView = createNetworkPanel();
+            break;
+          case "matches":
+            currentView = createMatchesPanel();
             break;
           case "contacts":
             currentView = createContactsView();

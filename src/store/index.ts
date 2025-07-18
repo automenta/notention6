@@ -20,6 +20,7 @@ import { OntologyService } from "../services/ontology"; // Added OntologyService
 import { NoteService } from "../services/NoteService";
 import { nostrService, NostrService } from "../services/NostrService"; // Import NostrService
 import { AIService } from "../services/AIService";
+import { networkService, NetworkService } from "../services/NetworkService";
 import { Filter } from "nostr-tools";
 
 interface AppActions {
@@ -38,11 +39,15 @@ interface AppActions {
     folderId: string | undefined,
   ) => Promise<void>;
 
+  // Notes actions
+  importNotes: (notes: Note[]) => Promise<void>;
+
   // Ontology actions
   setOntology: (ontology: OntologyTree) => Promise<void>;
 
   // User profile actions
   updateUserProfile: (profileUpdates: Partial<UserProfile>) => Promise<void>;
+  createProfileNote: () => Promise<void>;
   generateAndStoreNostrKeys: (
     privateKey?: string,
     publicKey?: string,
@@ -74,7 +79,6 @@ interface AppActions {
   setEditorContent: (content: string) => void;
   setIsEditing: (editing: boolean) => void;
   setNoteView: (view: AppState["noteView"]) => void;
-  setSelectedFolder: (folderId: string | undefined) => void;
 
   // Loading and error actions
   setLoading: (key: keyof AppState["loading"], loading: boolean) => void;
@@ -95,7 +99,6 @@ interface AppActions {
   subscribeToPublicNotes: (relays?: string[]) => string | null; // Returns subscription ID or null
   subscribeToTopic: (topic: string, relays?: string[]) => string | null; // Returns subscription ID
   unsubscribeFromNostr: (subscriptionId: string | any) => void; // Accepts ID or subscription object
-  addNostrMatch: (match: Match) => void;
   addDirectMessage: (message: DirectMessage) => void;
   setNostrRelays: (relays: string[]) => Promise<void>;
   addNostrRelay: (relay: string) => Promise<void>;
@@ -136,6 +139,9 @@ interface AppActions {
   ) => void;
   updateUserProfile: (profileUpdates: Partial<UserProfile>) => Promise<void>;
 
+  // Folders actions
+  moveFolder: (folderId: string, targetFolderId: string) => Promise<void>;
+
   // AI Service
   getAIService: () => AIService;
 
@@ -145,6 +151,7 @@ interface AppActions {
   // Nostr
   addMatch: (match: Match) => void;
   nostrService: NostrService;
+  networkService: NetworkService;
 
   // Theme
   setTheme: (theme: "light" | "dark" | "system") => void;
@@ -233,7 +240,6 @@ export const useAppStore = create<AppStore>((set, get) => ({
   searchQuery: "",
   searchFilters: {},
   noteView: "all",
-  selectedFolderId: undefined,
 
   matches: [],
   directMessages: [],
@@ -402,6 +408,12 @@ export const useAppStore = create<AppStore>((set, get) => ({
       if (isOnline() && get().userProfile?.nostrPubkey) {
         console.log("Attempting initial sync with Nostr...");
         await get().syncWithNostr(true); // Force full sync on init
+      }
+
+      // Start network matching
+      if (isOnline() && get().userProfile?.nostrPubkey) {
+        const { ontology, notes, networkService } = get();
+        networkService.startMatching(ontology, Object.values(notes));
       }
     } catch (error: any) {
       console.error("Failed to initialize app:", error);
@@ -731,10 +743,19 @@ export const useAppStore = create<AppStore>((set, get) => ({
     set((state) => ({ searchFilters: { ...state.searchFilters, ...filters } }));
   },
 
+  importNotes: async (notesToImport: Note[]) => {
+    const { notes } = get();
+    const newNotes = { ...notes };
+    for (const note of notesToImport) {
+      newNotes[note.id] = note;
+      await DBService.saveNote(note);
+    }
+    set({ notes: newNotes });
+  },
+
   setOntology: async (ontologyData: OntologyTree) => {
-    // DBService.saveOntology now sets updatedAt
     await DBService.saveOntology(ontologyData);
-    const savedOntology = await DBService.getOntology(); // Re-fetch to get with updated timestamp
+    const savedOntology = await DBService.getOntology();
     set({ ontology: savedOntology || ontologyData });
 
     if (isOnline() && get().userProfile?.nostrPubkey) {
@@ -945,10 +966,6 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
   setNoteView: (view: AppState["noteView"]) => {
     set({ noteView: view });
-  },
-
-  setSelectedFolder: (folderId: string | undefined) => {
-    set({ selectedFolderId: folderId });
   },
 
   setLoading: (key: keyof AppState["loading"], loading: boolean) => {
@@ -1395,10 +1412,6 @@ export const useAppStore = create<AppStore>((set, get) => ({
     }
   },
 
-  addNostrMatch: (match: Match) => {
-    set((state) => ({ matches: [...state.matches, match] })); // Basic add, consider deduplication or sorting
-  },
-
   addDirectMessage: (message: DirectMessage) => {
     set((state) => ({ directMessages: [...state.directMessages, message] })); // Basic add
     // TODO: Decrypt if necessary and if keys are available
@@ -1672,14 +1685,14 @@ export const useAppStore = create<AppStore>((set, get) => ({
                 bestTagMatchForThisPair.similarity
               ) {
                 state.matches.splice(oldTagMatchIndex, 1);
-                state.addNostrMatch(bestTagMatchForThisPair);
+                state.addMatch(bestTagMatchForThisPair);
                 console.log(
                   "Updated ontology-aware tag match (better similarity):",
                   bestTagMatchForThisPair,
                 );
               }
             } else {
-              state.addNostrMatch(bestTagMatchForThisPair);
+              state.addMatch(bestTagMatchForThisPair);
               console.log(
                 "New ontology-aware tag match found:",
                 bestTagMatchForThisPair,
@@ -1742,14 +1755,14 @@ export const useAppStore = create<AppStore>((set, get) => ({
                       similarity
                     ) {
                       state.matches.splice(existingEmbeddingMatchIndex, 1);
-                      state.addNostrMatch(embeddingMatch);
+                      state.addMatch(embeddingMatch);
                       console.log(
                         "Updated Nostr embedding match (better similarity):",
                         embeddingMatch,
                       );
                     }
                   } else {
-                    state.addNostrMatch(embeddingMatch);
+                    state.addMatch(embeddingMatch);
                     console.log(
                       "New Nostr embedding match found:",
                       embeddingMatch,
@@ -2395,6 +2408,11 @@ export const useAppStore = create<AppStore>((set, get) => ({
     setOntology(newOntology);
   },
 
+  moveFolder: async (folderId: string, targetFolderId: string) => {
+    const { updateFolder } = get();
+    await updateFolder(folderId, { parentId: targetFolderId });
+  },
+
   updateUserProfile: async (profileUpdates: Partial<UserProfile>) => {
     const { userProfile } = get();
     if (userProfile) {
@@ -2403,6 +2421,18 @@ export const useAppStore = create<AppStore>((set, get) => ({
       set({ userProfile: updatedProfile });
       aiService.preferences = updatedProfile.preferences;
       aiService.reinitializeModels();
+    }
+  },
+
+  createProfileNote: async () => {
+    const { createNote, updateUserProfile, userProfile } = get();
+    if (userProfile && !userProfile.profileNoteId) {
+      const noteId = await createNote({
+        title: "User Profile",
+        tags: ["#profile"],
+        content: "This is your user profile.",
+      });
+      await updateUserProfile({ profileNoteId: noteId });
     }
   },
 
@@ -2435,6 +2465,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
   },
 
   nostrService: nostrService,
+  networkService: networkService,
 
   setTheme: (theme: "light" | "dark" | "system") => {
     const { userProfile, updateUserProfile } = get();

@@ -1,4 +1,6 @@
 import { UserProfile, OntologyTree, OntologyNode } from "../../shared/types";
+import { ChatOllama } from "@langchain/ollama";
+import { OllamaEmbeddings } from "@langchain/ollama";
 
 type AIPreferences = UserProfile["preferences"];
 
@@ -186,6 +188,64 @@ Provide tags in the format: #tag1, #tag2, #tag3 (max 5 tags)`;
   }
 }
 
+class OllamaAIProvider implements AIProvider {
+  private chatModel: ChatOllama;
+  private embeddingModel: OllamaEmbeddings;
+
+  constructor(apiUrl: string) {
+    this.chatModel = new ChatOllama({
+      baseUrl: apiUrl,
+      model: "llama3",
+    });
+    this.embeddingModel = new OllamaEmbeddings({
+      baseUrl: apiUrl,
+      model: "llama3",
+    });
+  }
+
+  async generateEmbedding(text: string): Promise<number[]> {
+    try {
+      return await this.embeddingModel.embedQuery(text);
+    } catch (error) {
+      console.error("Ollama embedding generation failed:", error);
+      return new FallbackAIProvider().generateEmbedding(text);
+    }
+  }
+
+  async generateText(prompt: string): Promise<string> {
+    try {
+      const response = await this.chatModel.invoke(prompt);
+      return response.content.toString();
+    } catch (error) {
+      console.error("Ollama text generation failed:", error);
+      return new FallbackAIProvider().generateText(prompt);
+    }
+  }
+
+  async extractTags(text: string, ontology?: OntologyTree): Promise<string[]> {
+    const ontologyContext = ontology
+      ? `Available tags in ontology: ${Object.values(ontology.nodes)
+          .map((n) => n.label)
+          .join(", ")}`
+      : "";
+
+    const prompt = `Analyze the following text and suggest relevant tags. ${ontologyContext}
+
+Text: ${text}
+
+Provide tags in the format: #tag1, #tag2, #tag3 (max 5 tags)`;
+
+    try {
+      const response = await this.generateText(prompt);
+      const tags = response.match(/#\w+/g) || [];
+      return tags.slice(0, 5);
+    } catch (error) {
+      console.error("Ollama tag extraction failed:", error);
+      return new FallbackAIProvider().extractTags(text, ontology);
+    }
+  }
+}
+
 export class AIService {
   public preferences: AIPreferences | undefined;
   private provider: AIProvider;
@@ -201,6 +261,12 @@ export class AIService {
       this.preferences?.geminiApiKey
     ) {
       return new GeminiAIProvider(this.preferences.geminiApiKey);
+    }
+    if (
+      this.preferences?.aiProvider === "ollama" &&
+      this.preferences?.ollamaApiUrl
+    ) {
+      return new OllamaAIProvider(this.preferences.ollamaApiUrl);
     }
     // Default to fallback provider
     return new FallbackAIProvider();

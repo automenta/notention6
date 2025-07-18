@@ -13,8 +13,6 @@ export function createNetworkPanel(): HTMLElement {
     removeNostrRelay,
     nostrService: appNostrService,
     addMatch,
-    subscribeToPublicNotes,
-    handleIncomingNostrEvent,
   } = useAppStore.getState();
 
   const container = document.createElement("div");
@@ -63,37 +61,49 @@ export function createNetworkPanel(): HTMLElement {
     }
   };
 
-  subscribeToPublicNotes();
+  const nostr = appNostrService || nostrService;
 
-  useAppStore.subscribe(
-    (state) => state.matches,
-    (newMatches) => {
-      renderMatches(matchesList, newMatches);
-    },
-  );
+  // This flag prevents re-subscribing on every render
+  let isSubscribed = false;
 
-  useAppStore.subscribe(
-    (state) => state.topicNotes,
-    (newTopicNotes) => {
-      const publicFeedNotes = newTopicNotes["public"] || [];
-      state.publicFeedNotes = publicFeedNotes.map((event) => ({
-        id: event.id,
-        title: event.tags.find((t) => t[0] === "title")?.[1] || "Untitled",
-        content: event.content,
-        createdAt: new Date(event.created_at * 1000),
-        updatedAt: new Date(event.created_at * 1000),
-        status: "published",
-        tags: event.tags.filter((t) => t[0] === "t").map((t) => `#${t[1]}`),
-        values: {},
-        fields: {},
-        pinned: false,
-        archived: false,
-      }));
-      renderPublicFeed();
-    },
-  );
+  if (!isSubscribed) {
+    isSubscribed = true;
 
-  renderPublicFeed();
+    state.publicFeedNotes = [];
+
+    nostr.subscribeToEvents(
+      [{ kinds: [1], limit: 20 }],
+      (event) => {
+          const note: Note = {
+              id: event.id,
+              title: event.tags.find(t => t[0] === 'title')?.[1] || 'Untitled',
+              content: event.content,
+              createdAt: new Date(event.created_at * 1000),
+              updatedAt: new Date(event.created_at * 1000),
+              status: 'published',
+              tags: event.tags.filter(t => t[0] === 't').map(t => `#${t[1]}`),
+              values: {},
+              fields: {},
+              pinned: false,
+              archived: false,
+          };
+          state.publicFeedNotes = [...state.publicFeedNotes, note];
+          renderPublicFeed();
+      }
+    );
+
+    renderPublicFeed();
+
+    const { ontology, notes } = useAppStore.getState();
+    const allNotes = Object.values(notes);
+    nostr.findMatchingNotes(ontology, (localNote, remoteNote, similarity) => {
+      addMatch({
+          localNoteId: localNote.id,
+          targetNoteId: remoteNote.id,
+          similarity,
+      });
+    }, allNotes);
+  }
 
   // Matches Section
   const matchesContainer = document.createElement("div");
@@ -105,26 +115,21 @@ export function createNetworkPanel(): HTMLElement {
   const matchesList = document.createElement("ul");
   matchesList.className = "matches-list";
 
-  function renderMatches(listElement: HTMLElement, matches: Match[]) {
-    listElement.innerHTML = "";
-    if (matches.length > 0) {
-      matches.forEach((match) => {
-        const listItem = document.createElement("li");
-        listItem.className = "match-item";
-        listItem.innerHTML = `
-          <p>Match for note: <strong>${match.localNoteId}</strong> with <strong>${match.targetNoteId}</strong></p>
-          <span>Similarity: ${match.similarity.toFixed(2)}</span>
-        `;
-        listElement.appendChild(listItem);
-      });
-    } else {
-      const noMatchesMessage = document.createElement("p");
-      noMatchesMessage.textContent = "No matches found.";
-      listElement.appendChild(noMatchesMessage);
-    }
+  if (matches.length > 0) {
+    matches.forEach((match) => {
+      const listItem = document.createElement("li");
+      listItem.className = "match-item";
+      listItem.innerHTML = `
+        <p>Match for note: <strong>${match.localNoteId}</strong> with <strong>${match.targetNoteId}</strong></p>
+        <span>Similarity: ${match.similarity.toFixed(2)}</span>
+      `;
+      matchesList.appendChild(listItem);
+    });
+  } else {
+    const noMatchesMessage = document.createElement("p");
+    noMatchesMessage.textContent = "No matches found.";
+    matchesList.appendChild(noMatchesMessage);
   }
-
-  renderMatches(matchesList, matches);
   matchesContainer.appendChild(matchesList);
   container.appendChild(matchesContainer);
 
@@ -184,6 +189,75 @@ export function createNetworkPanel(): HTMLElement {
 
   relaysContainer.appendChild(addRelayForm);
   container.appendChild(relaysContainer);
+
+  // Topic Channels Section
+  const topicsContainer = document.createElement("div");
+  topicsContainer.className = "topics-container";
+  const topicsTitle = document.createElement("h2");
+  topicsTitle.textContent = "Topic Channels";
+  topicsContainer.appendChild(topicsTitle);
+
+  const addTopicForm = document.createElement("form");
+  addTopicForm.className = "add-topic-form";
+  addTopicForm.onsubmit = (e) => {
+    e.preventDefault();
+    const input = (e.target as HTMLFormElement).elements.namedItem(
+      "topicName",
+    ) as HTMLInputElement;
+    const newTopic = input.value.trim();
+    if (newTopic) {
+      useAppStore.getState().subscribeToTopic(newTopic);
+      input.value = "";
+    }
+  };
+
+  const topicNameInput = document.createElement("input");
+  topicNameInput.type = "text";
+  topicNameInput.name = "topicName";
+  topicNameInput.placeholder = "#topic";
+  addTopicForm.appendChild(topicNameInput);
+
+  const addTopicButton = createButton({
+    label: "Subscribe to Topic",
+    onClick: () => addTopicForm.requestSubmit(),
+    variant: "primary",
+  });
+  addTopicForm.appendChild(addTopicButton);
+  topicsContainer.appendChild(addTopicForm);
+
+  const topicNotesContainer = document.createElement("div");
+  topicNotesContainer.className = "topic-notes-container";
+  topicsContainer.appendChild(topicNotesContainer);
+
+  useAppStore.subscribe(
+    (state) => state.topicNotes,
+    (topicNotes) => {
+      topicNotesContainer.innerHTML = "";
+      for (const topic in topicNotes) {
+        const topicSection = document.createElement("div");
+        topicSection.className = "topic-section";
+        const topicTitle = document.createElement("h3");
+        topicTitle.textContent = topic;
+        topicSection.appendChild(topicTitle);
+
+        const notesList = document.createElement("ul");
+        notesList.className = "topic-notes-list";
+        topicNotes[topic].forEach((note) => {
+          const listItem = document.createElement("li");
+          listItem.className = "feed-item";
+          listItem.innerHTML = `
+            <p><strong>${note.id}</strong></p>
+            <span>${note.content.substring(0, 100)}...</span>
+          `;
+          notesList.appendChild(listItem);
+        });
+        topicSection.appendChild(notesList);
+        topicNotesContainer.appendChild(topicSection);
+      }
+    },
+  );
+
+  container.appendChild(topicsContainer);
 
   return container;
 }

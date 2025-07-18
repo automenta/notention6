@@ -92,8 +92,8 @@
 }
 
 .note-tag {
-  background-color: var(--primary-color);
-  color: white;
+  background-color: var(--tag-bg-color);
+  color: var(--tag-text-color);
   padding: 0.125rem 0.375rem;
   border-radius: 12px;
   font-size: 0.75rem;

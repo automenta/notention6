@@ -15,13 +15,8 @@ export function createNotesList(): HTMLElement {
     setCurrentNote,
     noteView,
     setNoteView,
-    selectedFolderId,
   } = useAppStore.getState();
   let notesArray: Note[] = Object.values(notes);
-
-  if (selectedFolderId) {
-    notesArray = notesArray.filter(note => note.folderId === selectedFolderId);
-  }
 
   const container = document.createElement("div");
   container.className = "notes-list-container";
@@ -78,12 +73,38 @@ export function createNotesList(): HTMLElement {
     onClick: () => {
       const folderName = prompt("Enter new folder name:");
       if (folderName) {
-        createFolder({ name: folderName });
+        createFolder(folderName);
       }
     },
     variant: "secondary",
   });
   searchFilterContainer.appendChild(newFolderButton);
+
+  const tagFilter = document.createElement("select");
+  tagFilter.className = "tag-filter";
+  const defaultOption = document.createElement("option");
+  defaultOption.textContent = "Filter by tag...";
+  defaultOption.value = "";
+  tagFilter.appendChild(defaultOption);
+
+  const allTags = new Set<string>();
+  Object.values(notes).forEach((note) => {
+    note.tags.forEach((tag) => allTags.add(tag));
+  });
+
+  allTags.forEach((tag) => {
+    const option = document.createElement("option");
+    option.value = tag;
+    option.textContent = tag;
+    tagFilter.appendChild(option);
+  });
+
+  tagFilter.onchange = (e) => {
+    const { setSearchFilters } = useAppStore.getState();
+    const selectedTag = (e.target as HTMLSelectElement).value;
+    setSearchFilters({ tags: selectedTag ? [selectedTag] : [] });
+  };
+  searchFilterContainer.appendChild(tagFilter);
 
   container.appendChild(searchFilterContainer);
 
@@ -97,9 +118,10 @@ export function createNotesList(): HTMLElement {
     notesArray = notesArray.filter((note) => note.archived);
   }
 
-  // Use semantic search if there's a query, otherwise use simple filtering
+  // Use semantic search if there's a query or filters, otherwise use simple filtering
   let filteredNotes: Note[] = [];
-  if (searchQuery.trim()) {
+  const { searchFilters } = useAppStore.getState();
+  if (searchQuery.trim() || (searchFilters.tags && searchFilters.tags.length > 0)) {
     // Import NoteService for semantic search
     import("../services/NoteService").then(async ({ NoteService }) => {
       const { ontology } = useAppStore.getState();
@@ -107,7 +129,7 @@ export function createNotesList(): HTMLElement {
         filteredNotes = await NoteService.semanticSearch(
           searchQuery,
           ontology,
-          {},
+          searchFilters,
           notesArray,
         );
         // Re-render the list with search results

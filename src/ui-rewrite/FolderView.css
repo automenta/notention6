@@ -14,31 +14,21 @@
 
 .folder-list-item {
     display: flex;
-    flex-direction: column;
-    padding: 0.5rem;
-    border-bottom: 1px solid #ccc;
-}
-
-.folder-content {
-    display: flex;
-    justify-content: space-between;
     align-items: center;
+    padding: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
 }
 
-.folder-controls {
-    display: flex;
-    gap: 0.5rem;
-    margin-top: 0.5rem;
+.folder-list-item span {
+    flex-grow: 1;
 }
 
 .note-count {
+    font-size: 0.8rem;
+    color: var(--text-color-muted);
     margin-left: 0.5rem;
-    color: #666;
 }
 
-.folder-list-nested {
-    list-style: none;
-    padding-left: 1.5rem;
-    border-left: 1px solid #eee;
-    margin-top: 0.5rem;
+.folder-list-item button {
+    margin-left: 0.5rem;
 }
