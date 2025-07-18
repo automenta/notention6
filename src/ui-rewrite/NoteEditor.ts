@@ -17,8 +17,8 @@ export function createNoteEditor(): HTMLElement {
   const { currentNoteId, notes, updateNote, userProfile } =
     useAppStore.getState();
   const note: Note | null = currentNoteId ? notes[currentNoteId] : null;
-  const aiEnabled = userProfile?.preferences?.aiEnabled || false;
   const aiService = useAppStore.getState().getAIService();
+  const aiEnabled = aiService.isAIEnabled();
 
   const editorLayout = document.createElement("div");
   editorLayout.className = "note-editor-layout";
@@ -315,20 +315,41 @@ export function createNoteEditor(): HTMLElement {
 
   mainEditorContainer.insertBefore(toolbar, editorElement);
 
-  const statusButton = createButton({
-    label: `Status: ${note.status}`,
-    onClick: () => {
-      const newStatus =
-        note.status === "draft"
-          ? "private"
-          : note.status === "private"
-            ? "published"
-            : "draft";
-      updateNote(note.id, { status: newStatus });
-    },
-    variant: "secondary",
+  const statusSelector = document.createElement("select");
+  statusSelector.className = "status-selector";
+  const statuses = ["draft", "private", "published"];
+  statuses.forEach(status => {
+      const option = document.createElement("option");
+      option.value = status;
+      option.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+      if (note.status === status) {
+          option.selected = true;
+      }
+      statusSelector.appendChild(option);
   });
-  toolbar.appendChild(statusButton);
+  statusSelector.onchange = (e) => {
+      const newStatus = (e.target as HTMLSelectElement).value as "draft" | "private" | "published";
+      updateNote(note.id, { status: newStatus });
+  };
+  toolbar.appendChild(statusSelector);
+
+  const shareButton = createButton({
+      label: "Share",
+      onClick: () => {
+          const { publishCurrentNoteToNostr } = useAppStore.getState();
+          if (note.status === 'private') {
+              const recipientPk = prompt("Enter recipient's Nostr public key (npub):");
+              if (recipientPk) {
+                publishCurrentNoteToNostr({ encrypt: true, recipientPk });
+              }
+          } else {
+            publishCurrentNoteToNostr({ encrypt: false });
+          }
+      },
+      variant: "primary",
+      disabled: note.status === 'draft',
+  });
+  toolbar.appendChild(shareButton);
 
   mainEditorContainer.insertBefore(toolbar, editorElement);
 

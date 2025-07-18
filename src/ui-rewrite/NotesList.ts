@@ -15,8 +15,13 @@ export function createNotesList(): HTMLElement {
     setCurrentNote,
     noteView,
     setNoteView,
+    selectedFolderId,
   } = useAppStore.getState();
   let notesArray: Note[] = Object.values(notes);
+
+  if (selectedFolderId) {
+    notesArray = notesArray.filter(note => note.folderId === selectedFolderId);
+  }
 
   const container = document.createElement("div");
   container.className = "notes-list-container";

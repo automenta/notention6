@@ -6,8 +6,16 @@ import { Match, Note } from "../../shared/types";
 import { nostrService } from "../services/NostrService";
 
 export function createNetworkPanel(): HTMLElement {
-  const { matches, nostrRelays, addNostrRelay, removeNostrRelay, nostrService: appNostrService } =
-    useAppStore.getState();
+  const {
+    matches,
+    nostrRelays,
+    addNostrRelay,
+    removeNostrRelay,
+    nostrService: appNostrService,
+    addMatch,
+    subscribeToPublicNotes,
+    handleIncomingNostrEvent,
+  } = useAppStore.getState();
 
   const container = document.createElement("div");
   container.className = "network-panel-container";
@@ -55,40 +63,37 @@ export function createNetworkPanel(): HTMLElement {
     }
   };
 
-  const nostr = appNostrService || nostrService;
+  subscribeToPublicNotes();
 
-  nostr.subscribeToEvents(
-    [{ kinds: [1], limit: 20 }],
-    (event) => {
-        const note: Note = {
-            id: event.id,
-            title: event.tags.find(t => t[0] === 'title')?.[1] || 'Untitled',
-            content: event.content,
-            createdAt: new Date(event.created_at * 1000),
-            updatedAt: new Date(event.created_at * 1000),
-            status: 'published',
-            tags: event.tags.filter(t => t[0] === 't').map(t => `#${t[1]}`),
-            values: {},
-            fields: {},
-            pinned: false,
-            archived: false,
-        };
-        state.publicFeedNotes = [...state.publicFeedNotes, note];
-        renderPublicFeed();
-    }
+  useAppStore.subscribe(
+    (state) => state.matches,
+    (newMatches) => {
+      renderMatches(matchesList, newMatches);
+    },
+  );
+
+  useAppStore.subscribe(
+    (state) => state.topicNotes,
+    (newTopicNotes) => {
+      const publicFeedNotes = newTopicNotes["public"] || [];
+      state.publicFeedNotes = publicFeedNotes.map((event) => ({
+        id: event.id,
+        title: event.tags.find((t) => t[0] === "title")?.[1] || "Untitled",
+        content: event.content,
+        createdAt: new Date(event.created_at * 1000),
+        updatedAt: new Date(event.created_at * 1000),
+        status: "published",
+        tags: event.tags.filter((t) => t[0] === "t").map((t) => `#${t[1]}`),
+        values: {},
+        fields: {},
+        pinned: false,
+        archived: false,
+      }));
+      renderPublicFeed();
+    },
   );
 
   renderPublicFeed();
-
-  const { ontology, notes, addMatch } = useAppStore.getState();
-  const allNotes = Object.values(notes);
-  nostr.findMatchingNotes(ontology, (localNote, remoteNote, similarity) => {
-    addMatch({
-        localNoteId: localNote.id,
-        targetNoteId: remoteNote.id,
-        similarity,
-    });
-  }, allNotes);
 
   // Matches Section
   const matchesContainer = document.createElement("div");
@@ -100,21 +105,26 @@ export function createNetworkPanel(): HTMLElement {
   const matchesList = document.createElement("ul");
   matchesList.className = "matches-list";
 
-  if (matches.length > 0) {
-    matches.forEach((match) => {
-      const listItem = document.createElement("li");
-      listItem.className = "match-item";
-      listItem.innerHTML = `
-        <p>Match for note: <strong>${match.localNoteId}</strong> with <strong>${match.targetNoteId}</strong></p>
-        <span>Similarity: ${match.similarity.toFixed(2)}</span>
-      `;
-      matchesList.appendChild(listItem);
-    });
-  } else {
-    const noMatchesMessage = document.createElement("p");
-    noMatchesMessage.textContent = "No matches found.";
-    matchesList.appendChild(noMatchesMessage);
+  function renderMatches(listElement: HTMLElement, matches: Match[]) {
+    listElement.innerHTML = "";
+    if (matches.length > 0) {
+      matches.forEach((match) => {
+        const listItem = document.createElement("li");
+        listItem.className = "match-item";
+        listItem.innerHTML = `
+          <p>Match for note: <strong>${match.localNoteId}</strong> with <strong>${match.targetNoteId}</strong></p>
+          <span>Similarity: ${match.similarity.toFixed(2)}</span>
+        `;
+        listElement.appendChild(listItem);
+      });
+    } else {
+      const noMatchesMessage = document.createElement("p");
+      noMatchesMessage.textContent = "No matches found.";
+      listElement.appendChild(noMatchesMessage);
+    }
   }
+
+  renderMatches(matchesList, matches);
   matchesContainer.appendChild(matchesList);
   container.appendChild(matchesContainer);
 

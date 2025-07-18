@@ -74,6 +74,7 @@ interface AppActions {
   setEditorContent: (content: string) => void;
   setIsEditing: (editing: boolean) => void;
   setNoteView: (view: AppState["noteView"]) => void;
+  setSelectedFolder: (folderId: string | undefined) => void;
 
   // Loading and error actions
   setLoading: (key: keyof AppState["loading"], loading: boolean) => void;
@@ -137,6 +138,13 @@ interface AppActions {
 
   // AI Service
   getAIService: () => AIService;
+
+  // getters
+  getNotesByFolder: (folderId: string) => Note[];
+
+  // Nostr
+  addMatch: (match: Match) => void;
+  nostrService: NostrService;
 
   // Theme
   setTheme: (theme: "light" | "dark" | "system") => void;
@@ -225,6 +233,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
   searchQuery: "",
   searchFilters: {},
   noteView: "all",
+  selectedFolderId: undefined,
 
   matches: [],
   directMessages: [],
@@ -936,6 +945,10 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
   setNoteView: (view: AppState["noteView"]) => {
     set({ noteView: view });
+  },
+
+  setSelectedFolder: (folderId: string | undefined) => {
+    set({ selectedFolderId: folderId });
   },
 
   setLoading: (key: keyof AppState["loading"], loading: boolean) => {
@@ -2411,6 +2424,17 @@ export const useAppStore = create<AppStore>((set, get) => ({
   getAIService: () => {
     return aiService;
   },
+
+  getNotesByFolder: (folderId: string) => {
+    const { notes } = get();
+    return Object.values(notes).filter((note) => note.folderId === folderId);
+  },
+
+  addMatch: (match: Match) => {
+    set((state) => ({ matches: [...state.matches, match] }));
+  },
+
+  nostrService: nostrService,
 
   setTheme: (theme: "light" | "dark" | "system") => {
     const { userProfile, updateUserProfile } = get();

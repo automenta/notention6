@@ -124,6 +124,7 @@ export function createOntologyEditor({
             }
         },
         variant: "secondary",
+        disabled: !useAppStore.getState().userProfile?.preferences.aiEnabled,
     });
     header.appendChild(aiSuggestButton);
 

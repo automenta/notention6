@@ -146,6 +146,7 @@ export interface AppState {
 
   // UI state
   currentNoteId?: string;
+  selectedFolderId?: string;
   sidebarTab:
     | "dashboard"
     | "notes"
