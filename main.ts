@@ -1,4 +1,4 @@
-import {renderApp} from "./src/ui-rewrite/NotentionApp";
+import {renderApp} from "@/ui/NotentionApp";
 import "./src/index.css";
 
 const rootElement = document.getElementById("root");
