@@ -1,122 +1,122 @@
 /* src/ui-rewrite/NoteEditor.css */
 .note-editor-layout {
-  display: flex;
-  height: 100%;
-  gap: 20px;
+    display: flex;
+    height: 100%;
+    gap: 20px;
 }
 
 .note-editor-main {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  background-color: white;
-  border-radius: 8px;
-  padding: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: white;
+    border-radius: 8px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .note-title-input {
-  width: 100%;
-  padding: 12px 16px;
-  font-size: 1.75em;
-  font-weight: 600;
-  margin-bottom: 20px;
-  border: 2px solid transparent;
-  border-radius: 8px;
-  background-color: var(--background-color);
-  transition: border-color 0.2s ease;
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 1.75em;
+    font-weight: 600;
+    margin-bottom: 20px;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    background-color: var(--background-color);
+    transition: border-color 0.2s ease;
 }
 
 .note-title-input:focus {
-  border-color: var(--primary-color);
-  background-color: white;
+    border-color: var(--primary-color);
+    background-color: white;
 }
 
 .tiptap-editor {
-  border: 2px solid var(--border-color);
-  padding: 20px;
-  border-radius: 8px;
-  flex-grow: 1;
-  min-height: 400px;
-  font-size: 16px;
-  line-height: 1.6;
-  transition: border-color 0.2s ease;
+    border: 2px solid var(--border-color);
+    padding: 20px;
+    border-radius: 8px;
+    flex-grow: 1;
+    min-height: 400px;
+    font-size: 16px;
+    line-height: 1.6;
+    transition: border-color 0.2s ease;
 }
 
 .tiptap-editor:focus {
-  border-color: var(--primary-color);
-  outline: none;
+    border-color: var(--primary-color);
+    outline: none;
 }
 
 .tiptap-editor h1,
 .tiptap-editor h2,
 .tiptap-editor h3 {
-  margin-top: 1.5em;
-  margin-bottom: 0.5em;
-  font-weight: 600;
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+    font-weight: 600;
 }
 
 .tiptap-editor p {
-  margin-bottom: 1em;
+    margin-bottom: 1em;
 }
 
 .tiptap-editor ul,
 .tiptap-editor ol {
-  margin-left: 1.5em;
-  margin-bottom: 1em;
+    margin-left: 1.5em;
+    margin-bottom: 1em;
 }
 
 .editor-toolbar {
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding: 12px;
-  background-color: var(--background-color);
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 12px;
+    background-color: var(--background-color);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
 }
 
 .template-selector {
-  padding: 8px 12px;
-  border-radius: 6px;
-  border: 1px solid var(--border-color);
-  background-color: white;
-  font-size: 14px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background-color: white;
+    font-size: 14px;
 }
 
 .editor-toolbar .btn {
-  padding: 8px 12px;
-  font-size: 14px;
-  border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 14px;
+    border-radius: 6px;
 }
 
 /* Semantic Tag Styling */
 .tiptap-editor span[data-tag] {
-  background-color: #e3f2fd;
-  color: #1565c0;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-weight: 500;
-  font-size: 0.9em;
+    background-color: #e3f2fd;
+    color: #1565c0;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 500;
+    font-size: 0.9em;
 }
 
 @media (max-width: 768px) {
-  .note-editor-layout {
-    flex-direction: column;
-  }
+    .note-editor-layout {
+        flex-direction: column;
+    }
 
-  .note-editor-main {
-    padding: 16px;
-  }
+    .note-editor-main {
+        padding: 16px;
+    }
 
-  .editor-toolbar {
-    flex-direction: column;
-    align-items: stretch;
-  }
+    .editor-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
 
-  .editor-toolbar .btn {
-    margin-bottom: 8px;
-  }
+    .editor-toolbar .btn {
+        margin-bottom: 8px;
+    }
 }

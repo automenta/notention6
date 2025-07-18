@@ -1,12 +1,16 @@
 // src/ui-rewrite/FolderView.ts
-import { useAppStore } from "../store";
-import { createButton } from "./Button";
+import {useAppStore} from "../store";
+import {createButton} from "./Button";
 import "./FolderView.css";
-import { Folder } from "../../shared/types";
-import { FolderService } from "../services/FolderService";
+import {Folder} from "../../shared/types";
+import {FolderService} from "../services/FolderService";
 
-function renderFolder(folder: Folder, allFolders: { [id: string]: Folder }): HTMLElement {
-    const { updateFolder, deleteFolder, getNotesByFolder, moveFolder } = useAppStore.getState();
+function renderFolder(
+    folder: Folder,
+    allFolders: { [id: string]: Folder },
+): HTMLElement {
+    const {updateFolder, deleteFolder, getNotesByFolder, moveFolder} =
+        useAppStore.getState();
 
     const listItem = document.createElement("li");
     listItem.className = "folder-list-item";
@@ -52,7 +56,7 @@ function renderFolder(folder: Folder, allFolders: { [id: string]: Folder }): HTM
         onClick: () => {
             const newName = prompt("Enter new folder name:", folder.name);
             if (newName) {
-                updateFolder(folder.id, { name: newName });
+                updateFolder(folder.id, {name: newName});
             }
         },
         variant: "secondary",
@@ -62,7 +66,9 @@ function renderFolder(folder: Folder, allFolders: { [id: string]: Folder }): HTM
     const deleteButton = createButton({
         label: "Delete",
         onClick: () => {
-            if (confirm(`Are you sure you want to delete the folder "${folder.name}"?`)) {
+            if (
+                confirm(`Are you sure you want to delete the folder "${folder.name}"?`)
+            ) {
                 deleteFolder(folder.id);
             }
         },
@@ -73,7 +79,7 @@ function renderFolder(folder: Folder, allFolders: { [id: string]: Folder }): HTM
     if (folder.children && folder.children.length > 0) {
         const childList = document.createElement("ul");
         childList.className = "folder-list";
-        folder.children.forEach(childId => {
+        folder.children.forEach((childId) => {
             const childFolder = allFolders[childId];
             if (childFolder) {
                 childList.appendChild(renderFolder(childFolder, allFolders));
@@ -86,7 +92,7 @@ function renderFolder(folder: Folder, allFolders: { [id: string]: Folder }): HTM
 }
 
 export function createFolderView(): HTMLElement {
-    const { folders, createFolder } = useAppStore.getState();
+    const {folders, createFolder} = useAppStore.getState();
 
     const container = document.createElement("div");
     container.className = "folder-view-container";

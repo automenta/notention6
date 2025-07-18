@@ -1,146 +1,146 @@
 /* src/ui-rewrite/Settings.css */
 
 .settings-container {
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
 }
 
 .settings-tabs {
-  display: flex;
-  gap: 0.5rem;
-  border-bottom: 1px solid var(--border-color);
+    display: flex;
+    gap: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .settings-tabs .btn {
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
-  border-bottom: none;
-  background-color: transparent;
-  color: var(--text-secondary-color);
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-bottom: none;
+    background-color: transparent;
+    color: var(--text-secondary-color);
 }
 
 .settings-tabs .btn.active {
-  background-color: var(--card-background-color);
-  color: var(--text-color);
-  border: 1px solid var(--border-color);
-  border-bottom: none;
+    background-color: var(--card-background-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-bottom: none;
 }
 
 .settings-header {
-  border-bottom: 1px solid var(--border-color);
-  padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.5rem;
 }
 
 .settings-header h1 {
-  font-size: 1.5rem;
-  margin: 0;
+    font-size: 1.5rem;
+    margin: 0;
 }
 
 .settings-section {
-  background-color: var(--card-background-color);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 1rem;
+    background-color: var(--card-background-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
 }
 
 .settings-section h2 {
-  margin: 0 0 1rem;
-  font-size: 1.125rem;
-  border-bottom: 1px solid var(--border-color);
-  padding-bottom: 0.5rem;
+    margin: 0 0 1rem;
+    font-size: 1.125rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.5rem;
 }
 
 .nostr-key-form,
 .ai-form,
 .sharing-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 
 .nostr-key-form label,
 .ai-form label,
 .sharing-form label {
-  font-weight: bold;
+    font-weight: bold;
 }
 
 .nostr-key-form input[type="text"] {
-  padding: 0.5rem;
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  background-color: var(--input-disabled-background);
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--input-disabled-background);
 }
 
 .ai-form input[type="checkbox"],
 .sharing-form input[type="checkbox"] {
-  width: 1.25rem;
-  height: 1.25rem;
+    width: 1.25rem;
+    height: 1.25rem;
 }
 
 .ai-form select,
 .ai-form input[type="password"],
 .ai-form input[type="range"] {
-  padding: 0.5rem;
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  background-color: var(--background-color);
-  color: var(--text-color);
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--background-color);
+    color: var(--text-color);
 }
 
 .ai-form input[type="range"] {
-  width: 100%;
-  height: 6px;
-  background: var(--border-color);
-  outline: none;
-  border-radius: 3px;
+    width: 100%;
+    height: 6px;
+    background: var(--border-color);
+    outline: none;
+    border-radius: 3px;
 }
 
 .ai-form input[type="range"]::-webkit-slider-thumb {
-  appearance: none;
-  width: 20px;
-  height: 20px;
-  background: var(--primary-color);
-  cursor: pointer;
-  border-radius: 50%;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: var(--primary-color);
+    cursor: pointer;
+    border-radius: 50%;
 }
 
 .ai-form input[type="range"]::-moz-range-thumb {
-  width: 20px;
-  height: 20px;
-  background: var(--primary-color);
-  cursor: pointer;
-  border-radius: 50%;
-  border: none;
+    width: 20px;
+    height: 20px;
+    background: var(--primary-color);
+    cursor: pointer;
+    border-radius: 50%;
+    border: none;
 }
 
 .settings-section p {
-  margin: 0.5rem 0;
-  color: var(--text-secondary-color);
-  font-size: 0.875rem;
-  line-height: 1.4;
+    margin: 0.5rem 0;
+    color: var(--text-secondary-color);
+    font-size: 0.875rem;
+    line-height: 1.4;
 }
 
 .form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
 }
 
 .form-group label {
-  font-weight: 500;
-  color: var(--text-color);
+    font-weight: 500;
+    color: var(--text-color);
 }
 
 .form-group input,
 .form-group select {
-  font-family: inherit;
+    font-family: inherit;
 }
 
 .form-group input:focus,
 .form-group select:focus {
-  outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 2px rgba(var(--primary-color), 0.1);
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(var(--primary-color), 0.1);
 }

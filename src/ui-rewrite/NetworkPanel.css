@@ -1,86 +1,85 @@
 /* src/ui-rewrite/NetworkPanel.css */
 
 .network-panel-container {
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
 }
 
 .network-panel-header {
-  border-bottom: 1px solid var(--border-color);
-  padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.5rem;
 }
 
 .network-panel-header h1 {
-  font-size: 1.5rem;
-  margin: 0;
+    font-size: 1.5rem;
+    margin: 0;
 }
 
 .matches-container,
 .relays-container {
-  background-color: var(--card-background-color);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 1rem;
+    background-color: var(--card-background-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
 }
 
 .matches-container h2,
 .relays-container h2 {
-  margin: 0 0 1rem;
-  font-size: 1.125rem;
+    margin: 0 0 1rem;
+    font-size: 1.125rem;
 }
 
 .matches-list,
 .relays-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
 }
 
 .match-item,
 .relay-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px;
-  border-radius: 8px;
-  background-color: var(--background-color);
-  border: 1px solid var(--border-color);
-  transition: background-color 0.2s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    border-radius: 8px;
+    background-color: var(--background-color);
+    border: 1px solid var(--border-color);
+    transition: background-color 0.2s ease;
 }
 
 .match-item:hover,
 .relay-item:hover {
-  background-color: var(--hover-background-color);
+    background-color: var(--hover-background-color);
 }
 
 .match-item p {
-  margin: 0;
-  font-size: 14px;
+    margin: 0;
+    font-size: 14px;
 }
 
 .match-item span {
-  font-size: 12px;
-  color: var(--text-secondary-color);
-  background-color: var(--primary-color);
-  color: white;
-  padding: 4px 8px;
-  border-radius: 12px;
+    font-size: 12px;
+    color: var(--text-secondary-color);
+    background-color: var(--primary-color);
+    padding: 4px 8px;
+    border-radius: 12px;
 }
 
 .add-relay-form {
-  display: flex;
-  gap: 1rem;
-  margin-top: 1rem;
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
 }
 
 .add-relay-form input {
-  flex-grow: 1;
-  padding: 0.5rem;
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
+    flex-grow: 1;
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
 }
