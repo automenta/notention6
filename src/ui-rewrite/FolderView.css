@@ -16,7 +16,7 @@
     display: flex;
     align-items: center;
     padding: 0.5rem;
-    border-bottom: 1px solid #ccc;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .folder-list-item span {
@@ -25,7 +25,7 @@
 
 .note-count {
     font-size: 0.8rem;
-    color: #666;
+    color: var(--text-color-muted);
     margin-left: 0.5rem;
 }
 

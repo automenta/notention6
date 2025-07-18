@@ -20,6 +20,7 @@ import { OntologyService } from "../services/ontology"; // Added OntologyService
 import { NoteService } from "../services/NoteService";
 import { nostrService, NostrService } from "../services/NostrService"; // Import NostrService
 import { AIService } from "../services/AIService";
+import { networkService, NetworkService } from "../services/NetworkService";
 import { Filter } from "nostr-tools";
 
 interface AppActions {
@@ -98,7 +99,6 @@ interface AppActions {
   subscribeToPublicNotes: (relays?: string[]) => string | null; // Returns subscription ID or null
   subscribeToTopic: (topic: string, relays?: string[]) => string | null; // Returns subscription ID
   unsubscribeFromNostr: (subscriptionId: string | any) => void; // Accepts ID or subscription object
-  addNostrMatch: (match: Match) => void;
   addDirectMessage: (message: DirectMessage) => void;
   setNostrRelays: (relays: string[]) => Promise<void>;
   addNostrRelay: (relay: string) => Promise<void>;
@@ -148,6 +148,7 @@ interface AppActions {
   // Nostr
   addMatch: (match: Match) => void;
   nostrService: NostrService;
+  networkService: NetworkService;
 
   // Theme
   setTheme: (theme: "light" | "dark" | "system") => void;
@@ -404,6 +405,12 @@ export const useAppStore = create<AppStore>((set, get) => ({
       if (isOnline() && get().userProfile?.nostrPubkey) {
         console.log("Attempting initial sync with Nostr...");
         await get().syncWithNostr(true); // Force full sync on init
+      }
+
+      // Start network matching
+      if (isOnline() && get().userProfile?.nostrPubkey) {
+        const { ontology, notes, networkService } = get();
+        networkService.startMatching(ontology, Object.values(notes));
       }
     } catch (error: any) {
       console.error("Failed to initialize app:", error);
@@ -1402,10 +1409,6 @@ export const useAppStore = create<AppStore>((set, get) => ({
     }
   },
 
-  addNostrMatch: (match: Match) => {
-    set((state) => ({ matches: [...state.matches, match] })); // Basic add, consider deduplication or sorting
-  },
-
   addDirectMessage: (message: DirectMessage) => {
     set((state) => ({ directMessages: [...state.directMessages, message] })); // Basic add
     // TODO: Decrypt if necessary and if keys are available
@@ -1679,14 +1682,14 @@ export const useAppStore = create<AppStore>((set, get) => ({
                 bestTagMatchForThisPair.similarity
               ) {
                 state.matches.splice(oldTagMatchIndex, 1);
-                state.addNostrMatch(bestTagMatchForThisPair);
+                state.addMatch(bestTagMatchForThisPair);
                 console.log(
                   "Updated ontology-aware tag match (better similarity):",
                   bestTagMatchForThisPair,
                 );
               }
             } else {
-              state.addNostrMatch(bestTagMatchForThisPair);
+              state.addMatch(bestTagMatchForThisPair);
               console.log(
                 "New ontology-aware tag match found:",
                 bestTagMatchForThisPair,
@@ -1749,14 +1752,14 @@ export const useAppStore = create<AppStore>((set, get) => ({
                       similarity
                     ) {
                       state.matches.splice(existingEmbeddingMatchIndex, 1);
-                      state.addNostrMatch(embeddingMatch);
+                      state.addMatch(embeddingMatch);
                       console.log(
                         "Updated Nostr embedding match (better similarity):",
                         embeddingMatch,
                       );
                     }
                   } else {
-                    state.addNostrMatch(embeddingMatch);
+                    state.addMatch(embeddingMatch);
                     console.log(
                       "New Nostr embedding match found:",
                       embeddingMatch,
@@ -2454,6 +2457,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
   },
 
   nostrService: nostrService,
+  networkService: networkService,
 
   setTheme: (theme: "light" | "dark" | "system") => {
     const { userProfile, updateUserProfile } = get();
