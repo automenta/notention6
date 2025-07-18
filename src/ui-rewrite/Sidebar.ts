@@ -10,6 +10,7 @@ type AppView =
   | "folders"
   | "ontology"
   | "network"
+  | "matches"
   | "contacts"
   | "chats"
   | "settings";
@@ -20,6 +21,7 @@ const views: { id: AppView; label: string }[] = [
   { id: "profile", label: "Profile" },
   { id: "ontology", label: "Ontology" },
   { id: "network", label: "Network" },
+  { id: "matches", label: "Matches" },
   { id: "contacts", label: "Contacts" },
   { id: "chats", label: "Chats" },
   { id: "settings", label: "Settings" },

@@ -38,6 +38,9 @@ interface AppActions {
     folderId: string | undefined,
   ) => Promise<void>;
 
+  // Notes actions
+  importNotes: (notes: Note[]) => Promise<void>;
+
   // Ontology actions
   setOntology: (ontology: OntologyTree) => Promise<void>;
 
@@ -730,10 +733,19 @@ export const useAppStore = create<AppStore>((set, get) => ({
     set((state) => ({ searchFilters: { ...state.searchFilters, ...filters } }));
   },
 
+  importNotes: async (notesToImport: Note[]) => {
+    const { notes } = get();
+    const newNotes = { ...notes };
+    for (const note of notesToImport) {
+      newNotes[note.id] = note;
+      await DBService.saveNote(note);
+    }
+    set({ notes: newNotes });
+  },
+
   setOntology: async (ontologyData: OntologyTree) => {
-    // DBService.saveOntology now sets updatedAt
     await DBService.saveOntology(ontologyData);
-    const savedOntology = await DBService.getOntology(); // Re-fetch to get with updated timestamp
+    const savedOntology = await DBService.getOntology();
     set({ ontology: savedOntology || ontologyData });
 
     if (isOnline() && get().userProfile?.nostrPubkey) {

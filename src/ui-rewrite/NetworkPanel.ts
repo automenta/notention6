@@ -190,5 +190,74 @@ export function createNetworkPanel(): HTMLElement {
   relaysContainer.appendChild(addRelayForm);
   container.appendChild(relaysContainer);
 
+  // Topic Channels Section
+  const topicsContainer = document.createElement("div");
+  topicsContainer.className = "topics-container";
+  const topicsTitle = document.createElement("h2");
+  topicsTitle.textContent = "Topic Channels";
+  topicsContainer.appendChild(topicsTitle);
+
+  const addTopicForm = document.createElement("form");
+  addTopicForm.className = "add-topic-form";
+  addTopicForm.onsubmit = (e) => {
+    e.preventDefault();
+    const input = (e.target as HTMLFormElement).elements.namedItem(
+      "topicName",
+    ) as HTMLInputElement;
+    const newTopic = input.value.trim();
+    if (newTopic) {
+      useAppStore.getState().subscribeToTopic(newTopic);
+      input.value = "";
+    }
+  };
+
+  const topicNameInput = document.createElement("input");
+  topicNameInput.type = "text";
+  topicNameInput.name = "topicName";
+  topicNameInput.placeholder = "#topic";
+  addTopicForm.appendChild(topicNameInput);
+
+  const addTopicButton = createButton({
+    label: "Subscribe to Topic",
+    onClick: () => addTopicForm.requestSubmit(),
+    variant: "primary",
+  });
+  addTopicForm.appendChild(addTopicButton);
+  topicsContainer.appendChild(addTopicForm);
+
+  const topicNotesContainer = document.createElement("div");
+  topicNotesContainer.className = "topic-notes-container";
+  topicsContainer.appendChild(topicNotesContainer);
+
+  useAppStore.subscribe(
+    (state) => state.topicNotes,
+    (topicNotes) => {
+      topicNotesContainer.innerHTML = "";
+      for (const topic in topicNotes) {
+        const topicSection = document.createElement("div");
+        topicSection.className = "topic-section";
+        const topicTitle = document.createElement("h3");
+        topicTitle.textContent = topic;
+        topicSection.appendChild(topicTitle);
+
+        const notesList = document.createElement("ul");
+        notesList.className = "topic-notes-list";
+        topicNotes[topic].forEach((note) => {
+          const listItem = document.createElement("li");
+          listItem.className = "feed-item";
+          listItem.innerHTML = `
+            <p><strong>${note.id}</strong></p>
+            <span>${note.content.substring(0, 100)}...</span>
+          `;
+          notesList.appendChild(listItem);
+        });
+        topicSection.appendChild(notesList);
+        topicNotesContainer.appendChild(topicSection);
+      }
+    },
+  );
+
+  container.appendChild(topicsContainer);
+
   return container;
 }

@@ -53,6 +53,50 @@ export function createOntologyEditor({
     });
     header.appendChild(shareButton);
 
+    const importButton = createButton({
+        label: "Import from Nostr",
+        onClick: async () => {
+            const pubkey = prompt("Enter the Nostr public key (npub) of the user whose ontology you want to import:");
+            if (pubkey) {
+                const { nostrService, setOntology, addNotification } = useAppStore.getState();
+                if (nostrService) {
+                    try {
+                        const ontology = await nostrService.fetchOntologyByPubkey(pubkey);
+                        if (ontology) {
+                            setOntology(ontology);
+                            addNotification({
+                                id: `ontology-import-success-${Date.now()}`,
+                                type: "success",
+                                message: "Ontology imported successfully!",
+                                timestamp: new Date(),
+                                timeout: 3000,
+                            });
+                        } else {
+                            addNotification({
+                                id: `ontology-import-notfound-${Date.now()}`,
+                                type: "info",
+                                message: "No ontology found for this user.",
+                                timestamp: new Date(),
+                                timeout: 5000,
+                            });
+                        }
+                    } catch (error) {
+                        console.error("Failed to import ontology:", error);
+                        addNotification({
+                            id: `ontology-import-error-${Date.now()}`,
+                            type: "error",
+                            message: "Failed to import ontology.",
+                            timestamp: new Date(),
+                            timeout: 5000,
+                        });
+                    }
+                }
+            }
+        },
+        variant: "secondary",
+    });
+    header.appendChild(importButton);
+
     const aiSuggestButton = createButton({
         label: "AI Suggest",
         onClick: async () => {

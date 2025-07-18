@@ -39,6 +39,17 @@ export function createNoteEditor(noteId?: string): HTMLElement {
     return editorLayout;
   }
 
+  let metadataSidebar = createMetadataSidebar();
+  metadataSidebar.classList.add("hidden");
+
+  const toggleSidebarButton = createButton({
+    label: "Metadata",
+    onClick: () => {
+      metadataSidebar.classList.toggle("hidden");
+    },
+    variant: "secondary",
+  });
+
   // Title Input
   const titleInput = document.createElement("input");
   titleInput.type = "text";
@@ -142,10 +153,16 @@ export function createNoteEditor(noteId?: string): HTMLElement {
   });
 
   useAppStore.subscribe(
-    (state) => state.notes[state.currentNoteId as string]?.content,
-    (newContent, oldContent) => {
-      if (newContent !== oldContent && newContent !== editor.getHTML()) {
-        editor.commands.setContent(newContent, false);
+    (state) => state.notes[state.currentNoteId as string],
+    (newNote, oldNote) => {
+      if (newNote?.content !== oldNote?.content && newNote?.content !== editor.getHTML()) {
+        editor.commands.setContent(newNote.content, false);
+      }
+      if (newNote?.values !== oldNote?.values || newNote?.fields !== oldNote?.fields) {
+        const newSidebar = createMetadataSidebar();
+        newSidebar.classList.toggle("hidden", metadataSidebar.classList.contains("hidden"));
+        editorLayout.replaceChild(newSidebar, metadataSidebar);
+        metadataSidebar = newSidebar;
       }
     },
   );
@@ -362,6 +379,7 @@ export function createNoteEditor(noteId?: string): HTMLElement {
     disabled: !aiEnabled,
   });
   toolbar.appendChild(generateContentButton);
+  toolbar.appendChild(toggleSidebarButton);
 
   mainEditorContainer.insertBefore(toolbar, editorElement);
 
@@ -404,6 +422,7 @@ export function createNoteEditor(noteId?: string): HTMLElement {
   mainEditorContainer.insertBefore(toolbar, editorElement);
 
   editorLayout.appendChild(mainEditorContainer);
+  editorLayout.appendChild(metadataSidebar);
 
   return editorLayout;
 }

@@ -921,6 +921,41 @@ export class NostrService {
     }
   }
 
+  public async fetchOntologyByPubkey(
+    pubkey: string,
+    targetRelays?: string[],
+  ): Promise<OntologyTree | null> {
+    const relaysToUse =
+      targetRelays && targetRelays.length > 0 ? targetRelays : this.relays;
+    if (relaysToUse.length === 0) return null;
+
+    const filters: Filter[] = [
+      {
+        kinds: [ONTOLOGY_KIND],
+        authors: [pubkey],
+        "#d": ["ontology"],
+        limit: 1,
+      },
+    ];
+
+    const events = await this.pool.querySync(relaysToUse, filters);
+    if (!events || events.length === 0) return null;
+
+    events.sort((a, b) => b.created_at - a.created_at);
+
+    const latestEvent = events[0];
+    try {
+      const ontology = JSON.parse(latestEvent.content);
+      if (ontology.updatedAt && typeof ontology.updatedAt === "string") {
+        ontology.updatedAt = new Date(ontology.updatedAt);
+      }
+      return ontology;
+    } catch (error) {
+      console.error("Error parsing fetched ontology:", error, latestEvent);
+      return null;
+    }
+  }
+
   public async publishOntology(
     ontology: OntologyTree,
     targetRelays?: string[],

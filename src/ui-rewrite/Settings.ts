@@ -173,6 +173,87 @@ export function createSettings(): HTMLElement {
   sharingSection.appendChild(sharingForm);
   container.appendChild(sharingSection);
 
+  // Data Management Section
+  const dataManagementSection = createSection("Data Management");
+
+  const exportNotesButton = createButton({
+    label: "Export Notes",
+    onClick: async () => {
+      const { notes } = useAppStore.getState();
+      const data = JSON.stringify(Object.values(notes), null, 2);
+      const blob = new Blob([data], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "notention-notes.json";
+      a.click();
+      URL.revokeObjectURL(url);
+    },
+    variant: "secondary",
+  });
+  dataManagementSection.appendChild(exportNotesButton);
+
+  const importNotesButton = createButton({
+    label: "Import Notes",
+    onClick: () => {
+      const input = document.createElement("input");
+      input.type = "file";
+      input.accept = "application/json";
+      input.onchange = async (e) => {
+        const file = (e.target as HTMLInputElement).files?.[0];
+        if (file) {
+          const text = await file.text();
+          const notesToImport = JSON.parse(text);
+          const { importNotes } = useAppStore.getState();
+          importNotes(notesToImport);
+        }
+      };
+      input.click();
+    },
+    variant: "secondary",
+  });
+  dataManagementSection.appendChild(importNotesButton);
+
+  const exportOntologyButton = createButton({
+    label: "Export Ontology",
+    onClick: async () => {
+      const { ontology } = useAppStore.getState();
+      const data = JSON.stringify(ontology, null, 2);
+      const blob = new Blob([data], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "notention-ontology.json";
+      a.click();
+      URL.revokeObjectURL(url);
+    },
+    variant: "secondary",
+  });
+  dataManagementSection.appendChild(exportOntologyButton);
+
+  const importOntologyButton = createButton({
+    label: "Import Ontology",
+    onClick: () => {
+      const input = document.createElement("input");
+      input.type = "file";
+      input.accept = "application/json";
+      input.onchange = async (e) => {
+        const file = (e.target as HTMLInputElement).files?.[0];
+        if (file) {
+          const text = await file.text();
+          const ontologyToImport = JSON.parse(text);
+          const { setOntology } = useAppStore.getState();
+          setOntology(ontologyToImport);
+        }
+      };
+      input.click();
+    },
+    variant: "secondary",
+  });
+  dataManagementSection.appendChild(importOntologyButton);
+
+  container.appendChild(dataManagementSection);
+
   return container;
 }
 
