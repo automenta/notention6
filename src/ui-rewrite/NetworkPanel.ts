@@ -63,40 +63,47 @@ export function createNetworkPanel(): HTMLElement {
 
   const nostr = appNostrService || nostrService;
 
-  state.publicFeedNotes = [];
+  // This flag prevents re-subscribing on every render
+  let isSubscribed = false;
 
-  nostr.subscribeToEvents(
-    [{ kinds: [1], limit: 20 }],
-    (event) => {
-        const note: Note = {
-            id: event.id,
-            title: event.tags.find(t => t[0] === 'title')?.[1] || 'Untitled',
-            content: event.content,
-            createdAt: new Date(event.created_at * 1000),
-            updatedAt: new Date(event.created_at * 1000),
-            status: 'published',
-            tags: event.tags.filter(t => t[0] === 't').map(t => `#${t[1]}`),
-            values: {},
-            fields: {},
-            pinned: false,
-            archived: false,
-        };
-        state.publicFeedNotes = [...state.publicFeedNotes, note];
-        renderPublicFeed();
-    }
-  );
+  if (!isSubscribed) {
+    isSubscribed = true;
 
-  renderPublicFeed();
+    state.publicFeedNotes = [];
 
-  const { ontology, notes } = useAppStore.getState();
-  const allNotes = Object.values(notes);
-  nostr.findMatchingNotes(ontology, (localNote, remoteNote, similarity) => {
-    addMatch({
-        localNoteId: localNote.id,
-        targetNoteId: remoteNote.id,
-        similarity,
-    });
-  }, allNotes);
+    nostr.subscribeToEvents(
+      [{ kinds: [1], limit: 20 }],
+      (event) => {
+          const note: Note = {
+              id: event.id,
+              title: event.tags.find(t => t[0] === 'title')?.[1] || 'Untitled',
+              content: event.content,
+              createdAt: new Date(event.created_at * 1000),
+              updatedAt: new Date(event.created_at * 1000),
+              status: 'published',
+              tags: event.tags.filter(t => t[0] === 't').map(t => `#${t[1]}`),
+              values: {},
+              fields: {},
+              pinned: false,
+              archived: false,
+          };
+          state.publicFeedNotes = [...state.publicFeedNotes, note];
+          renderPublicFeed();
+      }
+    );
+
+    renderPublicFeed();
+
+    const { ontology, notes } = useAppStore.getState();
+    const allNotes = Object.values(notes);
+    nostr.findMatchingNotes(ontology, (localNote, remoteNote, similarity) => {
+      addMatch({
+          localNoteId: localNote.id,
+          targetNoteId: remoteNote.id,
+          similarity,
+      });
+    }, allNotes);
+  }
 
   // Matches Section
   const matchesContainer = document.createElement("div");
