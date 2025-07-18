@@ -48,4 +48,47 @@ export class ChatService {
             }
         });
     }
+
+    static sendPublicMessage(content: string): Promise<DirectMessage> {
+        const { nostrService: appNostrService } = useAppStore.getState();
+        const nostr = appNostrService || nostrService;
+        return nostr.publishNote({
+            id: '',
+            title: '',
+            content,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            status: 'published',
+            tags: [],
+            values: {},
+            fields: {},
+            pinned: false,
+            archived: false,
+        }).then(event => {
+            return {
+                id: event[0],
+                from: nostr.getPublicKey() || '',
+                to: 'public',
+                content,
+                timestamp: new Date(),
+                encrypted: false,
+            };
+        });
+    }
+
+    static subscribeToPublicMessages(onMessage: (message: DirectMessage) => void) {
+        const { nostrService: appNostrService } = useAppStore.getState();
+        const nostr = appNostrService || nostrService;
+        nostr.subscribeToEvents([{ kinds: [1] }], (event) => {
+            const message: DirectMessage = {
+                id: event.id,
+                from: event.pubkey,
+                to: 'public',
+                content: event.content,
+                timestamp: new Date(event.created_at * 1000),
+                encrypted: false,
+            };
+            onMessage(message);
+        });
+    }
 }

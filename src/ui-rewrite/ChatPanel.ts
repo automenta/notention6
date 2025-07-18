@@ -3,12 +3,13 @@ import { useAppStore } from "../store";
 import { createButton } from "./Button";
 import "./ChatPanel.css";
 import { Contact, DirectMessage } from "../../shared/types";
+import { ChatService } from "../services/ChatService";
 
 export function createChatPanel(): HTMLElement {
-  const { userProfile, directMessages, sendDirectMessage } =
+  const { userProfile, directMessages, sendDirectMessage, addDirectMessage } =
     useAppStore.getState();
   const contacts = userProfile?.contacts || [];
-  let selectedContact: Contact | null = null;
+  let selectedContact: Contact | null | { pubkey: 'public', alias: 'Public Chat' } = null;
 
   const container = document.createElement("div");
   container.className = "chat-panel-container";
@@ -29,6 +30,15 @@ export function createChatPanel(): HTMLElement {
   contactListContainer.className = "contact-list-container";
   const contactList = document.createElement("ul");
   contactList.className = "chat-contact-list";
+
+  // Add Public Chat channel
+  const publicChatListItem = document.createElement("li");
+  publicChatListItem.textContent = "Public Chat";
+  publicChatListItem.onclick = () => {
+    selectedContact = { pubkey: 'public', alias: 'Public Chat' };
+    renderMessageView();
+  };
+  contactList.appendChild(publicChatListItem);
 
   contacts.forEach((contact) => {
     const listItem = document.createElement("li");
@@ -64,21 +74,38 @@ export function createChatPanel(): HTMLElement {
     const messagesList = document.createElement("ul");
     messagesList.className = "messages-list";
 
-    const messagesWithContact = directMessages.filter(
-      (dm) =>
-        (dm.from === selectedContact?.pubkey &&
-          dm.to === userProfile?.nostrPubkey) ||
-        (dm.to === selectedContact?.pubkey &&
-          dm.from === userProfile?.nostrPubkey),
-    );
+    if (selectedContact.pubkey === 'public') {
+      // Public chat
+      ChatService.subscribeToPublicMessages((message) => {
+        addDirectMessage(message);
+      });
 
-    messagesWithContact.forEach((dm) => {
-      const listItem = document.createElement("li");
-      listItem.className =
-        dm.from === userProfile?.nostrPubkey ? "sent" : "received";
-      listItem.textContent = dm.content;
-      messagesList.appendChild(listItem);
-    });
+      const publicMessages = directMessages.filter(dm => !dm.encrypted);
+      publicMessages.forEach((dm) => {
+        const listItem = document.createElement("li");
+        listItem.className =
+          dm.from === userProfile?.nostrPubkey ? "sent" : "received";
+        listItem.textContent = `${dm.from.substring(0, 8)}...: ${dm.content}`;
+        messagesList.appendChild(listItem);
+      });
+    } else {
+      // Direct messages
+      const messagesWithContact = directMessages.filter(
+        (dm) =>
+          (dm.from === selectedContact?.pubkey &&
+            dm.to === userProfile?.nostrPubkey) ||
+          (dm.to === selectedContact?.pubkey &&
+            dm.from === userProfile?.nostrPubkey),
+      );
+
+      messagesWithContact.forEach((dm) => {
+        const listItem = document.createElement("li");
+        listItem.className =
+          dm.from === userProfile?.nostrPubkey ? "sent" : "received";
+        listItem.textContent = dm.content;
+        messagesList.appendChild(listItem);
+      });
+    }
 
     messageViewContainer.appendChild(messagesList);
 
@@ -91,7 +118,11 @@ export function createChatPanel(): HTMLElement {
       ) as HTMLInputElement;
       const content = input.value.trim();
       if (content && selectedContact) {
-        sendDirectMessage(selectedContact.pubkey, content);
+        if (selectedContact.pubkey === 'public') {
+          ChatService.sendPublicMessage(content);
+        } else {
+          sendDirectMessage(selectedContact.pubkey, content);
+        }
         input.value = "";
       }
     };
@@ -117,14 +148,6 @@ export function createChatPanel(): HTMLElement {
 
   // Note: In a real implementation, we'd want to set up proper reactivity
   // For now, the component will be re-rendered when the main app state changes
-
-  const { addDirectMessage } = useAppStore.getState();
-
-  if (selectedContact) {
-      ChatService.subscribeToMessages(selectedContact.pubkey, (message) => {
-          addDirectMessage(message);
-      });
-  }
 
   renderMessageView();
 
