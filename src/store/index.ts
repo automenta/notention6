@@ -43,6 +43,7 @@ interface AppActions {
 
   // User profile actions
   updateUserProfile: (profileUpdates: Partial<UserProfile>) => Promise<void>;
+  createProfileNote: () => Promise<void>;
   generateAndStoreNostrKeys: (
     privateKey?: string,
     publicKey?: string,
@@ -2397,6 +2398,18 @@ export const useAppStore = create<AppStore>((set, get) => ({
       set({ userProfile: updatedProfile });
       aiService.preferences = updatedProfile.preferences;
       aiService.reinitializeModels();
+    }
+  },
+
+  createProfileNote: async () => {
+    const { createNote, updateUserProfile, userProfile } = get();
+    if (userProfile && !userProfile.profileNoteId) {
+      const noteId = await createNote({
+        title: "User Profile",
+        tags: ["#profile"],
+        content: "This is your user profile.",
+      });
+      await updateUserProfile({ profileNoteId: noteId });
     }
   },
 

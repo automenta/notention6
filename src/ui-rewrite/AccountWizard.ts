@@ -22,9 +22,10 @@ export function createAccountWizard(): HTMLElement {
   ) as HTMLInputElement;
 
   createKeyBtn?.addEventListener("click", async () => {
-    const result = await useAppStore.getState().generateAndStoreNostrKeys();
+    const { generateAndStoreNostrKeys, createProfileNote } = useAppStore.getState();
+    const result = await generateAndStoreNostrKeys();
     if (result.publicKey) {
-      // Keys generated and stored successfully - the app will re-render automatically
+      await createProfileNote();
       console.log("New Nostr keypair generated successfully");
     }
   });
@@ -34,10 +35,10 @@ export function createAccountWizard(): HTMLElement {
     if (privateKey) {
       try {
         const publicKey = getPublicKey(privateKey);
-        const result = await useAppStore
-          .getState()
-          .generateAndStoreNostrKeys(privateKey, publicKey);
+        const { generateAndStoreNostrKeys, createProfileNote } = useAppStore.getState();
+        const result = await generateAndStoreNostrKeys(privateKey, publicKey);
         if (result.publicKey) {
+          await createProfileNote();
           console.log("Nostr keypair imported successfully");
         }
       } catch (e) {

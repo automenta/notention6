@@ -14,10 +14,16 @@ import { templates } from "../lib/templates";
 import { AIService } from "../services/AIService";
 import { Note } from "../../shared/types";
 
-export function createNoteEditor(): HTMLElement {
+export function createNoteEditor(noteId?: string): HTMLElement {
   const { currentNoteId, notes, updateNote, userProfile } =
     useAppStore.getState();
-  const note: Note | null = currentNoteId ? notes[currentNoteId] : null;
+  const id = noteId || currentNoteId;
+  if (!id) {
+    const container = document.createElement("div");
+    container.textContent = "No note selected.";
+    return container;
+  }
+  const note: Note | null = notes[id]
   const aiEnabled = userProfile?.preferences?.aiEnabled || false;
   const aiService = useAppStore.getState().getAIService();
 

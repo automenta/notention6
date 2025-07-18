@@ -6,6 +6,7 @@ import "./Sidebar.css";
 type AppView =
   | "dashboard"
   | "notes"
+  | "profile"
   | "folders"
   | "ontology"
   | "network"
@@ -16,6 +17,7 @@ type AppView =
 const views: { id: AppView; label: string }[] = [
   { id: "dashboard", label: "Dashboard" },
   { id: "notes", label: "Notes" },
+  { id: "profile", label: "Profile" },
   { id: "ontology", label: "Ontology" },
   { id: "network", label: "Network" },
   { id: "contacts", label: "Contacts" },

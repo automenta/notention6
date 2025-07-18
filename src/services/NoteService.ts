@@ -290,6 +290,10 @@ export class NoteService {
     id: string,
     updates: Partial<Note>,
   ): Promise<Note | null> {
+    const { userProfile } = useAppStore.getState();
+    if (id === userProfile?.profileNoteId && updates.hasOwnProperty('tags')) {
+      throw new Error("Cannot change the tags of a profile note.");
+    }
     const note = await DBService.getNote(id);
     if (!note) return null;
 
@@ -309,6 +313,10 @@ export class NoteService {
   }
 
   static async deleteNote(id: string): Promise<void> {
+    const { userProfile } = useAppStore.getState();
+    if (id === userProfile?.profileNoteId) {
+      throw new Error("Cannot delete a profile note.");
+    }
     await DBService.deleteNote(id);
   }
 

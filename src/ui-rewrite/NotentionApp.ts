@@ -6,6 +6,7 @@ import { createAccountWizard } from "./AccountWizard";
 import { createDashboard } from "./Dashboard";
 import { createNotesList } from "./NotesList";
 import { createNoteEditor } from "./NoteEditor";
+import { createProfileEditor } from "./ProfileEditor";
 import { createOntologyEditor } from "./OntologyEditor";
 import { createFolderView } from "./FolderView";
 import { createNetworkPanel } from "./NetworkPanel";
@@ -80,6 +81,9 @@ export function renderApp(rootElement: HTMLElement) {
             break;
           case "notes":
             currentView = createNotesList();
+            break;
+          case "profile":
+            currentView = createProfileEditor();
             break;
           case "folders":
             currentView = createFolderView();

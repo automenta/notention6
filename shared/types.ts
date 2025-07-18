@@ -31,6 +31,7 @@ export interface OntologyTree {
 }
 
 export interface UserProfile {
+  profileNoteId?: string;
   nostrPubkey: string;
   nostrPrivkey?: string; // stored locally for convenience
   sharedTags: string[];
