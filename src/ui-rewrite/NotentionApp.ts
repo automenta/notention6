@@ -10,7 +10,6 @@ import { createProfileEditor } from "./ProfileEditor";
 import { createOntologyEditor } from "./OntologyEditor";
 import { createFolderView } from "./FolderView";
 import { createNetworkPanel } from "./NetworkPanel";
-import { createMatchesPanel } from "./MatchesPanel";
 import { createContactsView } from "./ContactsView";
 import { createChatPanel } from "./ChatPanel";
 import { createSettings } from "./Settings";
@@ -107,13 +106,10 @@ export function renderApp(rootElement: HTMLElement) {
             currentView = createFolderView();
             break;
           case "ontology":
-            currentView = createOntologyEditor({ onSave: () => {} });
+            currentView = createOntologyEditor();
             break;
           case "network":
             currentView = createNetworkPanel();
-            break;
-          case "matches":
-            currentView = createMatchesPanel();
             break;
           case "contacts":
             currentView = createContactsView();

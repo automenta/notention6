@@ -5,11 +5,7 @@ import "./OntologyEditor.css";
 import { OntologyNode, OntologyTree } from "../../shared/types";
 import Sortable from "sortablejs";
 
-export function createOntologyEditor({
-  onSave,
-}: {
-  onSave: () => void;
-}): HTMLElement {
+export function createOntologyEditor(): HTMLElement {
   const { ontology, setOntology } = useAppStore.getState();
   let selectedNodeId: string | null = null;
 
