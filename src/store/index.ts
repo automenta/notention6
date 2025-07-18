@@ -138,6 +138,13 @@ interface AppActions {
   // AI Service
   getAIService: () => AIService;
 
+  // getters
+  getNotesByFolder: (folderId: string) => Note[];
+
+  // Nostr
+  addMatch: (match: Match) => void;
+  nostrService: NostrService;
+
   // Theme
   setTheme: (theme: "light" | "dark" | "system") => void;
 }
@@ -2411,6 +2418,17 @@ export const useAppStore = create<AppStore>((set, get) => ({
   getAIService: () => {
     return aiService;
   },
+
+  getNotesByFolder: (folderId: string) => {
+    const { notes } = get();
+    return Object.values(notes).filter((note) => note.folderId === folderId);
+  },
+
+  addMatch: (match: Match) => {
+    set((state) => ({ matches: [...state.matches, match] }));
+  },
+
+  nostrService: nostrService,
 
   setTheme: (theme: "light" | "dark" | "system") => {
     const { userProfile, updateUserProfile } = get();

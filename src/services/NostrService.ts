@@ -994,6 +994,14 @@ export class NostrService {
                 if (intersection.size > 0) {
                     const similarity = intersection.size / union.size;
                     onMatch(localNote, remoteNote, similarity);
+                    const { useAppStore } = await import('../store');
+                    useAppStore.getState().addNotification({
+                        id: `match-${localNote.id}-${remoteNote.id}`,
+                        type: 'success',
+                        message: `New match found for note: ${localNote.title}`,
+                        description: `Found a new note with similarity of ${similarity.toFixed(2)}`,
+                        timestamp: new Date(),
+                    });
                 }
             }
         }

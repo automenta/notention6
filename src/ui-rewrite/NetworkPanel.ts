@@ -6,8 +6,14 @@ import { Match, Note } from "../../shared/types";
 import { nostrService } from "../services/NostrService";
 
 export function createNetworkPanel(): HTMLElement {
-  const { matches, nostrRelays, addNostrRelay, removeNostrRelay, nostrService: appNostrService } =
-    useAppStore.getState();
+  const {
+    matches,
+    nostrRelays,
+    addNostrRelay,
+    removeNostrRelay,
+    nostrService: appNostrService,
+    addMatch,
+  } = useAppStore.getState();
 
   const container = document.createElement("div");
   container.className = "network-panel-container";
@@ -57,6 +63,8 @@ export function createNetworkPanel(): HTMLElement {
 
   const nostr = appNostrService || nostrService;
 
+  state.publicFeedNotes = [];
+
   nostr.subscribeToEvents(
     [{ kinds: [1], limit: 20 }],
     (event) => {
@@ -80,7 +88,7 @@ export function createNetworkPanel(): HTMLElement {
 
   renderPublicFeed();
 
-  const { ontology, notes, addMatch } = useAppStore.getState();
+  const { ontology, notes } = useAppStore.getState();
   const allNotes = Object.values(notes);
   nostr.findMatchingNotes(ontology, (localNote, remoteNote, similarity) => {
     addMatch({
