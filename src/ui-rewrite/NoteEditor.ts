@@ -2,7 +2,9 @@
 import { useAppStore } from "../store";
 import { Editor } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
+import Mention from "@tiptap/extension-mention";
 import { SemanticTag } from "../extensions/SemanticTag";
+import { suggestion } from "../lib/suggestion";
 import "./NoteEditor.css";
 import { createButton } from "./Button";
 import { createTagModal } from "./TagModal";
@@ -47,7 +49,42 @@ export function createNoteEditor(): HTMLElement {
 
   const editor = new Editor({
     element: editorElement,
-    extensions: [StarterKit, SemanticTag],
+    extensions: [
+      StarterKit,
+      SemanticTag,
+      Mention.configure({
+        HTMLAttributes: {
+          class: "mention",
+        },
+        suggestion: {
+            ...suggestion(editorElement.getRootNode() as ShadowRoot),
+            command: ({ editor, range, props }) => {
+                // get the node before the suggestion
+                const nodeBefore = editor.view.state.selection.$from.nodeBefore
+                // get the current word
+                const text = nodeBefore?.text || ''
+                const trigger = text.slice(0, 1)
+                const query = text.slice(1)
+
+                // insert a semantic tag
+                editor
+                    .chain()
+                    .focus()
+                    .insertContentAt(range, [
+                        {
+                            type: 'semanticTag',
+                            attrs: { tag: props.id },
+                        },
+                        {
+                            type: 'text',
+                            text: ' ',
+                        },
+                    ])
+                    .run()
+            },
+        },
+      }),
+    ],
     content: note.content,
     onUpdate: ({ editor }) => {
       updateNote(note.id, { content: editor.getHTML() });

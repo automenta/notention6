@@ -16,8 +16,11 @@ import {
   NostrUserProfile,
   RelayDict,
   Contact,
+  OntologyTree,
 } from "../../shared/types"; // Assuming NostrUserProfile and RelayDict might be needed
 import { DBService } from "./db";
+
+const ONTOLOGY_KIND = 30078; // Kind for ontology events
 
 // const NOSTR_RELAYS_DB_KEY = 'nostrRelays'; // This might be stored in userProfile or app settings directly
 
@@ -916,6 +919,137 @@ export class NostrService {
       console.error("Error during contact list pool.publish:", error);
       return [];
     }
+  }
+
+  public async publishOntology(
+    ontology: OntologyTree,
+    targetRelays?: string[],
+  ): Promise<string[]> {
+    if (!this.isLoggedIn() || !this.privateKey || !this.publicKey) {
+      throw new Error("User not logged in. Cannot publish ontology.");
+    }
+
+    const content = JSON.stringify(ontology);
+
+    const unsignedEvent: UnsignedEvent = {
+      kind: ONTOLOGY_KIND,
+      pubkey: this.publicKey,
+      created_at: Math.floor(Date.now() / 1000),
+      tags: [["d", "ontology"]],
+      content,
+    };
+
+    const signedEvent: Event = finalizeEvent(unsignedEvent, this.privateKey);
+
+    const relaysToPublish =
+      targetRelays && targetRelays.length > 0 ? targetRelays : this.relays;
+    if (relaysToPublish.length === 0) {
+      console.warn("No relays for ontology publishing.");
+      return [];
+    }
+
+    try {
+      const pubPromises = this.pool.publish(relaysToPublish, signedEvent);
+      const results = await Promise.allSettled(pubPromises);
+      return results
+        .filter((r) => r.status === "fulfilled")
+        .map(() => signedEvent.id);
+    } catch (error) {
+      console.error("Error during ontology pool.publish:", error);
+      return [];
+    }
+  }
+
+  public findMatchingNotes(
+    ontology: OntologyTree,
+    onMatch: (localNote: Note, remoteNote: Note, similarity: number) => void,
+    allNotes: Note[],
+  ) {
+    const ontologyTags = Object.values(ontology.nodes).map(node => node.label.toLowerCase().replace(/^[#@]/, ''));
+
+    this.subscribeToEvents(
+        [{ kinds: [1], "#t": ontologyTags }],
+        async (event) => {
+            const remoteNote: Note = {
+                id: event.id,
+                title: event.tags.find(t => t[0] === 'title')?.[1] || 'Untitled',
+                content: event.content,
+                createdAt: new Date(event.created_at * 1000),
+                updatedAt: new Date(event.created_at * 1000),
+                status: 'published',
+                tags: event.tags.filter(t => t[0] === 't').map(t => `#${t[1]}`),
+                values: {},
+                fields: {},
+                pinned: false,
+                archived: false,
+            };
+
+            for (const localNote of allNotes) {
+                const localTags = new Set(localNote.tags.map(t => t.toLowerCase().replace(/^[#@]/, '')));
+                const remoteTags = new Set(remoteNote.tags.map(t => t.toLowerCase().replace(/^[#@]/, '')));
+
+                const intersection = new Set([...localTags].filter(t => remoteTags.has(t)));
+                const union = new Set([...localTags, ...remoteTags]);
+
+                if (intersection.size > 0) {
+                    const similarity = intersection.size / union.size;
+                    onMatch(localNote, remoteNote, similarity);
+                }
+            }
+        }
+    );
+  }
+
+  public async sendDirectMessage(
+    recipientPublicKey: string,
+    content: string,
+  ): Promise<Event> {
+    if (!this.isLoggedIn() || !this.privateKey || !this.publicKey) {
+      throw new Error("User not logged in. Cannot send direct message.");
+    }
+
+    const encryptedContent = await nip04.encrypt(
+      this.privateKey,
+      recipientPublicKey,
+      content,
+    );
+
+    const unsignedEvent: UnsignedEvent = {
+      kind: 4,
+      pubkey: this.publicKey,
+      created_at: Math.floor(Date.now() / 1000),
+      tags: [["p", recipientPublicKey]],
+      content: encryptedContent,
+    };
+
+    const signedEvent = finalizeEvent(unsignedEvent, this.privateKey);
+    this.pool.publish(this.relays, signedEvent);
+    return signedEvent;
+  }
+
+  public subscribeToDirectMessages(
+    otherUserPublicKey: string,
+    onMessage: (message: Event) => void,
+  ) {
+    if (!this.isLoggedIn() || !this.publicKey) {
+      throw new Error("User not logged in. Cannot subscribe to direct messages.");
+    }
+
+    this.subscribeToEvents(
+      [
+        {
+          kinds: [4],
+          authors: [this.publicKey],
+          "#p": [otherUserPublicKey],
+        },
+        {
+          kinds: [4],
+          authors: [otherUserPublicKey],
+          "#p": [this.publicKey],
+        },
+      ],
+      onMessage,
+    );
   }
 }
 

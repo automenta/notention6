@@ -75,7 +75,7 @@ export const suggestion = (
         suggestionList.addEventListener("click", (event) => {
           const target = event.target as HTMLButtonElement;
           if (target.matches(".suggestion-item")) {
-            props.command({ id: target.innerText, label: target.innerText });
+            props.command({ id: target.innerText });
             popup[0].hide();
           }
         });

@@ -52,6 +52,7 @@
     "@testing-library/dom": "^10.0.0",
     "@testing-library/jest-dom": "^6.4.8",
     "@types/node": "^22.15.21",
+    "@types/sortablejs": "^1.15.8",
     "@vitest/ui": "^1.6.0",
     "esbuild": "^0.25.5",
     "eslint": "^9.25.0",

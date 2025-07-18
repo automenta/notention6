@@ -217,34 +217,17 @@ export class AIService {
   public async getOntologySuggestions(
     existingOntology: OntologyTree,
     context?: string,
-  ): Promise<{ label: string; description?: string }[]> {
+  ): Promise<any[]> {
     if (!this.isAIEnabled()) return [];
 
     try {
-      const existingTags = Object.values(existingOntology.nodes || {})
-        .map((n) => n.label)
-        .join(", ");
-      const prompt = `Given these existing ontology tags: ${existingTags}
-
-${context ? `Context: ${context}\n\n` : ""}Suggest 3-5 new useful tags that would complement this ontology. Provide each tag in the format: #TagName - Description`;
+      const existingOntologyString = JSON.stringify(existingOntology, null, 2);
+      const prompt = `Given the following ontology, suggest new nodes (with labels, attributes, and parentId if applicable) to expand it. Return a JSON array of suggestions.\n\nOntology:\n${existingOntologyString}\n\n${context ? `Context: ${context}\n\n` : ""}Suggestions:`;
 
       const response = await this.provider.generateText(prompt);
 
-      // Parse the response to extract structured suggestions
-      const suggestions: { label: string; description?: string }[] = [];
-      const lines = response.split("\n");
-
-      for (const line of lines) {
-        const match = line.match(/(#\w+)\s*-\s*(.+)/);
-        if (match) {
-          suggestions.push({
-            label: match[1],
-            description: match[2].trim(),
-          });
-        }
-      }
-
-      return suggestions.slice(0, 5); // Limit to 5 suggestions
+      const jsonResponse = JSON.parse(response.match(/```json\n([\s\S]*?)\n```/)?.[1] || response);
+      return jsonResponse;
     } catch (error) {
       console.error("Failed to generate ontology suggestions:", error);
       return [];

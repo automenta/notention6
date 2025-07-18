@@ -118,6 +118,14 @@ export function createChatPanel(): HTMLElement {
   // Note: In a real implementation, we'd want to set up proper reactivity
   // For now, the component will be re-rendered when the main app state changes
 
+  const { addDirectMessage } = useAppStore.getState();
+
+  if (selectedContact) {
+      ChatService.subscribeToMessages(selectedContact.pubkey, (message) => {
+          addDirectMessage(message);
+      });
+  }
+
   renderMessageView();
 
   return container;

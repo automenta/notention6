@@ -3,10 +3,10 @@ import { useAppStore } from "../store";
 import { createButton } from "./Button";
 import "./NetworkPanel.css";
 import { Match, Note } from "../../shared/types";
-import { ChatService } from "../services/ChatService";
+import { nostrService } from "../services/NostrService";
 
 export function createNetworkPanel(): HTMLElement {
-  const { matches, nostrRelays, addNostrRelay, removeNostrRelay } =
+  const { matches, nostrRelays, addNostrRelay, removeNostrRelay, nostrService: appNostrService } =
     useAppStore.getState();
 
   const container = document.createElement("div");
@@ -55,12 +55,40 @@ export function createNetworkPanel(): HTMLElement {
     }
   };
 
-  ChatService.subscribeToPublicFeed((note) => {
-    state.publicFeedNotes = [...state.publicFeedNotes, note];
-    renderPublicFeed();
-  });
+  const nostr = appNostrService || nostrService;
+
+  nostr.subscribeToEvents(
+    [{ kinds: [1], limit: 20 }],
+    (event) => {
+        const note: Note = {
+            id: event.id,
+            title: event.tags.find(t => t[0] === 'title')?.[1] || 'Untitled',
+            content: event.content,
+            createdAt: new Date(event.created_at * 1000),
+            updatedAt: new Date(event.created_at * 1000),
+            status: 'published',
+            tags: event.tags.filter(t => t[0] === 't').map(t => `#${t[1]}`),
+            values: {},
+            fields: {},
+            pinned: false,
+            archived: false,
+        };
+        state.publicFeedNotes = [...state.publicFeedNotes, note];
+        renderPublicFeed();
+    }
+  );
 
   renderPublicFeed();
+
+  const { ontology, notes, addMatch } = useAppStore.getState();
+  const allNotes = Object.values(notes);
+  nostr.findMatchingNotes(ontology, (localNote, remoteNote, similarity) => {
+    addMatch({
+        localNoteId: localNote.id,
+        targetNoteId: remoteNote.id,
+        similarity,
+    });
+  }, allNotes);
 
   // Matches Section
   const matchesContainer = document.createElement("div");

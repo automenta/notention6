@@ -7,6 +7,7 @@ import { createDashboard } from "./Dashboard";
 import { createNotesList } from "./NotesList";
 import { createNoteEditor } from "./NoteEditor";
 import { createOntologyEditor } from "./OntologyEditor";
+import { createFolderView } from "./FolderView";
 import { createNetworkPanel } from "./NetworkPanel";
 import { createContactsView } from "./ContactsView";
 import { createChatPanel } from "./ChatPanel";
@@ -79,6 +80,9 @@ export function renderApp(rootElement: HTMLElement) {
             break;
           case "notes":
             currentView = createNotesList();
+            break;
+          case "folders":
+            currentView = createFolderView();
             break;
           case "ontology":
             currentView = createOntologyEditor({ onSave: () => {} });

@@ -7,6 +7,9 @@ import { Note } from "../../shared/types";
 export function createNotesList(): HTMLElement {
   const {
     notes,
+    folders,
+    createFolder,
+    updateNote,
     searchQuery,
     setSearchQuery,
     setCurrentNote,
@@ -64,6 +67,19 @@ export function createNotesList(): HTMLElement {
   viewSwitcher.appendChild(archivedButton);
 
   searchFilterContainer.appendChild(viewSwitcher);
+
+  const newFolderButton = createButton({
+    label: "New Folder",
+    onClick: () => {
+      const folderName = prompt("Enter new folder name:");
+      if (folderName) {
+        createFolder({ name: folderName });
+      }
+    },
+    variant: "secondary",
+  });
+  searchFilterContainer.appendChild(newFolderButton);
+
   container.appendChild(searchFilterContainer);
 
   // Notes List
@@ -157,6 +173,34 @@ export function createNotesList(): HTMLElement {
         }
 
         listItem.appendChild(noteMeta);
+
+        const folderSelect = document.createElement("select");
+        folderSelect.className = "folder-select";
+        folderSelect.onclick = (e) => e.stopPropagation(); // Prevent note selection
+
+        const defaultOption = document.createElement("option");
+        defaultOption.textContent = "Move to...";
+        defaultOption.value = "";
+        folderSelect.appendChild(defaultOption);
+
+        Object.values(folders).forEach(folder => {
+            const option = document.createElement("option");
+            option.value = folder.id;
+            option.textContent = folder.name;
+            if (note.folderId === folder.id) {
+                option.selected = true;
+            }
+            folderSelect.appendChild(option);
+        });
+
+        folderSelect.onchange = (e) => {
+            const newFolderId = (e.target as HTMLSelectElement).value;
+            if (newFolderId) {
+                updateNote(note.id, { folderId: newFolderId });
+            }
+        };
+
+        listItem.appendChild(folderSelect);
         listElement.appendChild(listItem);
       });
     } else {

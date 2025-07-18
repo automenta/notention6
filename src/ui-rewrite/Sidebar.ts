@@ -6,6 +6,7 @@ import "./Sidebar.css";
 type AppView =
   | "dashboard"
   | "notes"
+  | "folders"
   | "ontology"
   | "network"
   | "contacts"
