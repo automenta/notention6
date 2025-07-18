@@ -70,12 +70,18 @@ interface AppActions {
 
   // UI actions
   setSidebarTab: (tab: AppState["sidebarTab"]) => void;
+  toggleSidebar: () => void;
   setEditorContent: (content: string) => void;
   setIsEditing: (editing: boolean) => void;
+  setNoteView: (view: AppState["noteView"]) => void;
 
   // Loading and error actions
   setLoading: (key: keyof AppState["loading"], loading: boolean) => void;
   setError: (key: keyof AppState["errors"], error: string | undefined) => void;
+
+  // Notifications
+  addNotification: (notification: Notification) => void;
+  removeNotification: (id: string) => void;
 
   // Nostr specific actions
   initializeNostr: () => Promise<void>; // Renamed from initializeNostrService
@@ -115,6 +121,7 @@ interface AppActions {
   ) => Promise<void>;
 
   // Contacts (Buddy List)
+  setContacts: (contacts: Contact[]) => void;
   addContact: (contact: Contact) => Promise<void>;
   removeContact: (pubkey: string) => Promise<void>;
   updateContactAlias: (pubkey: string, alias: string) => Promise<void>;
@@ -130,6 +137,9 @@ interface AppActions {
 
   // AI Service
   getAIService: () => AIService;
+
+  // Theme
+  setTheme: (theme: "light" | "dark" | "system") => void;
 }
 
 type AppStore = AppState & AppActions;
@@ -141,6 +151,8 @@ const isOnline = () => navigator.onLine;
 type NostrSubscriptionStore = {
   [id: string]: any; // nostr-tools subscription object
 };
+
+const aiService = new AIService();
 
 export const useAppStore = create<AppStore>((set, get) => ({
   // Initial state
@@ -209,8 +221,10 @@ export const useAppStore = create<AppStore>((set, get) => ({
     | "settings"
     | "contacts"
     | "chats", // Added 'chats' back
+  sidebarCollapsed: false,
   searchQuery: "",
   searchFilters: {},
+  noteView: "all",
 
   matches: [],
   directMessages: [],
@@ -239,8 +253,12 @@ export const useAppStore = create<AppStore>((set, get) => ({
   },
 
   errors: {
+    notes: undefined,
+    ontology: undefined,
+    network: undefined,
     sync: undefined, // For sync errors
   },
+  notifications: [], // Initialize notifications array
 
   lastSyncTimestamp: undefined, // Timestamp of the last successful full sync
 
@@ -335,6 +353,9 @@ export const useAppStore = create<AppStore>((set, get) => ({
         ...userProfileData.preferences,
       };
 
+      aiService.preferences = userProfileData.preferences;
+      aiService.reinitializeModels();
+
       const foldersList = await FolderService.getAllFolders(); // Renamed
       const foldersMap: { [id: string]: Folder } = {};
       foldersList.forEach((folder) => (foldersMap[folder.id] = folder)); // Iterate over foldersList
@@ -362,6 +383,9 @@ export const useAppStore = create<AppStore>((set, get) => ({
         templates: templatesMap,
         nostrRelays: relaysToUseInStore,
       });
+
+      // Apply initial theme based on user profile
+      get().setTheme(userProfileData.preferences.theme);
 
       await get().initializeNostr(); // This might update userProfile with nostrPubkey
 
@@ -898,12 +922,20 @@ export const useAppStore = create<AppStore>((set, get) => ({
     set({ sidebarTab: tab });
   },
 
+  toggleSidebar: () => {
+    set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed }));
+  },
+
   setEditorContent: (content: string) => {
     set({ editorContent: content });
   },
 
   setIsEditing: (editing: boolean) => {
     set({ isEditing: editing });
+  },
+
+  setNoteView: (view: AppState["noteView"]) => {
+    set({ noteView: view });
   },
 
   setLoading: (key: keyof AppState["loading"], loading: boolean) => {
@@ -916,7 +948,36 @@ export const useAppStore = create<AppStore>((set, get) => ({
     set((state) => ({
       errors: { ...state.errors, [key]: error },
     }));
+    if (error) {
+      get().addNotification({
+        id: uuidv4(),
+        type: "error",
+        message: `Error: ${key}`,
+        description: error,
+        timestamp: new Date(),
+        timeout: 5000,
+      });
+    }
   },
+
+  addNotification: (notification: Notification) => {
+    set((state) => ({
+      notifications: [...state.notifications, notification],
+    }));
+    if (notification.timeout) {
+      setTimeout(() => {
+        get().removeNotification(notification.id);
+      }, notification.timeout);
+    }
+  },
+
+  removeNotification: (id: string) => {
+    set((state) => ({
+      notifications: state.notifications.filter((n) => n.id !== id),
+    }));
+  },
+
+  
 
   // Nostr Actions Implementation
   initializeNostr: async () => {
@@ -2226,6 +2287,13 @@ export const useAppStore = create<AppStore>((set, get) => ({
     });
   },
 
+  setContacts: (contacts: Contact[]) => {
+    const { userProfile, updateUserProfile } = get();
+    if (userProfile) {
+      updateUserProfile({ ...userProfile, contacts });
+    }
+  },
+
   addContact: async (contact: Contact) => {
     const { userProfile, updateUserProfile } = get();
     if (!userProfile) return;
@@ -2322,6 +2390,8 @@ export const useAppStore = create<AppStore>((set, get) => ({
       const updatedProfile = { ...userProfile, ...profileUpdates };
       await DBService.saveUserProfile(updatedProfile);
       set({ userProfile: updatedProfile });
+      aiService.preferences = updatedProfile.preferences;
+      aiService.reinitializeModels();
     }
   },
 
@@ -2341,7 +2411,14 @@ export const useAppStore = create<AppStore>((set, get) => ({
   },
 
   getAIService: () => {
-    const { userProfile } = get();
-    return new AIService(userProfile?.preferences);
+    return aiService;
+  },
+
+  setTheme: (theme: "light" | "dark" | "system") => {
+    const { userProfile, updateUserProfile } = get();
+    if (userProfile) {
+      const newPreferences = { ...userProfile.preferences, theme };
+      updateUserProfile({ ...userProfile, preferences: newPreferences });
+    }
   },
 }));

@@ -44,6 +44,13 @@ const templatesStore = localforage.createInstance({
   description: "Templates storage",
 });
 
+const relaysStore = localforage.createInstance({
+  name: "Notention",
+  storeName: "relays",
+  version: 1.0,
+  description: "Relays storage",
+});
+
 const messagesStore = localforage.createInstance({
   name: "Notention",
   storeName: "messages",
@@ -239,6 +246,15 @@ export class DBService {
 
   static async deleteTemplate(id: string): Promise<void> {
     await templatesStore.removeItem(id);
+  }
+
+  // Relays operations
+  static async saveRelays(relays: string[]): Promise<void> {
+    await relaysStore.setItem("list", relays);
+  }
+
+  static async getRelays(): Promise<string[] | null> {
+    return await relaysStore.getItem("list");
   }
 
   static async getDefaultTemplates(): Promise<NotentionTemplate[]> {

@@ -148,14 +148,17 @@ export interface AppState {
   // UI state
   currentNoteId?: string;
   sidebarTab:
+    | "dashboard"
     | "notes"
     | "ontology"
     | "network"
     | "settings"
     | "contacts"
-    | "chats"; // Added 'contacts' and 'chats'
+    | "chats";
+  sidebarCollapsed: boolean;
   searchQuery: string;
   searchFilters: SearchFilters;
+  noteView: 'all' | 'favorites' | 'archived';
 
   // Network state
   matches: Match[];
@@ -179,5 +182,18 @@ export interface AppState {
     notes?: string;
     ontology?: string;
     network?: string;
+    sync?: string; // Added sync error
   };
+
+  // Notifications
+  notifications: Notification[];
+}
+
+export interface Notification {
+  id: string;
+  type: "info" | "success" | "warning" | "error";
+  message: string;
+  description?: string;
+  timestamp: Date;
+  timeout?: number; // Milliseconds after which to auto-dismiss
 }
