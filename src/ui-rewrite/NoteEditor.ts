@@ -120,34 +120,38 @@ export function createNoteEditor(noteId?: string): HTMLElement {
     },
     onUpdate: ({ editor }) => {
       const json = editor.getJSON();
-      const properties: { [key: string]: any } = {};
-      let content = "";
+      const newValues: { [key: string]: any } = {};
+      const contentParts: any[] = [];
 
-      const html = editor.getHTML();
-      const tempDiv = document.createElement("div");
-      tempDiv.innerHTML = html;
+      if (json.content) {
+        json.content.forEach((node: any) => {
+          if (node.type === 'property') {
+            const key = node.attrs.key;
+            const value = node.content?.[0]?.text || '';
+            newValues[key] = value;
+          } else {
+            contentParts.push(node);
+          }
+        });
+      }
 
-      const properties: { [key: string]: any } = {};
-      const contentNodes = [];
+      const newContent = {
+        type: 'doc',
+        content: contentParts,
+      };
 
-      tempDiv.childNodes.forEach((node) => {
-        if (
-          node.nodeType === Node.ELEMENT_NODE &&
-          (node as HTMLElement).dataset.property
-        ) {
-          const key = (node as HTMLElement).dataset.property;
-          properties[key] = node.textContent?.split(":: ")[1] || "";
-        } else {
-          contentNodes.push(node.cloneNode(true));
-        }
+      // This is a temporary solution to get the HTML content.
+      // A better solution would be to use a proper HTML serializer.
+      const tempEditor = new Editor({
+        extensions: [StarterKit],
+        content: newContent,
       });
-
-      const contentDiv = document.createElement("div");
-      contentNodes.forEach((node) => contentDiv.appendChild(node));
+      const contentHtml = tempEditor.getHTML();
+      tempEditor.destroy();
 
       updateNote(note.id, {
-        content: contentDiv.innerHTML,
-        values: properties,
+        content: contentHtml,
+        values: newValues,
       });
     },
   });

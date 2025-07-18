@@ -84,7 +84,12 @@ export function createMetadataSidebar(): HTMLElement {
   const addValueButton = createButton({
     label: "Add Value",
     onClick: () => {
-      const newKey = `newKey${Object.keys(note.values).length}`;
+      let i = 0;
+      let newKey = "newKey";
+      while (note.values && newKey in note.values) {
+        i++;
+        newKey = `newKey${i}`;
+      }
       handleValueChange(newKey, newKey, "");
     },
     variant: "secondary",
@@ -102,6 +107,17 @@ export function createMetadataSidebar(): HTMLElement {
   fieldsContainer.className = "metadata-items";
   fieldsSection.appendChild(fieldsContainer);
 
+  const handleFieldChange = (key: string, value: string) => {
+    const newFields = { ...note.fields, [key]: value };
+    updateNote(note.id, { fields: newFields });
+  };
+
+  const handleFieldDelete = (key: string) => {
+    const newFields = { ...note.fields };
+    delete newFields[key];
+    updateNote(note.id, { fields: newFields });
+  };
+
   const renderFields = () => {
     fieldsContainer.innerHTML = "";
     for (const key in note.fields) {
@@ -114,21 +130,35 @@ export function createMetadataSidebar(): HTMLElement {
       const input = document.createElement("input");
       input.type = "text";
       input.value = note.fields[key];
-      input.onchange = (e) => {
-        const newFields = {
-          ...note.fields,
-          [key]: (e.target as HTMLInputElement).value,
-        };
-        updateNote(note.id, { fields: newFields });
-      };
+      input.onchange = (e) =>
+        handleFieldChange(key, (e.target as HTMLInputElement).value);
+
+      const deleteButton = createButton({
+        label: "x",
+        onClick: () => handleFieldDelete(key),
+        variant: "danger",
+      });
 
       item.appendChild(label);
       item.appendChild(input);
+      item.appendChild(deleteButton);
       fieldsContainer.appendChild(item);
     }
   };
 
   renderFields();
+
+  const addFieldButton = createButton({
+    label: "Add Field",
+    onClick: () => {
+      const newField = prompt("Enter new field name:");
+      if (newField && (!note.fields || !(newField in note.fields))) {
+        handleFieldChange(newField, "");
+      }
+    },
+    variant: "secondary",
+  });
+  fieldsSection.appendChild(addFieldButton);
 
   sidebar.appendChild(valuesSection);
   sidebar.appendChild(fieldsSection);
