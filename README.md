@@ -4,6 +4,17 @@ A lightweight, client-side Progressive Web App (PWA) for decentralized note-taki
 
 ## Features
 
+## Getting Started
+
+1. **Installation**:
+   - As a Progressive Web App (PWA), Notention can be installed directly from your browser on both desktop and mobile devices. Look for the "Install" button in the address bar or browser menu.
+   - Once installed, it works offline, caching your notes and syncing with the network when you're online.
+
+2. **Account Setup**:
+   - On first launch, you'll be guided through an account creation wizard.
+   - Notention uses a Nostr keypair for identity. You can either generate a new one or import an existing private key.
+   - **Important**: Back up your private key securely. It is the only way to recover your account.
+
 ### Instant Messaging
 
 - Using secure Nostr Direct Messages (DM)
