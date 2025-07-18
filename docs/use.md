@@ -35,9 +35,10 @@ Welcome to Notention! This guide will help you get started with using the app fo
 
     - Understanding Nostr and Relays
     - Connecting to Relays (Public and Private - See `relays.md`)
-    - Publishing Notes to Nostr (Public vs. Private/Encrypted)
+    - Publishing Notes to Nostr (Draft vs. Private vs. Published)
     - Privacy Settings for Sharing
     - Network Matching Panel (Discovering related notes/users)
+    - Public Feed (Viewing notes from the network)
     - Direct Messages (Secure Chat)
 
 ## 6. Advanced Features

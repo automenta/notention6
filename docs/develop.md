@@ -36,7 +36,7 @@
     tags: string[];
     values: { [key: string]: string };
     fields: { [key: string]: string };
-    status: "draft" | "published";
+    status: "draft" | "published" | "private";
     createdAt: Date;
     updatedAt: Date;
   }

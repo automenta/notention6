@@ -170,24 +170,6 @@ export function createSettings(): HTMLElement {
   const sharingForm = document.createElement("form");
   sharingForm.className = "sharing-form";
 
-  const sharePubliclyLabel = document.createElement("label");
-  sharePubliclyLabel.textContent = "Share Notes Publicly";
-  const sharePubliclyCheckbox = document.createElement("input");
-  sharePubliclyCheckbox.type = "checkbox";
-  sharePubliclyCheckbox.checked =
-    userProfile?.privacySettings?.sharePublicNotesGlobally || false;
-  sharePubliclyCheckbox.onchange = (e) => {
-    const newUserProfile: UserProfile = {
-      ...userProfile!,
-      privacySettings: {
-        ...userProfile!.privacySettings!,
-        sharePublicNotesGlobally: (e.target as HTMLInputElement).checked,
-      },
-    };
-    updateUserProfile(newUserProfile);
-  };
-  sharingForm.appendChild(sharePubliclyLabel);
-  sharingForm.appendChild(sharePubliclyCheckbox);
   sharingSection.appendChild(sharingForm);
   container.appendChild(sharingSection);
 

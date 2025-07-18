@@ -71,8 +71,11 @@ A lightweight, client-side Progressive Web App (PWA) for decentralized note-taki
   - Uses client-side graph traversal for matching.
   - Matches shown in “Matches” panel with links to view notes or contact authors.
 - **Privacy Controls**:
-  - Users choose which notes, tags, or values to share (public, private, none).
-  - UI indicators (e.g., “Public” badge on shared notes).
+  - Notes are private by default.
+  - Users can set note status to "draft", "private", or "published".
+  - UI indicators (e.g., “Published” status on shared notes).
+- **Public Feed**:
+  - A public feed of notes from the Nostr network is displayed in the "Network" panel.
 - **Notifications**:
   - Real-time alerts for matches or channel activity in a notification bar.
 

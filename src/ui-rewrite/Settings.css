@@ -7,6 +7,27 @@
   gap: 1.5rem;
 }
 
+.settings-tabs {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.settings-tabs .btn {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom: none;
+  background-color: transparent;
+  color: var(--text-secondary-color);
+}
+
+.settings-tabs .btn.active {
+  background-color: var(--card-background-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-bottom: none;
+}
+
 .settings-header {
   border-bottom: 1px solid var(--border-color);
   padding-bottom: 0.5rem;

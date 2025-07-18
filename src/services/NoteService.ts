@@ -273,7 +273,7 @@ export class NoteService {
       tags: [],
       values: {},
       fields: {},
-      status: "draft",
+      status: "private",
       createdAt: now,
       updatedAt: now,
       pinned: false,

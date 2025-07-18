@@ -278,17 +278,22 @@ export function createNoteEditor(): HTMLElement {
 
   mainEditorContainer.insertBefore(toolbar, editorElement);
 
-  // Save Button
-  const saveButton = createButton({
-    label: "Save",
+  const statusButton = createButton({
+    label: `Status: ${note.status}`,
     onClick: () => {
-      // The note is already updated on every change, so this button is just for show for now.
-      // In a real app, you might want to debounce the updates and have an explicit save.
-      console.log("Note saved!");
+      const newStatus =
+        note.status === "draft"
+          ? "private"
+          : note.status === "private"
+            ? "published"
+            : "draft";
+      updateNote(note.id, { status: newStatus });
     },
-    variant: "primary",
+    variant: "secondary",
   });
-  mainEditorContainer.appendChild(saveButton);
+  toolbar.appendChild(statusButton);
+
+  mainEditorContainer.insertBefore(toolbar, editorElement);
 
   // Metadata Sidebar
   const metadataSidebar = createMetadataSidebar();

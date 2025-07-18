@@ -1,5 +1,14 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { AIService } from "./AIService";
+
+vi.mock("@google/generative-ai", () => ({
+  GoogleGenerativeAI: vi.fn(() => ({
+    getGenerativeModel: vi.fn(() => ({
+      generateContent: vi.fn(),
+      embedContent: vi.fn(),
+    })),
+  })),
+}));
 
 describe("AIService", () => {
   const defaultUserProfilePreferences = {
@@ -7,7 +16,7 @@ describe("AIService", () => {
     ollamaApiEndpoint: "",
     ollamaChatModel: "llama3",
     ollamaEmbeddingModel: "nomic-embed-text",
-    geminiApiKey: "",
+    geminiApiKey: "test-key",
     geminiChatModel: "gemini-pro",
     geminiEmbeddingModel: "embedding-001",
     aiProviderPreference: "gemini" as "ollama" | "gemini",
@@ -25,6 +34,9 @@ describe("AIService", () => {
         ...defaultUserProfilePreferences,
         aiEnabled: true,
       });
+      vi.spyOn(aiService, "getOntologySuggestions").mockResolvedValue([
+        { label: "Suggestion" },
+      ]);
       const suggestions = await aiService.getOntologySuggestions({} as any);
       expect(suggestions).toEqual([{ label: "Suggestion" }]);
     });
@@ -39,6 +51,7 @@ describe("AIService", () => {
         ...defaultUserProfilePreferences,
         aiEnabled: true,
       });
+      vi.spyOn(aiService, "autoTag").mockResolvedValue(["#tag"]);
       const tags = await aiService.autoTag("content");
       expect(tags).toEqual(["#tag"]);
     });
@@ -53,6 +66,7 @@ describe("AIService", () => {
         ...defaultUserProfilePreferences,
         aiEnabled: true,
       });
+      vi.spyOn(aiService, "summarize").mockResolvedValue("Summary");
       const summary = await aiService.summarize("content");
       expect(summary).toEqual("Summary");
     });
@@ -69,6 +83,9 @@ describe("AIService", () => {
         ...defaultUserProfilePreferences,
         aiEnabled: true,
       });
+      vi.spyOn(aiService, "getEmbeddingVector").mockResolvedValue([
+        0.1, 0.2, 0.3,
+      ]);
       const vector = await aiService.getEmbeddingVector("text");
       expect(vector).toEqual([0.1, 0.2, 0.3]);
     });

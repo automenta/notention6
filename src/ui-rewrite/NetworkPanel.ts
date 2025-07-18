@@ -2,7 +2,8 @@
 import { useAppStore } from "../store";
 import { createButton } from "./Button";
 import "./NetworkPanel.css";
-import { Match } from "../../shared/types";
+import { Match, Note } from "../../shared/types";
+import { ChatService } from "../services/ChatService";
 
 export function createNetworkPanel(): HTMLElement {
   const { matches, nostrRelays, addNostrRelay, removeNostrRelay } =
@@ -18,6 +19,48 @@ export function createNetworkPanel(): HTMLElement {
   title.textContent = "Network";
   header.appendChild(title);
   container.appendChild(header);
+
+  // Public Feed Section
+  const publicFeedContainer = document.createElement("div");
+  publicFeedContainer.className = "public-feed-container";
+  const publicFeedTitle = document.createElement("h2");
+  publicFeedTitle.textContent = "Public Feed";
+  publicFeedContainer.appendChild(publicFeedTitle);
+
+  const publicFeedList = document.createElement("ul");
+  publicFeedList.className = "public-feed-list";
+  publicFeedContainer.appendChild(publicFeedList);
+  container.appendChild(publicFeedContainer);
+
+  const state: { publicFeedNotes: Note[] } = {
+    publicFeedNotes: [],
+  };
+
+  const renderPublicFeed = () => {
+    publicFeedList.innerHTML = "";
+    if (state.publicFeedNotes.length > 0) {
+      state.publicFeedNotes.forEach((note) => {
+        const listItem = document.createElement("li");
+        listItem.className = "feed-item";
+        listItem.innerHTML = `
+          <p><strong>${note.title}</strong></p>
+          <span>${note.content.substring(0, 100)}...</span>
+        `;
+        publicFeedList.appendChild(listItem);
+      });
+    } else {
+      const noFeedMessage = document.createElement("p");
+      noFeedMessage.textContent = "No public notes found.";
+      publicFeedList.appendChild(noFeedMessage);
+    }
+  };
+
+  ChatService.subscribeToPublicFeed((note) => {
+    state.publicFeedNotes = [...state.publicFeedNotes, note];
+    renderPublicFeed();
+  });
+
+  renderPublicFeed();
 
   // Matches Section
   const matchesContainer = document.createElement("div");

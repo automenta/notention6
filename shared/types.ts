@@ -6,13 +6,12 @@ export interface Note {
   tags: string[];
   values: { [key: string]: string };
   fields: { [key: string]: string };
-  status: "draft" | "published";
+  status: "draft" | "published" | "private";
   createdAt: Date;
   updatedAt: Date;
   folderId?: string;
   pinned?: boolean;
   archived?: boolean;
-  isSharedPublicly?: boolean; // Indicates if the note has been published publicly to Nostr
   embedding?: number[]; // Optional embedding vector for semantic search/matching
   nostrSyncEventId?: string; // ID of the Nostr event used for syncing this note (Kind 4)
 }
@@ -39,7 +38,7 @@ export interface UserProfile {
   preferences: {
     theme: "light" | "dark" | "system";
     aiEnabled: boolean;
-    defaultNoteStatus: "draft" | "published";
+    defaultNoteStatus: "draft" | "published" | "private";
     ollamaApiEndpoint?: string;
     ollamaEmbeddingModel?: string; // e.g., 'nomic-embed-text', 'mxbai-embed-large'
     ollamaChatModel?: string; // e.g., 'llama3', 'mistral'
@@ -52,7 +51,6 @@ export interface UserProfile {
   };
   nostrRelays?: string[]; // User's preferred relays
   privacySettings?: {
-    sharePublicNotesGlobally: boolean; // A master switch for all public sharing
     shareTagsWithPublicNotes: boolean;
     shareValuesWithPublicNotes: boolean;
     shareEmbeddingsWithPublicNotes?: boolean; // New setting for sharing embeddings
@@ -130,7 +128,7 @@ export interface SearchFilters {
   tags?: string[];
   values?: { [key: string]: string };
   fields?: { [key: string]: string };
-  status?: "draft" | "published";
+  status?: "draft" | "published" | "private";
   folderId?: string;
   dateRange?: {
     from: Date;
