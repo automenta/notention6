@@ -45,7 +45,9 @@ const mockUserProfile: UserProfile = {
 };
 
 const mockAIService = new AIService(mockUserProfile.preferences);
-vi.spyOn(mockAIService, "getEmbeddingVector").mockResolvedValue([0.1, 0.2, 0.3]);
+vi.spyOn(mockAIService, "getEmbeddingVector").mockResolvedValue([
+  0.1, 0.2, 0.3,
+]);
 
 vi.mock("../store", () => ({
   useAppStore: {
@@ -133,7 +135,10 @@ describe("NoteService", () => {
     });
 
     it("createNote should not generate embedding if AI is disabled", async () => {
-      const disabledAIService = new AIService({ ...mockUserProfile.preferences, aiEnabled: false });
+      const disabledAIService = new AIService({
+        ...mockUserProfile.preferences,
+        aiEnabled: false,
+      });
       vi.spyOn(disabledAIService, "getEmbeddingVector");
       (useAppStore.getState as vi.Mock).mockReturnValue({
         userProfile: {

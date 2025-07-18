@@ -153,7 +153,7 @@ export class NostrService {
   }
 
   public async removeRelay(url: string): Promise<void> {
-    this.relays = this.relays.filter(r => r !== url);
+    this.relays = this.relays.filter((r) => r !== url);
     await DBService.saveRelays(this.relays);
   }
 
@@ -204,9 +204,7 @@ export class NostrService {
     }
 
     const relaysToPublish =
-      targetRelays && targetRelays.length > 0
-        ? targetRelays
-        : this.relays;
+      targetRelays && targetRelays.length > 0 ? targetRelays : this.relays;
     if (relaysToPublish.length === 0) {
       console.warn("No relays configured or provided to publish note.");
       return [];
@@ -359,9 +357,7 @@ export class NostrService {
     subscriptionId?: string,
   ) {
     const relaysToUse =
-      targetRelays && targetRelays.length > 0
-        ? targetRelays
-        : this.relays;
+      targetRelays && targetRelays.length > 0 ? targetRelays : this.relays;
     if (relaysToUse.length === 0) {
       console.warn("No relays to subscribe to.");
       return null; // Or handle appropriately
@@ -481,9 +477,7 @@ export class NostrService {
     const signedEvent: Event = finalizeEvent(unsignedEvent, this.privateKey);
 
     const relaysToPublish =
-      targetRelays && targetRelays.length > 0
-        ? targetRelays
-        : this.relays;
+      targetRelays && targetRelays.length > 0 ? targetRelays : this.relays;
     if (relaysToPublish.length === 0) {
       console.warn(
         "No relays configured or provided to publish note for sync.",
@@ -542,9 +536,7 @@ export class NostrService {
     }
 
     const relaysToUse =
-      targetRelays && targetRelays.length > 0
-        ? targetRelays
-        : this.relays;
+      targetRelays && targetRelays.length > 0 ? targetRelays : this.relays;
     if (relaysToUse.length === 0) return [];
 
     const filters: Filter[] = [
@@ -630,9 +622,7 @@ export class NostrService {
     const signedEvent: Event = finalizeEvent(unsignedEvent, this.privateKey);
 
     const relaysToPublish =
-      targetRelays && targetRelays.length > 0
-        ? targetRelays
-        : this.relays;
+      targetRelays && targetRelays.length > 0 ? targetRelays : this.relays;
     if (relaysToPublish.length === 0) {
       console.warn("No relays for ontology sync.");
       return [];
@@ -669,9 +659,7 @@ export class NostrService {
     }
 
     const relaysToUse =
-      targetRelays && targetRelays.length > 0
-        ? targetRelays
-        : this.relays;
+      targetRelays && targetRelays.length > 0 ? targetRelays : this.relays;
     if (relaysToUse.length === 0) return null;
 
     const filters: Filter[] = [
@@ -715,9 +703,7 @@ export class NostrService {
     targetRelays?: string[],
   ): Promise<Event | null> {
     const relaysToUse =
-      targetRelays && targetRelays.length > 0
-        ? targetRelays
-        : this.relays;
+      targetRelays && targetRelays.length > 0 ? targetRelays : this.relays;
     if (relaysToUse.length === 0) {
       console.warn("No relays to fetch event from.");
       return null;
@@ -771,9 +757,7 @@ export class NostrService {
     const signedEvent: Event = finalizeEvent(unsignedEvent, this.privateKey);
 
     const relaysToPublish =
-      targetRelays && targetRelays.length > 0
-        ? targetRelays
-        : this.relays;
+      targetRelays && targetRelays.length > 0 ? targetRelays : this.relays;
     if (relaysToPublish.length === 0) {
       console.warn("No relays for deletion event.");
       return [];
@@ -811,9 +795,7 @@ export class NostrService {
     }
 
     const relaysToUse =
-      targetRelays && targetRelays.length > 0
-        ? targetRelays
-        : this.relays;
+      targetRelays && targetRelays.length > 0 ? targetRelays : this.relays;
     if (relaysToUse.length === 0) {
       console.warn("No relays configured to fetch deletion events.");
       return [];
@@ -857,9 +839,7 @@ export class NostrService {
     }
 
     const relaysToUse =
-      targetRelays && targetRelays.length > 0
-        ? targetRelays
-        : this.relays;
+      targetRelays && targetRelays.length > 0 ? targetRelays : this.relays;
     if (relaysToUse.length === 0) return null;
 
     const filters: Filter[] = [
@@ -920,9 +900,7 @@ export class NostrService {
     const signedEvent: Event = finalizeEvent(unsignedEvent, this.privateKey);
 
     const relaysToPublish =
-      targetRelays && targetRelays.length > 0
-        ? targetRelays
-        : this.relays;
+      targetRelays && targetRelays.length > 0 ? targetRelays : this.relays;
     if (relaysToPublish.length === 0) {
       console.warn("No relays for contact list sync.");
       return [];

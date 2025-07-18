@@ -1,7 +1,47 @@
-/* Reset and base styles can be added here if needed */
+/* CSS Variables for consistent theming */
+:root {
+  --primary-color: #1877f2;
+  --secondary-color: #f8f9fa;
+  --danger-color: #dc3545;
+  --text-color: #1c1e21;
+  --text-secondary-color: #65676b;
+  --text-tertiary-color: #8a8d91;
+  --border-color: #ced4da;
+  --background-color: #f0f2f5;
+  --card-background-color: #ffffff;
+  --hover-background-color: #f2f3f4;
+  --success-color: #42b883;
+  --warning-color: #ffc107;
+  --info-color: #17a2b8;
+}
+
+/* Reset and base styles */
 body {
-  font-family: sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   margin: 0;
-  background-color: #f0f2f5;
-  color: #1c1e21;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  line-height: 1.5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: inherit;
+  padding: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(24, 119, 242, 0.2);
 }

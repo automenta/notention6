@@ -2,10 +2,34 @@
 .sidebar-nav {
   display: flex;
   flex-direction: column;
-  padding: 10px;
+  padding: 16px;
+  gap: 8px;
 }
 
 .sidebar-nav .btn {
-  margin-bottom: 10px;
   text-align: left;
+  justify-content: flex-start;
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.sidebar-nav .btn-primary {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+  box-shadow: 0 2px 4px rgba(24, 119, 242, 0.2);
+}
+
+.sidebar-nav .btn-secondary {
+  background-color: transparent;
+  border-color: transparent;
+  color: var(--text-color);
+}
+
+.sidebar-nav .btn-secondary:hover {
+  background-color: var(--secondary-color);
+  border-color: var(--border-color);
 }

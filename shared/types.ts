@@ -46,6 +46,7 @@ export interface UserProfile {
     geminiApiKey?: string;
     geminiEmbeddingModel?: string; // e.g., 'embedding-001', 'text-embedding-004'
     geminiChatModel?: string; // e.g., 'gemini-pro', 'gemini-1.5-flash'
+    aiProvider?: "ollama" | "gemini" | "fallback"; // Current AI provider
     aiProviderPreference?: "ollama" | "gemini"; // User preference for which provider to use if both configured
     aiMatchingSensitivity?: number; // Threshold for embedding similarity (0.0 to 1.0)
   };
@@ -158,7 +159,7 @@ export interface AppState {
   sidebarCollapsed: boolean;
   searchQuery: string;
   searchFilters: SearchFilters;
-  noteView: 'all' | 'favorites' | 'archived';
+  noteView: "all" | "favorites" | "archived";
 
   // Network state
   matches: Match[];

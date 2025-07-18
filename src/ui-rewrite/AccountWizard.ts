@@ -1,11 +1,11 @@
 // src/ui-rewrite/AccountWizard.ts
-import { getPublicKey } from 'nostr-tools/pure';
-import { DBService } from '../services/db';
-import { useAppStore } from '../store';
-import { nostrService } from '../services/NostrService';
+import { getPublicKey } from "nostr-tools/pure";
+import { DBService } from "../services/db";
+import { useAppStore } from "../store";
+import { nostrService } from "../services/NostrService";
 
 export function createAccountWizard(): HTMLElement {
-  const el = document.createElement('div');
+  const el = document.createElement("div");
   el.innerHTML = `
     <h1>Account Setup Wizard</h1>
     <p>Create a new Nostr keypair or import an existing one.</p>
@@ -15,27 +15,34 @@ export function createAccountWizard(): HTMLElement {
     <button id="import-key-btn" class="btn btn-secondary">Import Key</button>
   `;
 
-  const createKeyBtn = el.querySelector('#create-key-btn');
-  const importKeyBtn = el.querySelector('#import-key-btn');
-  const privateKeyInput = el.querySelector('#private-key-input') as HTMLInputElement;
+  const createKeyBtn = el.querySelector("#create-key-btn");
+  const importKeyBtn = el.querySelector("#import-key-btn");
+  const privateKeyInput = el.querySelector(
+    "#private-key-input",
+  ) as HTMLInputElement;
 
-  createKeyBtn?.addEventListener('click', async () => {
-    const { privateKey, publicKey } = nostrService.generateNewKeyPair();
-    await DBService.saveNostrPrivateKey(privateKey);
-    await DBService.saveNostrPublicKey(publicKey);
-    useAppStore.getState().setUserProfile({ nostrPubkey: publicKey });
+  createKeyBtn?.addEventListener("click", async () => {
+    const result = await useAppStore.getState().generateAndStoreNostrKeys();
+    if (result.publicKey) {
+      // Keys generated and stored successfully - the app will re-render automatically
+      console.log("New Nostr keypair generated successfully");
+    }
   });
 
-  importKeyBtn?.addEventListener('click', async () => {
+  importKeyBtn?.addEventListener("click", async () => {
     const privateKey = privateKeyInput.value.trim();
     if (privateKey) {
       try {
         const publicKey = getPublicKey(privateKey);
-        await DBService.saveNostrPrivateKey(privateKey);
-        await DBService.saveNostrPublicKey(publicKey);
-        useAppStore.getState().setUserProfile({ nostrPubkey: publicKey });
+        const result = await useAppStore
+          .getState()
+          .generateAndStoreNostrKeys(privateKey, publicKey);
+        if (result.publicKey) {
+          console.log("Nostr keypair imported successfully");
+        }
       } catch (e) {
-        alert('Invalid private key');
+        alert("Invalid private key");
+        console.error("Error importing key:", e);
       }
     }
   });

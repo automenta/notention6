@@ -1,14 +1,14 @@
 // src/ui-rewrite/MetadataSidebar.ts
-import { useAppStore } from '../store';
-import { createButton } from './Button';
-import './MetadataSidebar.css';
+import { useAppStore } from "../store";
+import { createButton } from "./Button";
+import "./MetadataSidebar.css";
 
 export function createMetadataSidebar(): HTMLElement {
   const { currentNoteId, notes, updateNote } = useAppStore.getState();
   const note = currentNoteId ? notes[currentNoteId] : null;
 
-  const sidebar = document.createElement('div');
-  sidebar.className = 'metadata-sidebar';
+  const sidebar = document.createElement("div");
+  sidebar.className = "metadata-sidebar";
 
   if (!note) {
     return sidebar;
@@ -32,38 +32,44 @@ export function createMetadataSidebar(): HTMLElement {
   };
 
   // Values Section
-  const valuesSection = document.createElement('div');
-  valuesSection.className = 'metadata-section';
-  const valuesTitle = document.createElement('h3');
-  valuesTitle.textContent = 'Values';
+  const valuesSection = document.createElement("div");
+  valuesSection.className = "metadata-section";
+  const valuesTitle = document.createElement("h3");
+  valuesTitle.textContent = "Values";
   valuesSection.appendChild(valuesTitle);
 
-  const valuesContainer = document.createElement('div');
-  valuesContainer.className = 'metadata-items';
+  const valuesContainer = document.createElement("div");
+  valuesContainer.className = "metadata-items";
   valuesSection.appendChild(valuesContainer);
 
   const renderValues = () => {
-    valuesContainer.innerHTML = '';
+    valuesContainer.innerHTML = "";
     for (const key in note.values) {
-      const item = document.createElement('div');
-      item.className = 'metadata-item';
+      const item = document.createElement("div");
+      item.className = "metadata-item";
 
-      const keyInput = document.createElement('input');
-      keyInput.type = 'text';
+      const keyInput = document.createElement("input");
+      keyInput.type = "text";
       keyInput.value = key;
-      keyInput.className = 'key-input';
-      keyInput.onchange = (e) => handleValueChange(key, (e.target as HTMLInputElement).value, note.values[key]);
+      keyInput.className = "key-input";
+      keyInput.onchange = (e) =>
+        handleValueChange(
+          key,
+          (e.target as HTMLInputElement).value,
+          note.values[key],
+        );
 
-      const valueInput = document.createElement('input');
-      valueInput.type = 'text';
+      const valueInput = document.createElement("input");
+      valueInput.type = "text";
       valueInput.value = note.values[key];
-      valueInput.className = 'value-input';
-      valueInput.onchange = (e) => handleValueChange(key, key, (e.target as HTMLInputElement).value);
+      valueInput.className = "value-input";
+      valueInput.onchange = (e) =>
+        handleValueChange(key, key, (e.target as HTMLInputElement).value);
 
       const deleteButton = createButton({
-        label: 'x',
+        label: "x",
         onClick: () => handleValueDelete(key),
-        variant: 'danger'
+        variant: "danger",
       });
 
       item.appendChild(keyInput);
@@ -76,40 +82,43 @@ export function createMetadataSidebar(): HTMLElement {
   renderValues();
 
   const addValueButton = createButton({
-    label: 'Add Value',
+    label: "Add Value",
     onClick: () => {
       const newKey = `newKey${Object.keys(note.values).length}`;
-      handleValueChange(newKey, newKey, '');
+      handleValueChange(newKey, newKey, "");
     },
-    variant: 'secondary'
+    variant: "secondary",
   });
   valuesSection.appendChild(addValueButton);
 
   // Fields Section
-  const fieldsSection = document.createElement('div');
-  fieldsSection.className = 'metadata-section';
-  const fieldsTitle = document.createElement('h3');
-  fieldsTitle.textContent = 'Fields';
+  const fieldsSection = document.createElement("div");
+  fieldsSection.className = "metadata-section";
+  const fieldsTitle = document.createElement("h3");
+  fieldsTitle.textContent = "Fields";
   fieldsSection.appendChild(fieldsTitle);
 
-  const fieldsContainer = document.createElement('div');
-  fieldsContainer.className = 'metadata-items';
+  const fieldsContainer = document.createElement("div");
+  fieldsContainer.className = "metadata-items";
   fieldsSection.appendChild(fieldsContainer);
 
   const renderFields = () => {
-    fieldsContainer.innerHTML = '';
+    fieldsContainer.innerHTML = "";
     for (const key in note.fields) {
-      const item = document.createElement('div');
-      item.className = 'metadata-item';
+      const item = document.createElement("div");
+      item.className = "metadata-item";
 
-      const label = document.createElement('label');
+      const label = document.createElement("label");
       label.textContent = key;
 
-      const input = document.createElement('input');
-      input.type = 'text';
+      const input = document.createElement("input");
+      input.type = "text";
       input.value = note.fields[key];
       input.onchange = (e) => {
-        const newFields = { ...note.fields, [key]: (e.target as HTMLInputElement).value };
+        const newFields = {
+          ...note.fields,
+          [key]: (e.target as HTMLInputElement).value,
+        };
         updateNote(note.id, { fields: newFields });
       };
 

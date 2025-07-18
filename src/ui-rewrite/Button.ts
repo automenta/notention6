@@ -3,7 +3,7 @@
 interface ButtonOptions {
   label: string;
   onClick: () => void;
-  variant?: "primary" | "secondary";
+  variant?: "primary" | "secondary" | "danger";
   disabled?: boolean;
 }
 

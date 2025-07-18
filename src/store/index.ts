@@ -977,8 +977,6 @@ export const useAppStore = create<AppStore>((set, get) => ({
     }));
   },
 
-  
-
   // Nostr Actions Implementation
   initializeNostr: async () => {
     get().setLoading("network", true);

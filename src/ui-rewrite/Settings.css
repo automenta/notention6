@@ -57,3 +57,69 @@
   width: 1.25rem;
   height: 1.25rem;
 }
+
+.ai-form select,
+.ai-form input[type="password"],
+.ai-form input[type="range"] {
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+.ai-form input[type="range"] {
+  width: 100%;
+  height: 6px;
+  background: var(--border-color);
+  outline: none;
+  border-radius: 3px;
+}
+
+.ai-form input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  background: var(--primary-color);
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.ai-form input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  background: var(--primary-color);
+  cursor: pointer;
+  border-radius: 50%;
+  border: none;
+}
+
+.settings-section p {
+  margin: 0.5rem 0;
+  color: var(--text-secondary-color);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.form-group label {
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+.form-group input,
+.form-group select {
+  font-family: inherit;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(var(--primary-color), 0.1);
+}
