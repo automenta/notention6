@@ -29,10 +29,10 @@ export class ChatService {
         const { nostrService: appNostrService } = useAppStore.getState();
         const nostr = appNostrService || nostrService;
         nostr.subscribeToDirectMessages(pubkey, async (event) => {
-            const { userProfile } = useAppStore.getState();
-            if (userProfile?.nostrPrivkey) {
+            const privateKey = nostr.getPrivateKey();
+            if (privateKey) {
                 const content = await nip04.decrypt(
-                    userProfile.nostrPrivkey,
+                    privateKey,
                     event.pubkey,
                     event.content,
                 );
@@ -49,37 +49,24 @@ export class ChatService {
         });
     }
 
-    static sendPublicMessage(content: string): Promise<DirectMessage> {
+    static async sendPublicMessage(content: string): Promise<DirectMessage> {
         const { nostrService: appNostrService } = useAppStore.getState();
         const nostr = appNostrService || nostrService;
-        return nostr.publishNote({
-            id: '',
-            title: '',
+        const eventIds = await nostr.publishEvent(42, content, [["c", "public"]]);
+        return {
+            id: eventIds[0] || '',
+            from: nostr.getPublicKey() || '',
+            to: 'public',
             content,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            status: 'published',
-            tags: [],
-            values: {},
-            fields: {},
-            pinned: false,
-            archived: false,
-        }).then(event => {
-            return {
-                id: event[0],
-                from: nostr.getPublicKey() || '',
-                to: 'public',
-                content,
-                timestamp: new Date(),
-                encrypted: false,
-            };
-        });
+            timestamp: new Date(),
+            encrypted: false,
+        };
     }
 
     static subscribeToPublicMessages(onMessage: (message: DirectMessage) => void) {
         const { nostrService: appNostrService } = useAppStore.getState();
         const nostr = appNostrService || nostrService;
-        nostr.subscribeToEvents([{ kinds: [1] }], (event) => {
+        nostr.subscribeToEvents([{ kinds: [42], "#c": ["public"] }], (event) => {
             const message: DirectMessage = {
                 id: event.id,
                 from: event.pubkey,

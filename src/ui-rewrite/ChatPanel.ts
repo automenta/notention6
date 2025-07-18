@@ -74,38 +74,63 @@ export function createChatPanel(): HTMLElement {
     const messagesList = document.createElement("ul");
     messagesList.className = "messages-list";
 
-    if (selectedContact.pubkey === 'public') {
-      // Public chat
+    const renderMessages = () => {
+      messagesList.innerHTML = "";
+      let messagesToShow: DirectMessage[] = [];
+
+      if (selectedContact?.pubkey === "public") {
+        messagesToShow = directMessages.filter((dm) => !dm.encrypted);
+      } else if (selectedContact) {
+        messagesToShow = directMessages.filter(
+          (dm) =>
+            (dm.from === selectedContact?.pubkey &&
+              dm.to === userProfile?.nostrPubkey) ||
+            (dm.to === selectedContact?.pubkey &&
+              dm.from === userProfile?.nostrPubkey),
+        );
+      }
+
+      messagesToShow
+        .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
+        .forEach((dm) => {
+          const listItem = document.createElement("li");
+          listItem.className =
+            dm.from === userProfile?.nostrPubkey ? "sent" : "received";
+
+          const messageBubble = document.createElement("div");
+          messageBubble.className = "message-bubble";
+          messageBubble.textContent = dm.content;
+
+          if (selectedContact?.pubkey === "public") {
+            const sender = document.createElement("small");
+            sender.className = "message-sender";
+            sender.textContent =
+              dm.from === userProfile?.nostrPubkey
+                ? "You"
+                : dm.from.substring(0, 8) + "...";
+            listItem.appendChild(sender);
+          }
+          listItem.appendChild(messageBubble);
+          messagesList.appendChild(listItem);
+        });
+
+      // Scroll to the bottom
+      messagesList.scrollTop = messagesList.scrollHeight;
+    };
+
+    if (selectedContact?.pubkey === "public") {
       ChatService.subscribeToPublicMessages((message) => {
         addDirectMessage(message);
+        renderMessages();
       });
-
-      const publicMessages = directMessages.filter(dm => !dm.encrypted);
-      publicMessages.forEach((dm) => {
-        const listItem = document.createElement("li");
-        listItem.className =
-          dm.from === userProfile?.nostrPubkey ? "sent" : "received";
-        listItem.textContent = `${dm.from.substring(0, 8)}...: ${dm.content}`;
-        messagesList.appendChild(listItem);
-      });
-    } else {
-      // Direct messages
-      const messagesWithContact = directMessages.filter(
-        (dm) =>
-          (dm.from === selectedContact?.pubkey &&
-            dm.to === userProfile?.nostrPubkey) ||
-          (dm.to === selectedContact?.pubkey &&
-            dm.from === userProfile?.nostrPubkey),
-      );
-
-      messagesWithContact.forEach((dm) => {
-        const listItem = document.createElement("li");
-        listItem.className =
-          dm.from === userProfile?.nostrPubkey ? "sent" : "received";
-        listItem.textContent = dm.content;
-        messagesList.appendChild(listItem);
+    } else if (selectedContact) {
+      ChatService.subscribeToMessages(selectedContact.pubkey, (message) => {
+        addDirectMessage(message);
+        renderMessages();
       });
     }
+
+    renderMessages();
 
     messageViewContainer.appendChild(messagesList);
 
