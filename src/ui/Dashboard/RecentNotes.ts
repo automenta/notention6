@@ -1,8 +1,9 @@
-import { useAppStore } from "../../store";
+import { useStore } from "../../store";
 import { Note } from "../../../shared/types";
 
 export function createRecentNotes(): HTMLElement {
-  const { notes, setCurrentNote } = useAppStore.getState();
+  const notes = useStore.use.notes();
+  const { setCurrentNote } = useStore.getState();
   const notesArray = Object.values(notes);
 
   const container = document.createElement("div");

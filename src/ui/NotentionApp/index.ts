@@ -1,14 +1,14 @@
-// src/ui/NotentionApp.ts
-import { useAppStore } from "../store";
-import { createButton } from "./Button";
-import { createSidebar } from "./Sidebar";
-import { createAccountWizard } from "./AccountWizard";
-import { createNotificationBar } from "./NotificationBar";
-import { ComponentRegistry } from "../lib/ComponentRegistry";
-import { registerComponents } from "../lib/ComponentRegistrations";
-import { AnimationSystem, createFeedbackSystem } from "../lib/AnimationSystem";
-import { AppRouter } from "./AppRouter";
-import "./NotentionApp.css";
+// src/ui/NotentionApp/index.ts
+import { useStore } from "../../store";
+import { createButton } from "../Button";
+import { createSidebar } from "../Sidebar/index";
+import { createAccountWizard } from "../AccountWizard";
+import { createNotificationBar } from "../NotificationBar";
+import { ComponentRegistry } from "../../lib/ComponentRegistry";
+import { registerComponents } from "../../lib/ComponentRegistrations";
+import { AnimationSystem, createFeedbackSystem } from "../../lib/AnimationSystem";
+import { AppRouter } from "../AppRouter";
+import "../NotentionApp.css";
 
 // A type guard to check if a profile exists and has a public key
 function profileExists(profile: any): profile is { nostrPubkey: string } {
@@ -23,7 +23,7 @@ function profileExists(profile: any): profile is { nostrPubkey: string } {
 const feedback = createFeedbackSystem();
 
 function applyTheme() {
-  const { userProfile } = useAppStore.getState();
+  const { userProfile } = useStore.getState();
   const theme = userProfile?.preferences.theme || "system";
 
   // Remove all theme attributes
@@ -43,7 +43,9 @@ function applyTheme() {
 export function renderApp(rootElement: HTMLElement) {
   // Initial render function
   const render = () => {
-    const { userProfile, sidebarTab, sidebarCollapsed } = useAppStore.getState();
+    const userProfile = useStore.use.userProfile();
+    const sidebarTab = useStore.use.sidebarTab();
+    const sidebarCollapsed = useStore.use.sidebarCollapsed();
 
     // Apply the theme
     applyTheme();
@@ -79,7 +81,7 @@ export function renderApp(rootElement: HTMLElement) {
 
       const toggleButton = createButton({
         label: "☰",
-        onClick: () => useAppStore.getState().toggleSidebar(),
+        onClick: () => useStore.getState().toggleSidebar(),
         variant: "secondary",
         className: "sidebar-toggle-btn",
       });
@@ -102,7 +104,7 @@ export function renderApp(rootElement: HTMLElement) {
   };
 
   // Subscribe to the store
-  useAppStore.subscribe(render);
+  useStore.subscribe(render);
 
   // Listen for component preference changes to re-render
   window.addEventListener("componentPreferenceChanged", (event: any) => {
@@ -117,7 +119,7 @@ export function renderApp(rootElement: HTMLElement) {
   registerComponents();
 
   // Initial call to initialize and render the app
-  useAppStore
+  useStore
     .getState()
     .initializeApp()
     .then(() => {

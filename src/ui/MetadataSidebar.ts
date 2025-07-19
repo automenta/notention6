@@ -1,10 +1,10 @@
 // src/ui-rewrite/MetadataSidebar.ts
-import { useAppStore } from "../store";
+import { useStore } from "../store";
 import { createButton } from "./Button";
 import "./MetadataSidebar.css";
 
 export function createMetadataSidebar(): HTMLElement {
-  const { currentNoteId, notes, updateNote } = useAppStore.getState();
+  const { currentNoteId, notes, updateNote } = useStore.getState();
   const note = currentNoteId ? notes[currentNoteId] : null;
 
   const sidebar = document.createElement("div");

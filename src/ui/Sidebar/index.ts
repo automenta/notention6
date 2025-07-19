@@ -1,7 +1,7 @@
-// src/ui/Sidebar.ts
-import { useAppStore } from "../store";
-import { createButton } from "./Button";
-import "./Sidebar.css";
+// src/ui/Sidebar/index.ts
+import { useStore } from "../../store";
+import { createButton } from "../Button";
+import "../Sidebar.css";
 
 type AppView =
   | "dashboard"
@@ -28,7 +28,7 @@ const views: { id: AppView; label: string; icon: string }[] = [
 ];
 
 export function createSidebar(currentView: AppView): HTMLElement {
-  const { sidebarCollapsed } = useAppStore.getState();
+  const sidebarCollapsed = useStore.use.sidebarCollapsed();
 
   const nav = document.createElement("nav");
   nav.className = "sidebar-nav";
@@ -36,7 +36,7 @@ export function createSidebar(currentView: AppView): HTMLElement {
   views.forEach((view) => {
     const button = createButton({
       label: sidebarCollapsed ? view.icon : `${view.icon} ${view.label}`,
-      onClick: () => useAppStore.getState().setSidebarTab(view.id),
+      onClick: () => useStore.getState().setSidebarTab(view.id),
       variant: currentView === view.id ? "primary" : "ghost",
       className: "sidebar-button",
     });

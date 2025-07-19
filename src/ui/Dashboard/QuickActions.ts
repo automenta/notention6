@@ -1,8 +1,8 @@
-import { useAppStore } from "../../store";
+import { useStore } from "../../store";
 import { createButton } from "../Button";
 
 export function createQuickActions(): HTMLElement {
-  const { createNote, setCurrentNote, setSidebarTab } = useAppStore.getState();
+  const { createNote, setCurrentNote, setSidebarTab } = useStore.getState();
 
   const quickActions = document.createElement("div");
   quickActions.className = "dashboard-quick-actions";

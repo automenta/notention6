@@ -1,5 +1,5 @@
 // src/ui-rewrite/Settings.ts
-import { useAppStore } from "../store";
+import { useStore } from "../store";
 import { createButton } from "./Button";
 import { createComponentSwitcher } from "./ComponentSwitcher";
 import { createOntologyModuleManager } from "./OntologyModuleManager";
@@ -19,7 +19,7 @@ export function createSettings(): HTMLElement {
     updateUserProfile,
     generateAndStoreNostrKeys,
     logoutFromNostr,
-  } = useAppStore.getState();
+  } = useStore.getState();
 
   const container = document.createElement("div");
   container.className = "settings-container";
@@ -213,7 +213,7 @@ export function createSettings(): HTMLElement {
       | "system"
       | "solarized"
       | "nord";
-    const { setTheme } = useAppStore.getState();
+    const { setTheme } = useStore.getState();
     setTheme(newTheme);
     const feedback = createFeedbackSystem();
     feedback.success(`Theme changed to ${newTheme}`);
@@ -277,7 +277,7 @@ export function createSettings(): HTMLElement {
   const exportNotesButton = createButton({
     label: "Export Notes",
     onClick: async () => {
-      const { notes } = useAppStore.getState();
+      const { notes } = useStore.getState();
       const data = JSON.stringify(Object.values(notes), null, 2);
       const blob = new Blob([data], { type: "application/json" });
       const url = URL.createObjectURL(blob);
@@ -302,7 +302,7 @@ export function createSettings(): HTMLElement {
         if (file) {
           const text = await file.text();
           const notesToImport = JSON.parse(text);
-          const { importNotes } = useAppStore.getState();
+          const { importNotes } = useStore.getState();
           await importNotes(notesToImport);
         }
       };
@@ -315,7 +315,7 @@ export function createSettings(): HTMLElement {
   const exportOntologyButton = createButton({
     label: "Export Ontology",
     onClick: async () => {
-      const { ontology } = useAppStore.getState();
+      const { ontology } = useStore.getState();
       const data = JSON.stringify(ontology, null, 2);
       const blob = new Blob([data], { type: "application/json" });
       const url = URL.createObjectURL(blob);
@@ -340,7 +340,7 @@ export function createSettings(): HTMLElement {
         if (file) {
           const text = await file.text();
           const ontologyToImport = JSON.parse(text);
-          const { setOntology } = useAppStore.getState();
+          const { setOntology } = useStore.getState();
           await setOntology(ontologyToImport);
         }
       };

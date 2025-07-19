@@ -1,7 +1,7 @@
-import { useAppStore } from "../store";
-import { createDashboard } from "./Dashboard";
+import { useStore } from "../store";
+import { createDashboard } from "./Dashboard/index";
 import { createNotesList } from "./NotesList";
-import { createNoteEditor } from "./NoteEditor";
+import { createNoteEditor } from "./NoteEditor/index";
 import { createProfileEditor } from "./ProfileEditor";
 import { createOntologyEditor } from "./OntologyEditor";
 import { createFolderView } from "./FolderView";
@@ -12,7 +12,8 @@ import { createSettings } from "./Settings";
 import { ComponentRegistry } from "../lib/ComponentRegistry";
 
 export function AppRouter(): HTMLElement {
-  const { sidebarTab, currentNoteId } = useAppStore.getState();
+  const sidebarTab = useStore.use.sidebarTab();
+  const currentNoteId = useStore.use.currentNoteId();
 
   let currentView: HTMLElement | null = null;
 

@@ -1,8 +1,8 @@
-import { useAppStore } from "../store";
-import { createNoteEditor } from "./NoteEditor";
+import { useStore } from "../store";
+import { createNoteEditor } from "./NoteEditor/index";
 
 export function createProfileEditor(): HTMLElement {
-  const { userProfile, notes } = useAppStore.getState();
+  const { userProfile, notes } = useStore.getState();
 
   if (!userProfile || !userProfile.profileNoteId) {
     const container = document.createElement("div");

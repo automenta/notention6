@@ -1,5 +1,5 @@
 // src/ui-rewrite/NotificationBar.ts
-import { useAppStore } from "../store";
+import { useStore } from "../store";
 import { Notification } from "../../shared/types";
 import "./NotificationBar.css";
 
@@ -8,7 +8,7 @@ export function createNotificationBar(): HTMLElement {
   notificationBar.className = "notification-bar";
 
   const renderNotifications = () => {
-    const { notifications, removeNotification } = useAppStore.getState();
+    const { notifications, removeNotification } = useStore.getState();
     notificationBar.innerHTML = ""; // Clear existing notifications
 
     notifications.forEach((notification: Notification) => {
@@ -39,10 +39,14 @@ export function createNotificationBar(): HTMLElement {
   };
 
   // Subscribe to notifications changes
-  useAppStore.subscribe((state) => state.notifications, renderNotifications, {
-    equalityFn: (a, b) =>
-      a.length === b.length && a.every((val, i) => val.id === b[i].id),
-  });
+  useStore.subscribe(
+    (state) => state.notifications,
+    renderNotifications,
+    {
+      equalityFn: (a, b) =>
+        a.length === b.length && a.every((val, i) => val.id === b[i].id),
+    },
+  );
 
   // Initial render
   renderNotifications();

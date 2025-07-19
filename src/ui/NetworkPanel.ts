@@ -1,5 +1,5 @@
 // src/ui-rewrite/NetworkPanel.ts
-import { useAppStore } from "../store";
+import { useStore } from "../store";
 import { createButton } from "./Button";
 import "./NetworkPanel.css";
 import { Note } from "../../shared/types";
@@ -13,7 +13,7 @@ export function createNetworkPanel(): HTMLElement {
     removeNostrRelay,
     nostrService: appNostrService,
     addMatch,
-  } = useAppStore.getState();
+  } = useStore.getState();
 
   const container = document.createElement("div");
   container.className = "network-panel-container";
@@ -91,7 +91,7 @@ export function createNetworkPanel(): HTMLElement {
 
     renderPublicFeed();
 
-    const { ontology, notes } = useAppStore.getState();
+    const { ontology, notes } = useStore.getState();
     const allNotes = Object.values(notes);
     nostr.findMatchingNotes(
       ontology,
@@ -207,7 +207,7 @@ export function createNetworkPanel(): HTMLElement {
     ) as HTMLInputElement;
     const newTopic = input.value.trim();
     if (newTopic) {
-      useAppStore.getState().subscribeToTopic(newTopic);
+      useStore.getState().subscribeToTopic(newTopic);
       input.value = "";
     }
   };
@@ -230,7 +230,7 @@ export function createNetworkPanel(): HTMLElement {
   topicNotesContainer.className = "topic-notes-container";
   topicsContainer.appendChild(topicNotesContainer);
 
-  useAppStore.subscribe(
+  useStore.subscribe(
     (state) => state.topicNotes,
     (topicNotes) => {
       topicNotesContainer.innerHTML = "";

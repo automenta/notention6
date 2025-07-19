@@ -1,5 +1,5 @@
 // src/ui/AdvancedSearch.ts
-import { useAppStore } from "../store";
+import { useStore } from "../store";
 import { createButton } from "./Button";
 import { Note, SearchFilters } from "../../shared/types";
 import { NoteService } from "../services/NoteService";
@@ -15,7 +15,7 @@ export function createAdvancedSearch(): HTMLElement {
     setSearchQuery,
     setSearchFilters,
     setCurrentNote,
-  } = useAppStore.getState();
+  } = useStore.getState();
 
   const container = document.createElement("div");
   container.className = "advanced-search";
@@ -372,7 +372,7 @@ export function createAdvancedSearch(): HTMLElement {
   }
 
   async function performSearch() {
-    const state = useAppStore.getState();
+    const state = useStore.getState();
     const { searchQuery, searchFilters, ontology, notes } = state;
 
     try {

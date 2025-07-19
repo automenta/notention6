@@ -1,4 +1,4 @@
-import { useAppStore } from "../../store";
+import { useStore } from "../../store";
 import { Note } from "../../../shared/types";
 
 function getUpcomingEventsCount(notes: Note[]): number {
@@ -23,7 +23,8 @@ function createStatCard(title: string, value: string): HTMLElement {
 }
 
 export function createStats(): HTMLElement {
-  const { notes, userProfile } = useAppStore.getState();
+  const notes = useStore.use.notes();
+  const userProfile = useStore.use.userProfile();
   const notesArray = Object.values(notes);
   const contactsArray = userProfile?.contacts || [];
 

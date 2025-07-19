@@ -1,12 +1,12 @@
 // src/ui/TemplateManager.ts
-import { useAppStore } from "../store";
+import { useStore } from "../store";
 import { createButton } from "./Button";
 import { NotentionTemplate, TemplateField } from "../../shared/types";
 import "./TemplateManager.css";
 
 export function createTemplateManager(): HTMLElement {
   const { templates, createTemplate, updateTemplate, deleteTemplate } =
-    useAppStore.getState();
+    useStore.getState();
 
   const container = document.createElement("div");
   container.className = "template-manager";

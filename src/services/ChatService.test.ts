@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ChatService } from "./ChatService";
 import { nostrService } from "./NostrService";
-import { useAppStore } from "../store";
+import { useStore } from "../store";
 
 vi.mock("./NostrService");
 vi.mock("../store");
@@ -12,7 +12,7 @@ describe("ChatService", () => {
     const mockState = {
       nostrService: nostrService,
     };
-    (useAppStore.getState as vi.Mock).mockReturnValue(mockState);
+    (useStore.getState as vi.Mock).mockReturnValue(mockState);
   });
 
   it("should send a direct message", async () => {

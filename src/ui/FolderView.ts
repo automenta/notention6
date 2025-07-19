@@ -1,5 +1,5 @@
 // src/ui-rewrite/FolderView.ts
-import { useAppStore } from "../store";
+import { useStore } from "../store";
 import { createButton } from "./Button";
 import "./FolderView.css";
 import { Folder } from "../../shared/types";
@@ -10,7 +10,7 @@ function renderFolder(
   allFolders: { [id: string]: Folder },
 ): HTMLElement {
   const { updateFolder, deleteFolder, getNotesByFolder, moveFolder } =
-    useAppStore.getState();
+    useStore.getState();
 
   const listItem = document.createElement("li");
   listItem.className = "folder-list-item";
@@ -92,7 +92,7 @@ function renderFolder(
 }
 
 export function createFolderView(): HTMLElement {
-  const { folders, createFolder } = useAppStore.getState();
+  const { folders, createFolder } = useStore.getState();
 
   const container = document.createElement("div");
   container.className = "folder-view-container";

@@ -1,5 +1,5 @@
 // src/ui/OntologyModuleManager.ts
-import { useAppStore } from "../store";
+import { useStore } from "../store";
 import { createButton } from "./Button";
 import {
   OntologyModuleManager,
@@ -10,7 +10,7 @@ import { OntologyService } from "../services/ontology";
 import "./OntologyModuleManager.css";
 
 export function createOntologyModuleManager(): HTMLElement {
-  const { updateOntology, ontology } = useAppStore.getState();
+  const { updateOntology, ontology } = useStore.getState();
 
   const container = document.createElement("div");
   container.className = "ontology-module-manager";

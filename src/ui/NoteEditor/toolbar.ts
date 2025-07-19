@@ -1,180 +1,15 @@
-// src/ui-rewrite/NoteEditor.ts
-import { useAppStore } from "../store";
-import Quill from "quill";
-import "quill/dist/quill.snow.css";
-import "./NoteEditor.css";
-import { createButton } from "./Button";
-import { createTagModal } from "./TagModal";
-import { createMetadataSidebar } from "./MetadataSidebar";
-import { templates } from "../lib/templates";
-import { AIService } from "../services/AIService";
-import { Note } from "../../shared/types";
+import { Editor } from "@tiptap/core";
+import { useStore } from "../../store";
+import { createButton } from "../Button";
+import { createTagModal } from "../TagModal";
+import { templates } from "../../lib/templates";
+import { Note } from "../../../shared/types";
 
-export function createNoteEditor2(noteId?: string): HTMLElement {
-  const { currentNoteId, notes, updateNote, userProfile } =
-    useAppStore.getState();
-  const id = noteId || currentNoteId;
-  if (!id) {
-    const container = document.createElement("div");
-    container.textContent = "No note selected.";
-    return container;
-  }
-  const note: Note | null = notes[id];
+export function createToolbar(editor: Editor, note: Note): HTMLElement {
+  const { updateNote, userProfile } = useStore.getState();
   const aiEnabled = userProfile?.preferences?.aiEnabled || false;
-  const aiService = useAppStore.getState().getAIService();
+  const aiService = useStore.getState().getAIService();
 
-  const editorLayout = document.createElement("div");
-  editorLayout.className = "note-editor-layout";
-
-  const mainEditorContainer = document.createElement("div");
-  mainEditorContainer.className = "note-editor-main";
-
-  if (!note) {
-    mainEditorContainer.textContent = "No note selected.";
-    editorLayout.appendChild(mainEditorContainer);
-    return editorLayout;
-  }
-
-  let metadataSidebar = createMetadataSidebar();
-  metadataSidebar.classList.add("hidden");
-
-  const toggleSidebarButton = createButton({
-    label: "Metadata",
-    onClick: () => {
-      metadataSidebar.classList.toggle("hidden");
-    },
-    variant: "secondary",
-  });
-
-  // Title Input
-  const titleInput = document.createElement("input");
-  titleInput.type = "text";
-  titleInput.className = "note-title-input";
-  titleInput.value = note.title;
-  titleInput.oninput = (e) => {
-    updateNote(note.id, { title: (e.target as HTMLInputElement).value });
-  };
-  mainEditorContainer.appendChild(titleInput);
-
-  // Tiptap Editor
-  const editorElement = document.createElement("div");
-  editorElement.className = "tiptap-editor";
-  mainEditorContainer.appendChild(editorElement);
-
-  const editor = new Editor({
-    element: editorElement,
-    extensions: [
-      StarterKit,
-      SemanticTag,
-      Property,
-      Mention.configure({
-        HTMLAttributes: {
-          class: "mention",
-        },
-        suggestion: {
-          ...suggestion(editorElement.getRootNode() as ShadowRoot),
-          command: ({ editor, range, props }) => {
-            // get the node before the suggestion
-            const nodeBefore = editor.view.state.selection.$from.nodeBefore;
-            // get the current word
-            const text = nodeBefore?.text || "";
-            const trigger = text.slice(0, 1);
-            const query = text.slice(1);
-
-            // insert a semantic tag
-            editor
-              .chain()
-              .focus()
-              .insertContentAt(range, [
-                {
-                  type: "semanticTag",
-                  attrs: { tag: props.id },
-                },
-                {
-                  type: "text",
-                  text: " ",
-                },
-              ])
-              .run();
-          },
-        },
-      }),
-    ],
-    content: {
-      type: "doc",
-      content: [
-        ...Object.entries(note.values || {}).map(([key, value]) => ({
-          type: "property",
-          attrs: { key },
-          content: [{ type: "text", text: String(value) }],
-        })),
-        {
-          type: "paragraph",
-          content: [{ type: "text", text: note.content }],
-        },
-      ],
-    },
-    onUpdate: ({ editor }) => {
-      const json = editor.getJSON();
-      const newValues: { [key: string]: any } = {};
-      const contentParts: any[] = [];
-
-      if (json.content) {
-        json.content.forEach((node: any) => {
-          if (node.type === "property") {
-            newValues[node.attrs.key] = node.content?.[0]?.text || "";
-          } else {
-            contentParts.push(node);
-          }
-        });
-      }
-
-      const newContent = {
-        type: "doc",
-        content: contentParts,
-      };
-
-      // This is a temporary solution to get the HTML content.
-      // A better solution would be to use a proper HTML serializer.
-      const tempEditor = new Editor({
-        extensions: [StarterKit],
-        content: newContent,
-      });
-      const contentHtml = tempEditor.getHTML();
-      tempEditor.destroy();
-
-      updateNote(note.id, {
-        content: contentHtml,
-        values: newValues,
-      });
-    },
-  });
-
-  useAppStore.subscribe(
-    (state) => state.notes[state.currentNoteId as string],
-    (newNote, oldNote) => {
-      if (
-        newNote?.content !== oldNote?.content &&
-        newNote?.content !== editor.getHTML()
-      ) {
-        editor.commands.setContent(newNote.content, false);
-      }
-      if (
-        newNote?.values !== oldNote?.values ||
-        newNote?.fields !== oldNote?.fields
-      ) {
-        const newSidebar = createMetadataSidebar();
-        newSidebar.classList.toggle(
-          "hidden",
-          metadataSidebar.classList.contains("hidden"),
-        );
-        editorLayout.replaceChild(newSidebar, metadataSidebar);
-        metadataSidebar = newSidebar;
-      }
-    },
-  );
-
-  // Toolbar
   const toolbar = document.createElement("div");
   toolbar.className = "editor-toolbar";
 
@@ -266,7 +101,7 @@ export function createNoteEditor2(noteId?: string): HTMLElement {
     label: "Auto-tag",
     onClick: async () => {
       try {
-        const { ontology, addNotification } = useAppStore.getState();
+        const { ontology, addNotification } = useStore.getState();
         addNotification({
           id: `auto-tag-${Date.now()}`,
           type: "info",
@@ -307,7 +142,7 @@ export function createNoteEditor2(noteId?: string): HTMLElement {
         }
       } catch (error) {
         console.error("Auto-tagging failed:", error);
-        const { addNotification } = useAppStore.getState();
+        const { addNotification } = useStore.getState();
         addNotification({
           id: `auto-tag-error-${Date.now()}`,
           type: "error",
@@ -326,7 +161,7 @@ export function createNoteEditor2(noteId?: string): HTMLElement {
     label: "Summarize",
     onClick: async () => {
       try {
-        const { addNotification } = useAppStore.getState();
+        const { addNotification } = useStore.getState();
         addNotification({
           id: `summarize-${Date.now()}`,
           type: "info",
@@ -352,7 +187,7 @@ export function createNoteEditor2(noteId?: string): HTMLElement {
         }
       } catch (error) {
         console.error("Summarization failed:", error);
-        const { addNotification } = useAppStore.getState();
+        const { addNotification } = useStore.getState();
         addNotification({
           id: `summarize-error-${Date.now()}`,
           type: "error",
@@ -386,9 +221,6 @@ export function createNoteEditor2(noteId?: string): HTMLElement {
     disabled: !aiEnabled,
   });
   toolbar.appendChild(generateContentButton);
-  toolbar.appendChild(toggleSidebarButton);
-
-  mainEditorContainer.insertBefore(toolbar, editorElement);
 
   const statusSelector = document.createElement("select");
   statusSelector.className = "status-selector";
@@ -414,7 +246,7 @@ export function createNoteEditor2(noteId?: string): HTMLElement {
   const shareButton = createButton({
     label: "Share",
     onClick: () => {
-      const { publishCurrentNoteToNostr } = useAppStore.getState();
+      const { publishCurrentNoteToNostr } = useStore.getState();
       if (note.status === "private") {
         const recipientPk = prompt(
           "Enter recipient's Nostr public key (npub):",
@@ -431,10 +263,5 @@ export function createNoteEditor2(noteId?: string): HTMLElement {
   });
   toolbar.appendChild(shareButton);
 
-  mainEditorContainer.insertBefore(toolbar, editorElement);
-
-  editorLayout.appendChild(mainEditorContainer);
-  editorLayout.appendChild(metadataSidebar);
-
-  return editorLayout;
+  return toolbar;
 }

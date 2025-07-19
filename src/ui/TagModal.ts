@@ -1,5 +1,5 @@
 // src/ui-rewrite/TagModal.ts
-import { useAppStore } from "../store";
+import { useStore } from "../store";
 import { createButton } from "./Button";
 import "./TagModal.css";
 
@@ -12,7 +12,7 @@ export function createTagModal({
   onSelect,
   onClose,
 }: TagModalProps): HTMLElement {
-  const { ontology } = useAppStore.getState();
+  const { ontology } = useStore.getState();
   const concepts = Object.values(ontology.nodes || {});
 
   const modalOverlay = document.createElement("div");

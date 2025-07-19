@@ -1,9 +1,9 @@
-// src/ui/Dashboard.ts
-import { createQuickActions } from "./Dashboard/QuickActions";
-import { createStats } from "./Dashboard/Stats";
-import { createRecentNotes } from "./Dashboard/RecentNotes";
-import { createRecentActivity } from "./Dashboard/RecentActivity";
-import "./Dashboard.css";
+// src/ui/Dashboard/index.ts
+import { createQuickActions } from "./QuickActions";
+import { createStats } from "./Stats";
+import { createRecentNotes } from "./RecentNotes";
+import { createRecentActivity } from "./RecentActivity";
+import "../Dashboard.css";
 
 export function createDashboard(): HTMLElement {
   const dashboard = document.createElement("div");

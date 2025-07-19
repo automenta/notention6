@@ -1,12 +1,12 @@
 // src/ui-rewrite/ContactsView.ts
-import { useAppStore } from "../store";
+import { useStore } from "../store";
 import { createButton } from "./Button";
 import "./ContactsView.css";
 import { Contact } from "../../shared/types";
 
 export function createContactsView(): HTMLElement {
   const { userProfile, addContact, removeContact, updateContactAlias } =
-    useAppStore.getState();
+    useStore.getState();
   const contacts = userProfile?.contacts || [];
 
   const container = document.createElement("div");

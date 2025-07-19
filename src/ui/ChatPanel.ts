@@ -1,5 +1,5 @@
 // src/ui-rewrite/ChatPanel.ts
-import { useAppStore } from "../store";
+import { useStore } from "../store";
 import { createButton } from "./Button";
 import "./ChatPanel.css";
 import { Contact, DirectMessage } from "../../shared/types";
@@ -7,7 +7,7 @@ import { ChatService } from "../services/ChatService";
 
 export function createChatPanel(): HTMLElement {
   const { userProfile, directMessages, sendDirectMessage, addDirectMessage } =
-    useAppStore.getState();
+    useStore.getState();
   const contacts = userProfile?.contacts || [];
   let selectedContact:
     | Contact

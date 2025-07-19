@@ -1,8 +1,8 @@
-import { useAppStore } from "../../store";
+import { useStore } from "../../store";
 import { Match } from "../../../shared/types";
 
 export function createRecentActivity(): HTMLElement {
-  const { matches } = useAppStore.getState();
+  const matches = useStore.use.matches();
 
   const container = document.createElement("div");
   container.className = "dashboard-recent-activity";

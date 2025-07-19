@@ -1,12 +1,12 @@
 // src/ui-rewrite/OntologyEditor.ts
-import { useAppStore } from "../store";
+import { useStore } from "../store";
 import { createButton } from "./Button";
 import "./OntologyEditor.css";
 import { OntologyNode } from "../../shared/types";
 import Sortable from "sortablejs";
 
 export function createOntologyEditor(): HTMLElement {
-  const { ontology, setOntology } = useAppStore.getState();
+  const { ontology, setOntology } = useStore.getState();
   let selectedNodeId: string | null = null;
 
   const container = document.createElement("div");
@@ -22,7 +22,7 @@ export function createOntologyEditor(): HTMLElement {
   const shareButton = createButton({
     label: "Share Ontology",
     onClick: async () => {
-      const { nostrService, addNotification } = useAppStore.getState();
+      const { nostrService, addNotification } = useStore.getState();
       if (nostrService) {
         try {
           await nostrService.publishOntology(ontology);
@@ -57,7 +57,7 @@ export function createOntologyEditor(): HTMLElement {
       );
       if (pubkey) {
         const { nostrService, setOntology, addNotification } =
-          useAppStore.getState();
+          useStore.getState();
         if (nostrService) {
           try {
             const ontology = await nostrService.fetchOntologyByPubkey(pubkey);
@@ -100,7 +100,7 @@ export function createOntologyEditor(): HTMLElement {
     label: "AI Suggest",
     onClick: async () => {
       const { aiService, ontology, addNotification, setOntology } =
-        useAppStore.getState();
+        useStore.getState();
       if (aiService && aiService.isAIEnabled()) {
         try {
           addNotification({
@@ -172,7 +172,7 @@ export function createOntologyEditor(): HTMLElement {
       }
     },
     variant: "secondary",
-    disabled: !useAppStore.getState().userProfile?.preferences.aiEnabled,
+    disabled: !useStore.getState().userProfile?.preferences.aiEnabled,
   });
   header.appendChild(aiSuggestButton);
 
@@ -493,7 +493,7 @@ export function createOntologyEditor(): HTMLElement {
     renderPropertyEditor();
   };
 
-  useAppStore.subscribe(
+  useStore.subscribe(
     (state) => state.ontology,
     (newOntology, oldOntology) => {
       if (newOntology !== oldOntology) {

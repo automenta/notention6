@@ -1,6 +1,6 @@
 // src/ui-rewrite/AccountWizard.ts
 import { getPublicKey } from "nostr-tools/pure";
-import { useAppStore } from "../store";
+import { useStore } from "../store";
 
 export function createAccountWizard(): HTMLElement {
   const el = document.createElement("div");
@@ -21,7 +21,7 @@ export function createAccountWizard(): HTMLElement {
 
   createKeyBtn?.addEventListener("click", async () => {
     const { generateAndStoreNostrKeys, createProfileNote } =
-      useAppStore.getState();
+      useStore.getState();
     const result = await generateAndStoreNostrKeys();
     if (result.publicKey) {
       await createProfileNote();
@@ -35,7 +35,7 @@ export function createAccountWizard(): HTMLElement {
       try {
         const publicKey = getPublicKey(privateKey);
         const { generateAndStoreNostrKeys, createProfileNote } =
-          useAppStore.getState();
+          useStore.getState();
         const result = await generateAndStoreNostrKeys(privateKey, publicKey);
         if (result.publicKey) {
           await createProfileNote();

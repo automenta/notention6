@@ -1,5 +1,5 @@
 // src/ui-rewrite/NotesList.ts
-import { useAppStore } from "../store";
+import { useStore } from "../store";
 import { createButton } from "./Button";
 import { AnimationSystem, animateOnScroll } from "../lib/AnimationSystem";
 import "./NotesList.css";
@@ -16,7 +16,7 @@ export function createNotesList(): HTMLElement {
     setCurrentNote,
     noteView,
     setNoteView,
-  } = useAppStore.getState();
+  } = useStore.getState();
   let notesArray: Note[] = Object.values(notes);
 
   const container = document.createElement("div");
@@ -118,7 +118,7 @@ export function createNotesList(): HTMLElement {
   });
 
   tagFilter.onchange = (e) => {
-    const { setSearchFilters } = useAppStore.getState();
+    const { setSearchFilters } = useStore.getState();
     const selectedTag = (e.target as HTMLSelectElement).value;
     setSearchFilters({ tags: selectedTag ? [selectedTag] : [] });
   };
@@ -138,14 +138,14 @@ export function createNotesList(): HTMLElement {
 
   // Use semantic search if there's a query or filters, otherwise use simple filtering
   let filteredNotes: Note[] = [];
-  const { searchFilters } = useAppStore.getState();
+  const { searchFilters } = useStore.getState();
   if (
     searchQuery.trim() ||
     (searchFilters.tags && searchFilters.tags.length > 0)
   ) {
     // Import NoteService for semantic search
     import("../services/NoteService").then(async ({ NoteService }) => {
-      const { ontology } = useAppStore.getState();
+      const { ontology } = useStore.getState();
       try {
         filteredNotes = await NoteService.semanticSearch(
           searchQuery,

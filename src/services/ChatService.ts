@@ -1,22 +1,21 @@
-import { useAppStore } from "../store";
-import { DirectMessage } from "../../shared/types";
+import { DirectMessage, NostrEvent } from "../../shared/types";
+import { useStore } from "../store";
 import { nostrService } from "./NostrService";
-import { nip04 } from "nostr-tools";
 
 export class ChatService {
   static async sendMessage(
     pubkey: string,
     content: string,
   ): Promise<DirectMessage> {
-    const { nostrService: appNostrService } = useAppStore.getState();
+    const { nostrService: appNostrService } = useStore.getState();
     const nostr = appNostrService || nostrService;
     const event = await nostr.sendDirectMessage(pubkey, content);
     return {
       id: event.id,
-      from: event.pubkey,
       to: pubkey,
+      from: nostr.getPublicKey()!,
       content,
-      timestamp: new Date(event.created_at * 1000),
+      createdAt: new Date(event.created_at * 1000),
       encrypted: true,
     };
   }
@@ -25,35 +24,38 @@ export class ChatService {
     pubkey: string,
     onMessage: (message: DirectMessage) => void,
   ) {
-    const { nostrService: appNostrService } = useAppStore.getState();
+    const { nostrService: appNostrService } = useStore.getState();
     const nostr = appNostrService || nostrService;
     nostr.subscribeToDirectMessages(pubkey, async (event) => {
-      const privateKey = nostr.getPrivateKey();
-      if (privateKey) {
-        const content = nip04.decrypt(privateKey, event.pubkey, event.content);
-        const message: DirectMessage = {
+      try {
+        const content = await nostr.decryptMessage(
+          event.content,
+          event.pubkey,
+        );
+        onMessage({
           id: event.id,
+          to: nostr.getPublicKey()!,
           from: event.pubkey,
-          to: pubkey,
           content,
-          timestamp: new Date(event.created_at * 1000),
+          createdAt: new Date(event.created_at * 1000),
           encrypted: true,
-        };
-        onMessage(message);
+        });
+      } catch (error) {
+        console.error("Failed to decrypt message:", error);
       }
     });
   }
 
   static async sendPublicMessage(content: string): Promise<DirectMessage> {
-    const { nostrService: appNostrService } = useAppStore.getState();
+    const { nostrService: appNostrService } = useStore.getState();
     const nostr = appNostrService || nostrService;
     const eventIds = await nostr.publishEvent(42, content, [["c", "public"]]);
     return {
-      id: eventIds[0] || "",
-      from: nostr.getPublicKey() || "",
+      id: eventIds[0],
       to: "public",
+      from: nostr.getPublicKey()!,
       content,
-      timestamp: new Date(),
+      createdAt: new Date(),
       encrypted: false,
     };
   }
@@ -61,18 +63,17 @@ export class ChatService {
   static subscribeToPublicMessages(
     onMessage: (message: DirectMessage) => void,
   ) {
-    const { nostrService: appNostrService } = useAppStore.getState();
+    const { nostrService: appNostrService } = useStore.getState();
     const nostr = appNostrService || nostrService;
     nostr.subscribeToEvents([{ kinds: [42], "#c": ["public"] }], (event) => {
-      const message: DirectMessage = {
+      onMessage({
         id: event.id,
-        from: event.pubkey,
         to: "public",
+        from: event.pubkey,
         content: event.content,
-        timestamp: new Date(event.created_at * 1000),
+        createdAt: new Date(event.created_at * 1000),
         encrypted: false,
-      };
-      onMessage(message);
+      });
     });
   }
 }
