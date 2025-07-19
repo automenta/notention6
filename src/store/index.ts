@@ -153,7 +153,7 @@ interface AppActions {
   networkService: NetworkService;
 
   // Theme
-  setTheme: (theme: "light" | "dark" | "system") => void;
+  setTheme: (theme: "light" | "dark" | "system" | "solarized" | "nord") => void;
 }
 
 type AppStore = AppState & AppActions;

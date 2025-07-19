@@ -9,6 +9,7 @@ import {
   createCollapsibleSection,
   createProgressiveForm,
 } from "../lib/ProgressiveDisclosure";
+import { createFeedbackSystem } from "../lib/AnimationSystem";
 import "./Settings.css";
 import { UserProfile } from "../../shared/types";
 
@@ -197,7 +198,7 @@ export function createSettings(): HTMLElement {
   const themeLabel = document.createElement("label");
   themeLabel.textContent = "Theme";
   const themeSelect = document.createElement("select");
-  const themes = ["light", "dark", "system"];
+  const themes = ["light", "dark", "system", "solarized", "nord"];
   themes.forEach((theme) => {
     const option = document.createElement("option");
     option.value = theme;
@@ -209,9 +210,13 @@ export function createSettings(): HTMLElement {
     const newTheme = (e.target as HTMLSelectElement).value as
       | "light"
       | "dark"
-      | "system";
+      | "system"
+      | "solarized"
+      | "nord";
     const { setTheme } = useAppStore.getState();
     setTheme(newTheme);
+    const feedback = createFeedbackSystem();
+    feedback.success(`Theme changed to ${newTheme}`);
   };
   themeForm.appendChild(themeLabel);
   themeForm.appendChild(themeSelect);

@@ -34,14 +34,18 @@ const feedback = createFeedbackSystem();
 function applyTheme() {
   const { userProfile } = useAppStore.getState();
   const theme = userProfile?.preferences.theme || "system";
-  if (
-    theme === "dark" ||
-    (theme === "system" &&
-      window.matchMedia("(prefers-color-scheme: dark)").matches)
-  ) {
-    document.documentElement.setAttribute("data-theme", "dark");
+
+  // Remove all theme attributes
+  document.documentElement.removeAttribute("data-theme");
+
+  if (theme === "system") {
+    // Apply dark theme if system preference is dark
+    if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+      document.documentElement.setAttribute("data-theme", "dark");
+    }
   } else {
-    document.documentElement.removeAttribute("data-theme");
+    // Apply the selected theme
+    document.documentElement.setAttribute("data-theme", theme);
   }
 }
 
@@ -65,6 +69,7 @@ export function renderApp(rootElement: HTMLElement) {
       // If profile exists, show the main app
       const appContainer = document.createElement("div");
       appContainer.className = "app-container";
+      AnimationSystem.fadeIn(appContainer);
 
       // Sidebar
       const sidebarContainer = document.createElement("aside");
