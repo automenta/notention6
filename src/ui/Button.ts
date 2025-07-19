@@ -1,13 +1,13 @@
 // Enhanced Button Component - Professional Techno Minimalism
 import "./Button.css";
 
-export type ButtonVariant = 
-  | "primary" 
-  | "secondary" 
-  | "ghost" 
-  | "danger" 
-  | "success" 
-  | "warning" 
+export type ButtonVariant =
+  | "primary"
+  | "secondary"
+  | "ghost"
+  | "danger"
+  | "success"
+  | "warning"
   | "info"
   | "icon-ai"
   | "icon-project"
@@ -45,43 +45,43 @@ export function createButton(options: ButtonOptions): HTMLButtonElement {
     tooltip,
     ariaLabel,
     type = "button",
-    ripple = false
+    ripple = false,
   } = options;
 
   const button = document.createElement("button");
   button.type = type;
-  
+
   // Build class list
   const classes = ["button"];
-  
+
   classes.push(variant);
-  
+
   if (size !== "medium") {
     classes.push(size);
   }
-  
+
   if (iconOnly) {
     classes.push("icon-only");
   }
-  
+
   if (fullWidth) {
     classes.push("full-width");
   }
-  
+
   if (loading) {
     classes.push("loading");
   }
-  
+
   if (ripple) {
     classes.push("ripple");
   }
-  
+
   if (className) {
     classes.push(className);
   }
-  
+
   button.className = classes.join(" ");
-  
+
   // Set button content
   if (!loading) {
     if (iconOnly) {
@@ -93,22 +93,22 @@ export function createButton(options: ButtonOptions): HTMLButtonElement {
       button.appendChild(textSpan);
     }
   }
-  
+
   // Set attributes
   button.disabled = disabled || loading;
-  
+
   if (tooltip) {
     button.title = tooltip;
   }
-  
+
   if (ariaLabel) {
     button.setAttribute("aria-label", ariaLabel);
   }
-  
+
   if (loading) {
     button.setAttribute("aria-busy", "true");
   }
-  
+
   // Add click handler
   button.addEventListener("click", (e) => {
     if (!disabled && !loading) {
@@ -120,16 +120,16 @@ export function createButton(options: ButtonOptions): HTMLButtonElement {
         rippleElement.style.left = `${e.clientX - rect.left}px`;
         rippleElement.style.top = `${e.clientY - rect.top}px`;
         button.appendChild(rippleElement);
-        
+
         setTimeout(() => {
           rippleElement.remove();
         }, 600);
       }
-      
+
       onClick();
     }
   });
-  
+
   // Add keyboard accessibility
   button.addEventListener("keydown", (e) => {
     if (e.key === "Enter" || e.key === " ") {
@@ -139,17 +139,19 @@ export function createButton(options: ButtonOptions): HTMLButtonElement {
       }
     }
   });
-  
+
   return button;
 }
 
 // Utility function to create icon buttons
-export function createIconButton(options: Omit<ButtonOptions, "iconOnly" | "label"> & { icon: string }): HTMLButtonElement {
+export function createIconButton(
+  options: Omit<ButtonOptions, "iconOnly" | "label"> & { icon: string },
+): HTMLButtonElement {
   return createButton({
     ...options,
     label: options.icon,
     iconOnly: true,
-    ariaLabel: options.ariaLabel || "Icon button"
+    ariaLabel: options.ariaLabel || "Icon button",
   });
 }
 
@@ -160,10 +162,10 @@ export function createLoadingButton(options: ButtonOptions): {
   setLabel: (label: string) => void;
 } {
   const button = createButton(options);
-  
+
   const setLoading = (loading: boolean) => {
     const textSpan = button.querySelector(".button-text");
-    
+
     if (loading) {
       button.classList.add("loading");
       button.disabled = true;
@@ -174,14 +176,14 @@ export function createLoadingButton(options: ButtonOptions): {
       button.removeAttribute("aria-busy");
     }
   };
-  
+
   const setLabel = (label: string) => {
     const textSpan = button.querySelector(".button-text");
     if (textSpan) {
       textSpan.textContent = label;
     }
   };
-  
+
   return { button, setLoading, setLabel };
 }
 
@@ -189,45 +191,53 @@ export function createLoadingButton(options: ButtonOptions): {
 export function createButtonGroup(buttons: ButtonOptions[]): HTMLDivElement {
   const group = document.createElement("div");
   group.className = "button-group";
-  
-  buttons.forEach(buttonOptions => {
+
+  buttons.forEach((buttonOptions) => {
     const button = createButton(buttonOptions);
     group.appendChild(button);
   });
-  
+
   return group;
 }
 
 // Utility function to create floating action button
-export function createFAB(options: Omit<ButtonOptions, "fullWidth">): HTMLButtonElement {
+export function createFAB(
+  options: Omit<ButtonOptions, "fullWidth">,
+): HTMLButtonElement {
   return createButton({
     ...options,
     className: `fab ${options.className || ""}`,
-    variant: options.variant || "primary"
+    variant: options.variant || "primary",
   });
 }
 
 // Utility function to create semantic action buttons
-export function createAIButton(options: Omit<ButtonOptions, "variant">): HTMLButtonElement {
+export function createAIButton(
+  options: Omit<ButtonOptions, "variant">,
+): HTMLButtonElement {
   return createButton({
     ...options,
     variant: "icon-ai",
-    ariaLabel: options.ariaLabel || "AI action"
+    ariaLabel: options.ariaLabel || "AI action",
   });
 }
 
-export function createProjectButton(options: Omit<ButtonOptions, "variant">): HTMLButtonElement {
+export function createProjectButton(
+  options: Omit<ButtonOptions, "variant">,
+): HTMLButtonElement {
   return createButton({
     ...options,
     variant: "icon-project",
-    ariaLabel: options.ariaLabel || "Project action"
+    ariaLabel: options.ariaLabel || "Project action",
   });
 }
 
-export function createPersonalButton(options: Omit<ButtonOptions, "variant">): HTMLButtonElement {
+export function createPersonalButton(
+  options: Omit<ButtonOptions, "variant">,
+): HTMLButtonElement {
   return createButton({
     ...options,
     variant: "icon-personal",
-    ariaLabel: options.ariaLabel || "Personal action"
+    ariaLabel: options.ariaLabel || "Personal action",
   });
 }

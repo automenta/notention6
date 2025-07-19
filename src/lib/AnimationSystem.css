@@ -17,7 +17,9 @@
 }
 
 @keyframes bounce {
-  0%, 80%, 100% {
+  0%,
+  80%,
+  100% {
     transform: scale(0.8);
     opacity: 0.5;
   }
@@ -67,12 +69,20 @@
   animation: think 1.5s ease-in-out infinite;
 }
 
-.thinking-dots span:nth-child(1) { animation-delay: 0s; }
-.thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
-.thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
+.thinking-dots span:nth-child(1) {
+  animation-delay: 0s;
+}
+.thinking-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.thinking-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
 
 @keyframes think {
-  0%, 60%, 100% {
+  0%,
+  60%,
+  100% {
     transform: scale(0.8);
     opacity: 0.5;
   }
@@ -120,12 +130,24 @@
   background: var(--accent-primary);
 }
 
-.notification-success::before { background: var(--status-success); }
-.notification-error::before { background: var(--status-error); }
-.notification-warning::before { background: var(--status-warning); }
-.notification-info::before { background: var(--status-info); }
-.notification-loading::before { background: var(--accent-primary); }
-.notification-thinking::before { background: var(--tag-ai); }
+.notification-success::before {
+  background: var(--status-success);
+}
+.notification-error::before {
+  background: var(--status-error);
+}
+.notification-warning::before {
+  background: var(--status-warning);
+}
+.notification-info::before {
+  background: var(--status-info);
+}
+.notification-loading::before {
+  background: var(--accent-primary);
+}
+.notification-thinking::before {
+  background: var(--tag-ai);
+}
 
 .notification-success {
   background: var(--status-success-bg);
@@ -266,9 +288,23 @@
 }
 
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-  20%, 40%, 60%, 80% { transform: translateX(5px); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-5px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(5px);
+  }
 }
 
 /* Glow effect */
@@ -277,11 +313,14 @@
 }
 
 @keyframes glow {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 5px var(--accent-primary);
   }
   50% {
-    box-shadow: 0 0 20px var(--accent-primary), 0 0 30px var(--accent-primary);
+    box-shadow:
+      0 0 20px var(--accent-primary),
+      0 0 30px var(--accent-primary);
   }
 }
 
@@ -290,7 +329,9 @@
   overflow: hidden;
   border-right: 2px solid var(--accent-primary);
   white-space: nowrap;
-  animation: typewriter 2s steps(40, end), blink-caret 0.75s step-end infinite;
+  animation:
+    typewriter 2s steps(40, end),
+    blink-caret 0.75s step-end infinite;
 }
 
 .typing-complete {
@@ -299,13 +340,22 @@
 }
 
 @keyframes typewriter {
-  from { width: 0; }
-  to { width: 100%; }
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
 }
 
 @keyframes blink-caret {
-  from, to { border-color: transparent; }
-  50% { border-color: var(--accent-primary); }
+  from,
+  to {
+    border-color: transparent;
+  }
+  50% {
+    border-color: var(--accent-primary);
+  }
 }
 
 /* Fade in animation */
@@ -417,13 +467,22 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
   animation: progressShimmer 1.5s infinite;
 }
 
 @keyframes progressShimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 /* Stagger animation class */
@@ -461,8 +520,13 @@
 }
 
 @keyframes microBounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-2px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
 }
 
 .micro-scale {
@@ -470,8 +534,13 @@
 }
 
 @keyframes microScale {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.02); }
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
 }
 
 /* Loading states */
@@ -496,8 +565,12 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Responsive animations */
@@ -508,7 +581,7 @@
     left: var(--space-sm);
     max-width: none;
   }
-  
+
   .notification {
     min-width: auto;
   }
@@ -521,11 +594,11 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-  
+
   .notification {
     animation: none !important;
   }
-  
+
   .thinking-dots span,
   .spinner-dot {
     animation: none !important;
@@ -537,7 +610,7 @@
   .notification {
     border-width: 2px;
   }
-  
+
   .notification::before {
     width: 6px;
   }

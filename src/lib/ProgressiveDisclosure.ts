@@ -35,7 +35,7 @@ export class ProgressiveDisclosure {
       expandOnHover: false,
       persistent: false,
       triggerPosition: "after",
-      ...options
+      ...options,
     };
 
     this.trigger = options.trigger;
@@ -45,7 +45,7 @@ export class ProgressiveDisclosure {
     // Load persistent state
     if (this.options.persistent && this.options.storageKey) {
       const saved = localStorage.getItem(this.options.storageKey);
-      this.expanded = saved ? JSON.parse(saved) : (options.expanded || false);
+      this.expanded = saved ? JSON.parse(saved) : options.expanded || false;
     } else {
       this.expanded = options.expanded || false;
     }
@@ -82,8 +82,11 @@ export class ProgressiveDisclosure {
 
     // Set ARIA attributes
     this.trigger.setAttribute("aria-expanded", this.expanded.toString());
-    this.trigger.setAttribute("aria-controls", this.content.id || this.generateId());
-    
+    this.trigger.setAttribute(
+      "aria-controls",
+      this.content.id || this.generateId(),
+    );
+
     if (!this.content.id) {
       this.content.id = this.generateId();
     }
@@ -94,9 +97,13 @@ export class ProgressiveDisclosure {
   }
 
   private updateTrigger() {
-    const icon = this.expanded ? this.options.collapseIcon : this.options.expandIcon;
-    const text = this.expanded ? this.options.collapseText : this.options.expandText;
-    
+    const icon = this.expanded
+      ? this.options.collapseIcon
+      : this.options.expandIcon;
+    const text = this.expanded
+      ? this.options.collapseText
+      : this.options.expandText;
+
     if (this.options.triggerPosition === "replace") {
       this.trigger.innerHTML = `${icon} ${text}`;
     } else if (this.options.triggerPosition === "before") {
@@ -120,7 +127,7 @@ export class ProgressiveDisclosure {
     this.expanded = true;
     this.content.classList.remove("collapsed");
     this.content.classList.add("expanding");
-    
+
     this.updateTrigger();
     this.trigger.setAttribute("aria-expanded", "true");
 
@@ -191,7 +198,13 @@ export class ProgressiveDisclosure {
   public destroy() {
     this.trigger.removeEventListener("click", this.toggle.bind(this));
     this.trigger.classList.remove("disclosure-trigger");
-    this.content.classList.remove("disclosure-content", "collapsed", "expanded", "expanding", "collapsing");
+    this.content.classList.remove(
+      "disclosure-content",
+      "collapsed",
+      "expanded",
+      "expanding",
+      "collapsing",
+    );
     this.content.style.height = "";
     this.content.style.overflow = "";
     this.content.style.transition = "";
@@ -203,7 +216,7 @@ export class ProgressiveDisclosure {
 export function createCollapsibleSection(
   title: string,
   content: HTMLElement,
-  options: Partial<DisclosureOptions> = {}
+  options: Partial<DisclosureOptions> = {},
 ): HTMLElement {
   const container = document.createElement("div");
   container.className = "collapsible-section";
@@ -225,7 +238,7 @@ export function createCollapsibleSection(
     expandIcon: "▶",
     collapseIcon: "▼",
     triggerPosition: "before",
-    ...options
+    ...options,
   });
 
   return container;
@@ -234,7 +247,7 @@ export function createCollapsibleSection(
 export function createExpandableCard(
   summary: HTMLElement,
   details: HTMLElement,
-  options: Partial<DisclosureOptions> = {}
+  options: Partial<DisclosureOptions> = {},
 ): HTMLElement {
   const card = document.createElement("div");
   card.className = "expandable-card";
@@ -263,7 +276,7 @@ export function createExpandableCard(
     expandIcon: "⋯",
     collapseIcon: "×",
     triggerPosition: "replace",
-    ...options
+    ...options,
   });
 
   return card;
@@ -272,7 +285,7 @@ export function createExpandableCard(
 export function createProgressiveForm(
   basicFields: HTMLElement,
   advancedFields: HTMLElement,
-  options: Partial<DisclosureOptions> = {}
+  options: Partial<DisclosureOptions> = {},
 ): HTMLElement {
   const form = document.createElement("div");
   form.className = "progressive-form";
@@ -302,7 +315,7 @@ export function createProgressiveForm(
     collapseIcon: "⚙️",
     persistent: true,
     storageKey: "form-advanced-expanded",
-    ...options
+    ...options,
   });
 
   return form;
@@ -310,7 +323,7 @@ export function createProgressiveForm(
 
 export function createStepByStepGuide(
   steps: { title: string; content: HTMLElement }[],
-  options: { allowMultipleOpen?: boolean } = {}
+  options: { allowMultipleOpen?: boolean } = {},
 ): HTMLElement {
   const guide = document.createElement("div");
   guide.className = "step-guide";
@@ -349,7 +362,7 @@ export function createStepByStepGuide(
             }
           });
         }
-      }
+      },
     });
 
     disclosures.push(disclosure);

@@ -65,7 +65,11 @@
 .app-header h1::before {
   content: "⚡";
   font-size: var(--text-2xl);
-  background: linear-gradient(135deg, var(--accent-primary), var(--accent-dark));
+  background: linear-gradient(
+    135deg,
+    var(--accent-primary),
+    var(--accent-dark)
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -232,7 +236,7 @@
   .main-content {
     padding: var(--space-md);
   }
-  
+
   .app-header {
     padding: var(--space-sm) var(--space-md);
   }
@@ -307,11 +311,11 @@
   .app-container {
     border: 2px solid var(--border-primary);
   }
-  
+
   .sidebar-container {
     border-right-width: 2px;
   }
-  
+
   .app-header {
     border-bottom-width: 2px;
   }
@@ -348,7 +352,8 @@
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -374,12 +379,12 @@
   .sidebar-toggle {
     display: none !important;
   }
-  
+
   .main-container {
     width: 100%;
     height: auto;
   }
-  
+
   .main-content {
     padding: 0;
     overflow: visible;

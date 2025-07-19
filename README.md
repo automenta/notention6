@@ -14,14 +14,14 @@ devices.
 ## Getting Started
 
 1. **Installation**:
-    - As a Progressive Web App (PWA), Notention can be installed directly from your browser on both desktop and mobile
-      devices. Look for the "Install" button in the address bar or browser menu.
-    - Once installed, it works offline, caching your notes and syncing with the network when you're online.
+   - As a Progressive Web App (PWA), Notention can be installed directly from your browser on both desktop and mobile
+     devices. Look for the "Install" button in the address bar or browser menu.
+   - Once installed, it works offline, caching your notes and syncing with the network when you're online.
 
 2. **Account Setup**:
-    - On first launch, you'll be guided through an account creation wizard.
-    - Notention uses a Nostr keypair for identity. You can either generate a new one or import an existing private key.
-    - **Important**: Back up your private key securely. It is the only way to recover your account.
+   - On first launch, you'll be guided through an account creation wizard.
+   - Notention uses a Nostr keypair for identity. You can either generate a new one or import an existing private key.
+   - **Important**: Back up your private key securely. It is the only way to recover your account.
 
 ### Instant Messaging
 
@@ -34,73 +34,73 @@ devices.
 ### Note-Taking with Semantic Structure
 
 - **Rich Text Editor**:
-    - Powered by Tiptap for extensible editing.
-    - Supports bold, italic, bulleted/numbered lists, and hyperlinks.
-    - Markdown-like syntax (e.g., `*text*` for italic).
-    - Semantic elements:
-        - **Tags**: Inline `#Topic` or `@Person`, linked to ontology, inserted via autocomplete or toolbar.
-        - **Values**: Key-value pairs (e.g., `due::2025-06-01`) for metadata, added inline or via sidebar.
-        - **Fields**: Template-defined fields (e.g., `Status: In Progress`), editable in sidebar.
-        - **Templates**: Predefined note structures (e.g., “Meeting Note” with `Date`, `Attendees`), applied via
-          dropdown.
-    - Insertion interface:
-        - Autocomplete on `#` or `@` with ontology-based suggestions.
-        - Toolbar for inserting tags, values, fields, or templates.
-        - Sidebar form for metadata editing with real-time editor preview.
+  - Powered by Tiptap for extensible editing.
+  - Supports bold, italic, bulleted/numbered lists, and hyperlinks.
+  - Markdown-like syntax (e.g., `*text*` for italic).
+  - Semantic elements:
+    - **Tags**: Inline `#Topic` or `@Person`, linked to ontology, inserted via autocomplete or toolbar.
+    - **Values**: Key-value pairs (e.g., `due::2025-06-01`) for metadata, added inline or via sidebar.
+    - **Fields**: Template-defined fields (e.g., `Status: In Progress`), editable in sidebar.
+    - **Templates**: Predefined note structures (e.g., “Meeting Note” with `Date`, `Attendees`), applied via
+      dropdown.
+  - Insertion interface:
+    - Autocomplete on `#` or `@` with ontology-based suggestions.
+    - Toolbar for inserting tags, values, fields, or templates.
+    - Sidebar form for metadata editing with real-time editor preview.
 - **Active Notes**:
-    - Notes include metadata: UUID `id`, `title`, `content`, `tags`, `values`, `fields`, `status` (draft/published),
-      `createdAt`, `updatedAt`.
-    - Operations: create, edit, delete, archive, pin.
-    - Search: full-text with filters for tags, values, fields, using ontology relationships (e.g., `#NLP` finds `#AI`
-      notes).
+  - Notes include metadata: UUID `id`, `title`, `content`, `tags`, `values`, `fields`, `status` (draft/published),
+    `createdAt`, `updatedAt`.
+  - Operations: create, edit, delete, archive, pin.
+  - Search: full-text with filters for tags, values, fields, using ontology relationships (e.g., `#NLP` finds `#AI`
+    notes).
 - **Organization**:
-    - Hierarchical folders for grouping notes.
-    - Ontology-linked tags for categorization.
-    - List view, sortable by title, date, or tags.
+  - Hierarchical folders for grouping notes.
+  - Ontology-linked tags for categorization.
+  - List view, sortable by title, date, or tags.
 - **Persistence**:
-    - Stored locally in IndexedDB via localforage.
-    - Export/import notes as JSON for backups or migration.
+  - Stored locally in IndexedDB via localforage.
+  - Export/import notes as JSON for backups or migration.
 
 ### Ontology System
 
 - **Definition**:
-    - User-editable taxonomy of concepts and relationships (e.g., `#AI > #MachineLearning > #NLP`), stored as a JSON
-      tree.
-    - Concepts have `label` (e.g., `#Project`) and optional `attributes` (e.g., `due::date`).
-    - Relationships include parent-child links (e.g., `#NLP` under `#AI`).
-    - Loose, tolerating fuzzy/partial matching and vague/missing data
+  - User-editable taxonomy of concepts and relationships (e.g., `#AI > #MachineLearning > #NLP`), stored as a JSON
+    tree.
+  - Concepts have `label` (e.g., `#Project`) and optional `attributes` (e.g., `due::date`).
+  - Relationships include parent-child links (e.g., `#NLP` under `#AI`).
+  - Loose, tolerating fuzzy/partial matching and vague/missing data
 - **Interface**:
-    - Drag-and-drop tree editor for concepts and hierarchies.
-    - Form for defining concept attributes (e.g., `type: date`).
-    - Accessible via “Ontology” sidebar tab.
+  - Drag-and-drop tree editor for concepts and hierarchies.
+  - Form for defining concept attributes (e.g., `type: date`).
+  - Accessible via “Ontology” sidebar tab.
 - **Role**:
-    - Links tags, values, fields to concepts for semantic consistency.
-    - Enables semantic search (e.g., `#NLP` matches `#AI` notes).
-    - Drives network matching via relationship traversal (e.g., `#NLP` matches `#AI` on Nostr).
+  - Links tags, values, fields to concepts for semantic consistency.
+  - Enables semantic search (e.g., `#NLP` matches `#AI` notes).
+  - Drives network matching via relationship traversal (e.g., `#NLP` matches `#AI` on Nostr).
 - **Persistence and Sharing**:
-    - Stored in IndexedDB.
-    - Shareable via Nostr as public or private events; importable by other users.
+  - Stored in IndexedDB.
+  - Shareable via Nostr as public or private events; importable by other users.
 
 ### Network Matching
 
 - **Nostr Integration**:
-    - Publish notes as public Nostr events or encrypted private shares (NIP-04).
-    - User identity via locally stored Nostr keypair, generated during onboarding.
-    - Topic-based channels (e.g., `#Notes`) for sharing and discovery.
-    - Accessible via “Network” sidebar tab.
+  - Publish notes as public Nostr events or encrypted private shares (NIP-04).
+  - User identity via locally stored Nostr keypair, generated during onboarding.
+  - Topic-based channels (e.g., `#Notes`) for sharing and discovery.
+  - Accessible via “Network” sidebar tab.
 - **Ontology-Based Matching**:
-    - Matches notes by shared tags/values and ontology relationships.
-    - Example: `#NLP` note matches public `#AI` or `#MachineLearning` notes.
-    - Uses client-side graph traversal for matching.
-    - Matches shown in “Matches” panel with links to view notes or contact authors.
+  - Matches notes by shared tags/values and ontology relationships.
+  - Example: `#NLP` note matches public `#AI` or `#MachineLearning` notes.
+  - Uses client-side graph traversal for matching.
+  - Matches shown in “Matches” panel with links to view notes or contact authors.
 - **Privacy Controls**:
-    - Notes are private by default.
-    - Users can set note status to "draft", "private", or "published".
-    - UI indicators (e.g., “Published” status on shared notes).
+  - Notes are private by default.
+  - Users can set note status to "draft", "private", or "published".
+  - UI indicators (e.g., “Published” status on shared notes).
 - **Public Feed**:
-    - A public feed of notes from the Nostr network is displayed in the "Network" panel.
+  - A public feed of notes from the Nostr network is displayed in the "Network" panel.
 - **Notifications**:
-    - Real-time alerts for matches or channel activity in a notification bar.
+  - Real-time alerts for matches or channel activity in a notification bar.
 
 ### AI Enhancements (Optional)
 
@@ -109,28 +109,28 @@ application is fully functional without it.
 
 - **Integration**: Uses LangChain.js to connect with AI providers like a local Ollama instance or Google Gemini.
 - **Enabling AI**:
-    - Navigate to `Settings > AI Features`.
-    - Toggle "Enable AI" on.
+  - Navigate to `Settings > AI Features`.
+  - Toggle "Enable AI" on.
 - **Configuration**:
-    - **Ollama**:
-        - Install Ollama on your local machine by following the instructions
-          at [https://ollama.com](https://ollama.com).
-        - Once Ollama is running (e.g., `ollama serve`), ensure you have pulled a model (e.g., `ollama pull llama3`).
-        - In Notention's AI settings, enter your Ollama API endpoint (e.g., `http://localhost:11434`).
-    - **Google Gemini**:
-        - Obtain an API key from [Google AI Studio](https://aistudio.google.com/app/apikey).
-        - In Notention's AI settings, enter your Gemini API Key.
-    - _Note_: You can configure one or both. The application may prioritize Gemini if both are available, unless
-      otherwise specified.
+  - **Ollama**:
+    - Install Ollama on your local machine by following the instructions
+      at [https://ollama.com](https://ollama.com).
+    - Once Ollama is running (e.g., `ollama serve`), ensure you have pulled a model (e.g., `ollama pull llama3`).
+    - In Notention's AI settings, enter your Ollama API endpoint (e.g., `http://localhost:11434`).
+  - **Google Gemini**:
+    - Obtain an API key from [Google AI Studio](https://aistudio.google.com/app/apikey).
+    - In Notention's AI settings, enter your Gemini API Key.
+  - _Note_: You can configure one or both. The application may prioritize Gemini if both are available, unless
+    otherwise specified.
 - **Features**:
-    - **Ontology Suggestions**: In the Ontology Editor, use the "AI Suggest" button to get ideas for new concepts or
-      relationships based on your existing ontology and optional context you provide.
-    - **Auto-tagging**: While editing a note, use the "Auto-tag" button in the toolbar to let AI suggest relevant tags
-      based on the note's content and your ontology.
-    - **Summarization**: Use the "Summarize" button in the Note Editor toolbar to generate a concise summary of the
-      current note. The summary can be reviewed and optionally inserted into the note.
-    - **Embedding Vectors (Future)**: Future updates will explore using embedding vectors for enhanced semantic search
-      and network matching.
+  - **Ontology Suggestions**: In the Ontology Editor, use the "AI Suggest" button to get ideas for new concepts or
+    relationships based on your existing ontology and optional context you provide.
+  - **Auto-tagging**: While editing a note, use the "Auto-tag" button in the toolbar to let AI suggest relevant tags
+    based on the note's content and your ontology.
+  - **Summarization**: Use the "Summarize" button in the Note Editor toolbar to generate a concise summary of the
+    current note. The summary can be reviewed and optionally inserted into the note.
+  - **Embedding Vectors (Future)**: Future updates will explore using embedding vectors for enhanced semantic search
+    and network matching.
 - **Fallback**: If AI is not enabled or configured, these features will be unavailable, but the application remains
   fully functional for manual note-taking and organization.
 - **Sharing AI Results**: Users with AI support can share usable results (e.g., AI-assisted tags on a published note)
@@ -139,20 +139,20 @@ application is fully functional without it.
 ### Client-Side PWA
 
 - **Offline-First**:
-    - Service Workers cache assets for offline use.
-    - Notes and ontology saved locally, synced to Nostr when online.
+  - Service Workers cache assets for offline use.
+  - Notes and ontology saved locally, synced to Nostr when online.
 - **User Interface**:
-    - Layout: single-column (mobile), two-column (desktop, editor + sidebar).
-    - Components:
-        - Tiptap-based note editor with toolbar and autocomplete.
-        - Sidebar tabs: Notes (list, search), Ontology (tree editor), Network (matches, channels), Settings.
-        - Notification bar for alerts.
-    - Styling: custom CSS with light/dark themes.
+  - Layout: single-column (mobile), two-column (desktop, editor + sidebar).
+  - Components:
+    - Tiptap-based note editor with toolbar and autocomplete.
+    - Sidebar tabs: Notes (list, search), Ontology (tree editor), Network (matches, channels), Settings.
+    - Notification bar for alerts.
+  - Styling: custom CSS with light/dark themes.
 - **Installation**:
-    - Installable as PWA via browser prompts on web and mobile.
+  - Installable as PWA via browser prompts on web and mobile.
 - **Syncing**:
-    - Notes and ontology synced to Nostr relays as events.
-    - Timestamps for conflict-free versioning.
+  - Notes and ontology synced to Nostr relays as events.
+  - Timestamps for conflict-free versioning.
 
 ### Privacy and Security
 
@@ -160,6 +160,6 @@ application is fully functional without it.
 - **Encryption**: Private Nostr shares encrypted with NIP-04 (secp256k1).
 - **Sanitization**: DOMPurify prevents XSS in rich text.
 - **Data Sharing**:
-    - Only explicitly shared data sent to Nostr.
-    - Granular UI controls (e.g., “Share Tags” toggle).
+  - Only explicitly shared data sent to Nostr.
+  - Granular UI controls (e.g., “Share Tags” toggle).
 - **Key Management**: Nostr keypair stored locally with backup prompt.

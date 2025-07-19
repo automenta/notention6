@@ -44,9 +44,9 @@ Notention:
 1. **Open Notention.**
 2. **Go to Settings:** Look for a settings panel or user profile section where Nostr relays are managed.
 3. **Add Relay URL:**
-    - You should find a list of currently connected relays.
-    - There will be an option to "Add Relay" or a similar input field.
-    - Enter the full WebSocket URL of your relay (e.g., `wss://my.personal.relay.example.com`).
+   - You should find a list of currently connected relays.
+   - There will be an option to "Add Relay" or a similar input field.
+   - Enter the full WebSocket URL of your relay (e.g., `wss://my.personal.relay.example.com`).
 4. **Save Changes:** Ensure your changes to the relay list are saved.
 5. **Reconnect/Resubscribe (Automatic or Manual):** Notention should attempt to connect to the new relay. You might want
    to toggle your network connection within the app or restart it if you don't see immediate connection success (though

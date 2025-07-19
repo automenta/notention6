@@ -282,11 +282,11 @@
   .step-content:not(.collapsed) {
     padding: var(--space-md);
   }
-  
+
   .step-header {
     padding: var(--space-sm) var(--space-md);
   }
-  
+
   .expand-button {
     top: var(--space-sm);
     right: var(--space-sm);
@@ -333,7 +333,7 @@
   .guide-step {
     border-width: 2px;
   }
-  
+
   .disclosure-trigger:focus-visible {
     outline-width: 3px;
   }
@@ -350,7 +350,7 @@
   .form-toggle {
     transition: none;
   }
-  
+
   .disclosure-content.expanding,
   .disclosure-content.collapsing {
     transition: none;

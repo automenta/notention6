@@ -41,8 +41,8 @@ Your identity in Notention is managed by a Nostr keypair.
 
 The Notention interface is designed to be simple and intuitive.
 
-- **Sidebar**: On the left (or at the bottom on mobile), you'll find tabs to navigate between your **Notes**, the *
-  *Ontology Editor**, the **Network** panel, and **Settings**.
+- **Sidebar**: On the left (or at the bottom on mobile), you'll find tabs to navigate between your **Notes**, the \*
+  \*Ontology Editor**, the **Network** panel, and **Settings\*\*.
 - **Note Editor**: This is the main area where you will create and edit your notes.
 - **Panels**: The Network panel contains views for network matches, a public feed, and direct messages.
 

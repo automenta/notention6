@@ -315,24 +315,24 @@
     align-items: stretch;
     gap: 1rem;
   }
-  
+
   .quick-filter-buttons {
     justify-content: center;
   }
-  
+
   .checkbox-group {
     grid-template-columns: 1fr;
   }
-  
+
   .custom-date-inputs {
     flex-direction: column;
   }
-  
+
   .result-header {
     flex-direction: column;
     gap: 0.5rem;
   }
-  
+
   .result-date {
     margin-left: 0;
     align-self: flex-start;

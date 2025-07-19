@@ -7,24 +7,24 @@ project.
 
 - **Project Overview**: Notention is a lightweight, client-side PWA for decentralized note-taking using Nostr.
 - **Technology Stack**:
-    - **Frontend**: TypeScript, Web Components
-    - **Build Tool**: Vite
-    - **State Management**: Zustand
-    - **Networking**: nostr-tools for Nostr protocol integration
-    - **Editor**: Tiptap
-    - **Database**: LocalForage (IndexedDB wrapper)
-    - **AI (Optional)**: LangChain.js with Ollama/Gemini
+  - **Frontend**: TypeScript, Web Components
+  - **Build Tool**: Vite
+  - **State Management**: Zustand
+  - **Networking**: nostr-tools for Nostr protocol integration
+  - **Editor**: Tiptap
+  - **Database**: LocalForage (IndexedDB wrapper)
+  - **AI (Optional)**: LangChain.js with Ollama/Gemini
 
 ## 2. Project Structure
 
 - `src/`: Main source code directory.
-    - `backend/`: Services that run in a separate worker (future).
-    - `components/`: Reusable UI components (deprecated, see `ui-rewrite`).
-    - `extensions/`: Custom Tiptap extensions.
-    - `lib/`: Utility functions.
-    - `services/`: Core application logic (database, Nostr, notes, etc.).
-    - `store/`: Zustand stores for state management.
-    - `ui-rewrite/`: The new component library built with Lit.
+  - `backend/`: Services that run in a separate worker (future).
+  - `components/`: Reusable UI components (deprecated, see `ui-rewrite`).
+  - `extensions/`: Custom Tiptap extensions.
+  - `lib/`: Utility functions.
+  - `services/`: Core application logic (database, Nostr, notes, etc.).
+  - `store/`: Zustand stores for state management.
+  - `ui-rewrite/`: The new component library built with Lit.
 - `public/`: Static assets.
 - `docs/`: Project documentation.
 - `shared/`: TypeScript types shared across the application.
@@ -33,8 +33,8 @@ project.
 ## 3. Getting Started (Development Environment)
 
 1. **Prerequisites**:
-    - Node.js (LTS version)
-    - npm or yarn
+   - Node.js (LTS version)
+   - npm or yarn
 2. **Clone the Repository**:
    ```bash
    git clone https://github.com/your-repo/notention.git
@@ -109,20 +109,20 @@ handles caching of application assets for offline use.
   and `npm run format` to check and fix your code.
 - **TypeScript Best Practices**: Use strong types, avoid `any`, and leverage modern TypeScript features.
 - **Naming Conventions**:
-    - Components: `PascalCase` (e.g., `NoteEditor`)
-    - Services: `PascalCase` (e.g., `NoteService`)
-    - Functions/Variables: `camelCase` (e.g., `getNoteById`)
-    - Types: `PascalCase` (e.g., `Note`)
+  - Components: `PascalCase` (e.g., `NoteEditor`)
+  - Services: `PascalCase` (e.g., `NoteService`)
+  - Functions/Variables: `camelCase` (e.g., `getNoteById`)
+  - Types: `PascalCase` (e.g., `Note`)
 
 ## 6. Testing
 
 - **Unit Tests (Vitest)**:
-    - Run tests with `npm run test`.
-    - Test files are co-located with the source files they test (e.g., `NoteService.test.ts`).
-    - Dependencies are mocked to isolate the code under test.
+  - Run tests with `npm run test`.
+  - Test files are co-located with the source files they test (e.g., `NoteService.test.ts`).
+  - Dependencies are mocked to isolate the code under test.
 - **End-to-End Testing (Playwright)**:
-    - Run E2E tests with `npm run test:e2e`.
-    - Tests are located in the `tests-e2e/` directory.
+  - Run E2E tests with `npm run test:e2e`.
+  - Tests are located in the `tests-e2e/` directory.
 
 ## 7. Key Services Deep Dive
 
@@ -137,10 +137,10 @@ handles caching of application assets for offline use.
 1. **Report Bugs**: Use GitHub Issues to report any bugs you find.
 2. **Suggest Features**: Use GitHub Issues to suggest new features.
 3. **Pull Request Process**:
-    1. Fork the repository.
-    2. Create a new branch for your feature or bug fix.
-    3. Make your changes and commit them with a clear message.
-    4. Push your branch and open a pull request.
+   1. Fork the repository.
+   2. Create a new branch for your feature or bug fix.
+   3. Make your changes and commit them with a clear message.
+   4. Push your branch and open a pull request.
 
 ## 9. Deployment
 
