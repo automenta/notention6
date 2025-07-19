@@ -1,22 +1,13 @@
-// src/ui-rewrite/NotentionApp.ts
+// src/ui/NotentionApp.ts
 import { useAppStore } from "../store";
 import { createButton } from "./Button";
 import { createSidebar } from "./Sidebar";
 import { createAccountWizard } from "./AccountWizard";
-import { createDashboard } from "./Dashboard";
-import { createNotesList } from "./NotesList";
-import { createNoteEditor } from "./NoteEditor";
-import { createProfileEditor } from "./ProfileEditor";
-import { createOntologyEditor } from "./OntologyEditor";
-import { createFolderView } from "./FolderView";
-import { createNetworkPanel } from "./NetworkPanel";
-import { createContactsView } from "./ContactsView";
-import { createChatPanel } from "./ChatPanel";
-import { createSettings } from "./Settings";
 import { createNotificationBar } from "./NotificationBar";
 import { ComponentRegistry } from "../lib/ComponentRegistry";
 import { registerComponents } from "../lib/ComponentRegistrations";
 import { AnimationSystem, createFeedbackSystem } from "../lib/AnimationSystem";
+import { AppRouter } from "./AppRouter";
 import "./NotentionApp.css";
 
 // A type guard to check if a profile exists and has a public key
@@ -52,8 +43,7 @@ function applyTheme() {
 export function renderApp(rootElement: HTMLElement) {
   // Initial render function
   const render = () => {
-    const { userProfile, sidebarTab, sidebarCollapsed, currentNoteId } =
-      useAppStore.getState();
+    const { userProfile, sidebarTab, sidebarCollapsed } = useAppStore.getState();
 
     // Apply the theme
     applyTheme();
@@ -73,7 +63,9 @@ export function renderApp(rootElement: HTMLElement) {
 
       // Sidebar
       const sidebarContainer = document.createElement("aside");
-      sidebarContainer.className = `sidebar-container ${sidebarCollapsed ? "collapsed" : ""}`;
+      sidebarContainer.className = `sidebar-container ${
+        sidebarCollapsed ? "collapsed" : ""
+      }`;
       const sidebar = createSidebar(sidebarTab);
       sidebarContainer.appendChild(sidebar);
 
@@ -93,52 +85,8 @@ export function renderApp(rootElement: HTMLElement) {
       });
       mainContainer.appendChild(toggleButton);
 
-      let currentView: HTMLElement | null;
-
-      if (sidebarTab === "notes" && currentNoteId) {
-        // Use component registry to create note editor with user's preferred variant
-        const noteEditor = ComponentRegistry.createComponent(
-          "noteEditor",
-          currentNoteId,
-        );
-        currentView = noteEditor || createNoteEditor(currentNoteId); // Fallback to original if registry fails
-      } else {
-        switch (sidebarTab) {
-          case "dashboard":
-            currentView = createDashboard();
-            break;
-          case "notes":
-            currentView = createNotesList();
-            break;
-          case "profile":
-            currentView = createProfileEditor();
-            break;
-          case "folders":
-            currentView = createFolderView();
-            break;
-          case "ontology":
-            currentView = createOntologyEditor();
-            break;
-          case "network":
-            currentView = createNetworkPanel();
-            break;
-          case "contacts":
-            currentView = createContactsView();
-            break;
-          case "chats":
-            currentView = createChatPanel();
-            break;
-          case "settings":
-            currentView = createSettings();
-            break;
-          default:
-            currentView = createDashboard();
-        }
-      }
-
-      if (currentView) {
-        mainViewContainer.appendChild(currentView);
-      }
+      const currentView = AppRouter();
+      mainViewContainer.appendChild(currentView);
 
       mainContainer.appendChild(mainViewContainer);
 
