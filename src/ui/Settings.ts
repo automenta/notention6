@@ -230,29 +230,21 @@ export function createSettings(): HTMLElement {
   );
   container.appendChild(componentCollapsible);
 
-  // Ontology Modules Section with Progressive Disclosure
+  // Ontology & Template Management Section
+  const ontologyAndTemplateContainer = document.createElement("div");
+  ontologyAndTemplateContainer.appendChild(createOntologyModuleManager());
+  ontologyAndTemplateContainer.appendChild(createTemplateManager());
+
   const ontologyCollapsible = createCollapsibleSection(
-    "🧠 Built-in Ontology Modules",
-    createOntologyModuleManager(),
+    "🧠 Ontology & Templates",
+    ontologyAndTemplateContainer,
     {
       expanded: false,
       persistent: true,
-      storageKey: "ontology-modules-expanded",
+      storageKey: "ontology-templates-expanded",
     },
   );
   container.appendChild(ontologyCollapsible);
-
-  // Template Management Section with Progressive Disclosure
-  const templateCollapsible = createCollapsibleSection(
-    "📝 Template Management",
-    createTemplateManager(),
-    {
-      expanded: false,
-      persistent: true,
-      storageKey: "template-management-expanded",
-    },
-  );
-  container.appendChild(templateCollapsible);
 
   // Advanced Search Section with Progressive Disclosure
   const searchCollapsible = createCollapsibleSection(

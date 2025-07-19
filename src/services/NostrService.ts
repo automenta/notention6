@@ -1077,6 +1077,8 @@ export class NostrService {
     const storedRelays = await DBService.getRelays();
     if (storedRelays && storedRelays.length > 0) {
       this.relays = storedRelays;
+    } else {
+      this.relays = this.defaultRelays;
     }
   }
 }
