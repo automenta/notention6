@@ -1,4 +1,8 @@
-import { OntologyNode, OntologyTree } from "../../shared/types";
+import {
+  OntologyNode,
+  OntologyProperty,
+  OntologyTree,
+} from "../../shared/types";
 import { v4 as uuidv4 } from "uuid";
 
 export class OntologyService {
@@ -8,7 +12,7 @@ export class OntologyService {
   static createNode(
     label: string,
     parentId?: string,
-    attributes?: { [key: string]: string },
+    properties?: OntologyProperty[],
   ): OntologyNode {
     const id =
       label.toLowerCase().replace(/[^a-z0-9]/g, "-") +
@@ -20,7 +24,7 @@ export class OntologyService {
       label:
         label.startsWith("#") || label.startsWith("@") ? label : `#${label}`,
       parentId,
-      attributes,
+      properties,
       children: [],
     };
   }

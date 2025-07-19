@@ -118,7 +118,7 @@ export function createOntologyEditor(): HTMLElement {
                 id: newNodeId,
                 label: suggestion.label,
                 children: [],
-                attributes: suggestion.attributes,
+                properties: suggestion.properties,
               };
               if (
                 suggestion.parentId &&
@@ -185,8 +185,8 @@ export function createOntologyEditor(): HTMLElement {
   const treeContainer = document.createElement("div");
   treeContainer.className = "ontology-tree-container";
 
-  const attributeEditorContainer = document.createElement("div");
-  attributeEditorContainer.className = "attribute-editor-container";
+  const propertyEditorContainer = document.createElement("div");
+  propertyEditorContainer.className = "property-editor-container";
 
   const renderTree = (parentId?: string) => {
     const list = document.createElement("ul");
@@ -304,11 +304,11 @@ export function createOntologyEditor(): HTMLElement {
     return list;
   };
 
-  const renderAttributeEditor = () => {
-    attributeEditorContainer.innerHTML = "";
+  const renderPropertyEditor = () => {
+    propertyEditorContainer.innerHTML = "";
     if (!selectedNodeId) {
-      attributeEditorContainer.textContent =
-        "Select a node to edit its attributes.";
+      propertyEditorContainer.textContent =
+        "Select a node to edit its properties.";
       return;
     }
 
@@ -317,17 +317,13 @@ export function createOntologyEditor(): HTMLElement {
 
     const title = document.createElement("h3");
     title.textContent = `Edit: ${node.label}`;
-    attributeEditorContainer.appendChild(title);
+    propertyEditorContainer.appendChild(title);
 
     const form = document.createElement("form");
     form.onsubmit = (e) => {
       e.preventDefault();
-      const formData = new FormData(e.target as HTMLFormElement);
-      const newAttributes: { [key: string]: string } = {};
-      formData.forEach((value, key) => {
-        newAttributes[key] = value as string;
-      });
-      const updatedNode: OntologyNode = { ...node, attributes: newAttributes };
+      const newProperties = [...(node.properties || [])];
+      const updatedNode: OntologyNode = { ...node, properties: newProperties };
       const newOntology = {
         ...ontology,
         nodes: { ...ontology.nodes, [selectedNodeId!]: updatedNode },
@@ -335,68 +331,100 @@ export function createOntologyEditor(): HTMLElement {
       setOntology(newOntology);
     };
 
-    const attributesContainer = document.createElement("div");
+    const propertiesContainer = document.createElement("div");
 
-    const renderAttributes = () => {
-      attributesContainer.innerHTML = "";
-      const attributes = node.attributes || {};
-      for (const key in attributes) {
-        const attributeItem = document.createElement("div");
-        attributeItem.className = "attribute-item";
-        const label = document.createElement("label");
-        label.textContent = key;
-        const input = document.createElement("input");
-        input.name = key;
-        input.value = attributes[key];
+    const renderProperties = () => {
+      propertiesContainer.innerHTML = "";
+      const properties = node.properties || [];
+      properties.forEach((prop, index) => {
+        const propertyItem = document.createElement("div");
+        propertyItem.className = "property-item";
+
+        const nameInput = document.createElement("input");
+        nameInput.value = prop.name;
+        nameInput.onchange = (e) => {
+          const newName = (e.target as HTMLInputElement).value;
+          const newProps = [...(node.properties || [])];
+          newProps[index].name = newName;
+          const updatedNode = { ...node, properties: newProps };
+          const newOntology = { ...ontology, nodes: { ...ontology.nodes, [selectedNodeId!]: updatedNode } };
+          setOntology(newOntology);
+        };
+
+        const typeSelect = document.createElement("select");
+        ["text", "number", "date", "boolean"].forEach((type) => {
+          const option = document.createElement("option");
+          option.value = type;
+          option.textContent = type;
+          if (prop.type === type) {
+            option.selected = true;
+          }
+          typeSelect.appendChild(option);
+        });
+        typeSelect.onchange = (e) => {
+          const newType = (e.target as HTMLSelectElement).value as any;
+          const newProps = [...(node.properties || [])];
+          newProps[index].type = newType;
+          const updatedNode = { ...node, properties: newProps };
+          const newOntology = { ...ontology, nodes: { ...ontology.nodes, [selectedNodeId!]: updatedNode } };
+          setOntology(newOntology);
+        };
+
+        const valueInput = document.createElement("input");
+        valueInput.type = prop.type === "boolean" ? "checkbox" : prop.type;
+        if (prop.type === "boolean") {
+          (valueInput as HTMLInputElement).checked = prop.value as boolean;
+        } else {
+          valueInput.value = prop.value as string;
+        }
+        valueInput.onchange = (e) => {
+          const newValue =
+            prop.type === "boolean"
+              ? (e.target as HTMLInputElement).checked
+              : (e.target as HTMLInputElement).value;
+          const newProps = [...(node.properties || [])];
+          newProps[index].value = newValue;
+          const updatedNode = { ...node, properties: newProps };
+          const newOntology = { ...ontology, nodes: { ...ontology.nodes, [selectedNodeId!]: updatedNode } };
+          setOntology(newOntology);
+        };
+
         const deleteButton = createButton({
           label: "x",
-          onClick: () => deleteAttribute(key),
+          onClick: () => deleteProperty(index),
           variant: "danger",
         });
-        attributeItem.appendChild(label);
-        attributeItem.appendChild(input);
-        attributeItem.appendChild(deleteButton);
-        attributesContainer.appendChild(attributeItem);
-      }
+
+        propertyItem.appendChild(nameInput);
+        propertyItem.appendChild(typeSelect);
+        propertyItem.appendChild(valueInput);
+        propertyItem.appendChild(deleteButton);
+        propertiesContainer.appendChild(propertyItem);
+      });
     };
 
-    renderAttributes();
-    form.appendChild(attributesContainer);
+    renderProperties();
+    form.appendChild(propertiesContainer);
 
-    const addAttributeButton = createButton({
-      label: "+ Add Attribute",
+    const addPropertyButton = createButton({
+      label: "+ Add Property",
       onClick: () => {
-        const newAttributeName = prompt("Enter new attribute name:");
-        if (
-          newAttributeName &&
-          !(newAttributeName in (node.attributes || {}))
-        ) {
-          const updatedNode: OntologyNode = {
-            ...node,
-            attributes: { ...node.attributes, [newAttributeName]: "" },
-          };
-          const newOntology = {
-            ...ontology,
-            nodes: { ...ontology.nodes, [selectedNodeId!]: updatedNode },
-          };
-          setOntology(newOntology);
-        }
+        const newProperties = [
+          ...(node.properties || []),
+          { name: "new-property", type: "text", value: "" },
+        ];
+        const updatedNode: OntologyNode = { ...node, properties: newProperties };
+        const newOntology = {
+          ...ontology,
+          nodes: { ...ontology.nodes, [selectedNodeId!]: updatedNode },
+        };
+        setOntology(newOntology);
       },
       variant: "secondary",
     });
-    form.appendChild(addAttributeButton);
+    form.appendChild(addPropertyButton);
 
-    const saveButton = createButton({
-      label: "Save Attributes",
-      onClick: () =>
-        form.dispatchEvent(
-          new Event("submit", { cancelable: true, bubbles: true }),
-        ),
-      variant: "primary",
-    });
-    form.appendChild(saveButton);
-
-    attributeEditorContainer.appendChild(form);
+    propertyEditorContainer.appendChild(form);
   };
 
   const deleteNode = (nodeId: string) => {
@@ -443,15 +471,15 @@ export function createOntologyEditor(): HTMLElement {
     setOntology(newOntology);
   };
 
-  const deleteAttribute = (attributeKey: string) => {
+  const deleteProperty = (index: number) => {
     if (!selectedNodeId) return;
     const node = ontology.nodes[selectedNodeId];
-    if (!node || !node.attributes) return;
+    if (!node || !node.properties) return;
 
-    const newAttributes = { ...node.attributes };
-    delete newAttributes[attributeKey];
+    const newProperties = [...node.properties];
+    newProperties.splice(index, 1);
 
-    const updatedNode: OntologyNode = { ...node, attributes: newAttributes };
+    const updatedNode: OntologyNode = { ...node, properties: newProperties };
     const newOntology = {
       ...ontology,
       nodes: { ...ontology.nodes, [selectedNodeId]: updatedNode },
@@ -462,7 +490,7 @@ export function createOntologyEditor(): HTMLElement {
   const updateView = () => {
     treeContainer.innerHTML = "";
     treeContainer.appendChild(renderTree());
-    renderAttributeEditor();
+    renderPropertyEditor();
   };
 
   useAppStore.subscribe(
@@ -476,7 +504,7 @@ export function createOntologyEditor(): HTMLElement {
 
   updateView();
   editorContent.appendChild(treeContainer);
-  editorContent.appendChild(attributeEditorContainer);
+  editorContent.appendChild(propertyEditorContainer);
   container.appendChild(editorContent);
 
   return container;

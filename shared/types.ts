@@ -16,10 +16,16 @@ export interface Note {
   nostrSyncEventId?: string; // ID of the Nostr event used for syncing this note (Kind 4)
 }
 
+export interface OntologyProperty {
+  name: string;
+  type: "text" | "number" | "date" | "boolean";
+  value: string | number | boolean | Date;
+}
+
 export interface OntologyNode {
-  id: string;
+  id:string;
   label: string;
-  attributes?: { [key: string]: string };
+  properties?: OntologyProperty[];
   parentId?: string;
   children?: string[];
 }

@@ -26,12 +26,14 @@ describe("OntologyService", () => {
   });
 
   it("should create a new node correctly", () => {
-    const node = OntologyService.createNode("TestNode", "parent-123", {
-      color: "blue",
-    });
+    const node = OntologyService.createNode("TestNode", "parent-123", [
+      { name: "color", type: "text", value: "blue" },
+    ]);
     expect(node.label).toBe("#TestNode"); // Default adds #
     expect(node.parentId).toBe("parent-123");
-    expect(node.attributes).toEqual({ color: "blue" });
+    expect(node.properties).toEqual([
+      { name: "color", type: "text", value: "blue" },
+    ]);
     expect(node.id).toContain("testnode-");
   });
 
@@ -108,7 +110,7 @@ describe("OntologyService", () => {
     )!;
     const updates = {
       label: "#ProjectUpdated",
-      attributes: { status: "active" },
+      properties: [{ name: "status", type: "text", value: "active" }],
     };
     const updatedOntology = OntologyService.updateNode(
       baseOntology,
@@ -117,9 +119,9 @@ describe("OntologyService", () => {
     );
 
     expect(updatedOntology.nodes[projectNode.id].label).toBe("#ProjectUpdated");
-    expect(updatedOntology.nodes[projectNode.id].attributes).toEqual({
-      status: "active",
-    });
+    expect(updatedOntology.nodes[projectNode.id].properties).toEqual([
+      { name: "status", type: "text", value: "active" },
+    ]);
   });
 
   it("should move a node to a new parent", () => {
@@ -278,7 +280,7 @@ describe("OntologyService", () => {
       (n) => n.label === "#Project",
     )!.id;
     baseOntology = OntologyService.updateNode(baseOntology, projectNodeId, {
-      attributes: { status: "active" },
+      properties: [{ name: "status", type: "text", value: "active" }],
     });
 
     const jsonExport = OntologyService.exportToJSON(baseOntology);
