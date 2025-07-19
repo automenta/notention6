@@ -81,22 +81,17 @@ export function renderApp(rootElement: HTMLElement) {
       const mainContainer = document.createElement("div");
       mainContainer.className = "main-container";
 
-      // Header
-      const header = document.createElement("header");
-      header.className = "app-header";
+      // Main View
+      const mainViewContainer = document.createElement("main");
+      mainViewContainer.className = "main-content";
+
       const toggleButton = createButton({
         label: "☰",
         onClick: () => useAppStore.getState().toggleSidebar(),
         variant: "secondary",
+        className: "sidebar-toggle-btn",
       });
-      const title = document.createElement("h1");
-      title.textContent = "Notention";
-      header.appendChild(toggleButton);
-      header.appendChild(title);
-
-      // Main View
-      const mainViewContainer = document.createElement("main");
-      mainViewContainer.className = "main-content";
+      mainContainer.appendChild(toggleButton);
 
       let currentView: HTMLElement | null;
 
@@ -145,7 +140,6 @@ export function renderApp(rootElement: HTMLElement) {
         mainViewContainer.appendChild(currentView);
       }
 
-      mainContainer.appendChild(header);
       mainContainer.appendChild(mainViewContainer);
 
       appContainer.appendChild(sidebarContainer);
