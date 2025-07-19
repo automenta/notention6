@@ -1,0 +1,381 @@
+/* Professional Button System - Techno Minimalism */
+.button {
+  /* Base button styles */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  line-height: 1.4;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  position: relative;
+  overflow: hidden;
+  
+  /* Prevent text selection */
+  user-select: none;
+  -webkit-user-select: none;
+  
+  /* Focus and accessibility */
+  outline: none;
+}
+
+.button:focus-visible {
+  box-shadow: var(--shadow-focus);
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  transform: none !important;
+}
+
+/* Button Variants */
+
+/* Primary - Main action button */
+.button.primary {
+  background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-dark) 100%);
+  color: var(--text-inverse);
+  border-color: var(--accent-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.button.primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.button.primary:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Secondary - Supporting actions */
+.button.secondary {
+  background: var(--surface-elevated);
+  color: var(--text-primary);
+  border-color: var(--border-primary);
+}
+
+.button.secondary:hover:not(:disabled) {
+  background: var(--surface-hover);
+  border-color: var(--border-accent);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.button.secondary:active:not(:disabled) {
+  background: var(--surface-active);
+  transform: translateY(0);
+}
+
+/* Ghost - Minimal visual weight */
+.button.ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border-color: transparent;
+}
+
+.button.ghost:hover:not(:disabled) {
+  background: var(--interactive-hover);
+  color: var(--text-primary);
+}
+
+.button.ghost:active:not(:disabled) {
+  background: var(--interactive-active);
+}
+
+/* Danger - Destructive actions */
+.button.danger {
+  background: var(--status-error);
+  color: var(--text-inverse);
+  border-color: var(--status-error);
+}
+
+.button.danger:hover:not(:disabled) {
+  background: #dc2626;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.button.danger:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Success - Positive actions */
+.button.success {
+  background: var(--status-success);
+  color: var(--text-inverse);
+  border-color: var(--status-success);
+}
+
+.button.success:hover:not(:disabled) {
+  background: #059669;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.button.success:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Warning - Caution actions */
+.button.warning {
+  background: var(--status-warning);
+  color: var(--text-inverse);
+  border-color: var(--status-warning);
+}
+
+.button.warning:hover:not(:disabled) {
+  background: #d97706;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.button.warning:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Info - Informational actions */
+.button.info {
+  background: var(--status-info);
+  color: var(--text-inverse);
+  border-color: var(--status-info);
+}
+
+.button.info:hover:not(:disabled) {
+  background: #0284c7;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.button.info:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Button Sizes */
+.button.small {
+  padding: var(--space-xs) var(--space-sm);
+  font-size: var(--text-xs);
+  gap: var(--space-xs);
+}
+
+.button.large {
+  padding: var(--space-md) var(--space-lg);
+  font-size: var(--text-base);
+  gap: var(--space-sm);
+}
+
+.button.icon-only {
+  padding: var(--space-sm);
+  aspect-ratio: 1;
+}
+
+.button.icon-only.small {
+  padding: var(--space-xs);
+}
+
+.button.icon-only.large {
+  padding: var(--space-md);
+}
+
+/* Full width button */
+.button.full-width {
+  width: 100%;
+}
+
+/* Button with loading state */
+.button.loading {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.button.loading::after {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: var(--radius-full);
+  animation: spin 1s linear infinite;
+}
+
+.button.loading .button-text {
+  opacity: 0;
+}
+
+/* Icon buttons with semantic colors */
+.button.icon-ai {
+  background: var(--tag-ai-bg);
+  color: var(--tag-ai);
+  border-color: transparent;
+}
+
+.button.icon-ai:hover:not(:disabled) {
+  background: var(--tag-ai);
+  color: var(--text-inverse);
+}
+
+.button.icon-project {
+  background: var(--tag-project-bg);
+  color: var(--tag-project);
+  border-color: transparent;
+}
+
+.button.icon-project:hover:not(:disabled) {
+  background: var(--tag-project);
+  color: var(--text-inverse);
+}
+
+.button.icon-personal {
+  background: var(--tag-personal-bg);
+  color: var(--tag-personal);
+  border-color: transparent;
+}
+
+.button.icon-personal:hover:not(:disabled) {
+  background: var(--tag-personal);
+  color: var(--text-inverse);
+}
+
+/* Button groups */
+.button-group {
+  display: inline-flex;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.button-group .button {
+  border-radius: 0;
+  border-right-width: 0;
+}
+
+.button-group .button:first-child {
+  border-top-left-radius: var(--radius-md);
+  border-bottom-left-radius: var(--radius-md);
+}
+
+.button-group .button:last-child {
+  border-top-right-radius: var(--radius-md);
+  border-bottom-right-radius: var(--radius-md);
+  border-right-width: 1px;
+}
+
+.button-group .button:only-child {
+  border-radius: var(--radius-md);
+  border-right-width: 1px;
+}
+
+/* Floating Action Button */
+.button.fab {
+  position: fixed;
+  bottom: var(--space-xl);
+  right: var(--space-xl);
+  border-radius: var(--radius-full);
+  padding: var(--space-lg);
+  box-shadow: var(--shadow-lg);
+  z-index: var(--z-dropdown);
+}
+
+.button.fab:hover:not(:disabled) {
+  transform: scale(1.05) translateY(-2px);
+  box-shadow: var(--shadow-xl);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .button {
+    padding: var(--space-sm) var(--space-md);
+  }
+  
+  .button.large {
+    padding: var(--space-md) var(--space-lg);
+  }
+  
+  .button.fab {
+    bottom: var(--space-lg);
+    right: var(--space-lg);
+    padding: var(--space-md);
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .button {
+    border-width: 2px;
+  }
+  
+  .button.ghost {
+    border-color: var(--border-primary);
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .button {
+    transition: none;
+  }
+  
+  .button:hover:not(:disabled) {
+    transform: none;
+  }
+}
+
+/* Animations */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Button with ripple effect */
+.button.ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.button.ripple::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.button.ripple:active::before {
+  width: 300px;
+  height: 300px;
+}
+
+/* Dark theme adjustments */
+[data-theme="dark"] .button.secondary {
+  background: var(--surface-tertiary);
+}
+
+[data-theme="dark"] .button.ghost {
+  color: var(--text-tertiary);
+}
+
+[data-theme="dark"] .button.ghost:hover:not(:disabled) {
+  color: var(--text-primary);
+}

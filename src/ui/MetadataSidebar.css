@@ -1,0 +1,95 @@
+/* src/ui-rewrite/MetadataSidebar.css */
+.metadata-sidebar {
+    width: 320px;
+    padding: 20px;
+    background-color: var(--card-background-color);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    height: fit-content;
+    max-height: 100%;
+    overflow-y: auto;
+}
+
+.metadata-section {
+    margin-bottom: 32px;
+}
+
+.metadata-section:last-child {
+    margin-bottom: 0;
+}
+
+.metadata-section h3 {
+    margin: 0 0 16px 0;
+    font-size: 1.1em;
+    font-weight: 600;
+    color: var(--text-color);
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 8px;
+}
+
+.metadata-items {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.metadata-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    background-color: var(--background-color);
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+}
+
+.metadata-item .key-input,
+.metadata-item .value-input {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.metadata-item .key-input {
+    font-weight: 500;
+    background-color: var(--hover-background-color);
+}
+
+.metadata-item label {
+    font-weight: 600;
+    color: var(--text-color);
+    min-width: 80px;
+    font-size: 14px;
+}
+
+.metadata-item input[type="text"] {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.metadata-item .btn {
+    padding: 6px 12px;
+    font-size: 12px;
+    min-width: auto;
+}
+
+@media (max-width: 768px) {
+    .metadata-sidebar {
+        width: 100%;
+        margin-top: 20px;
+    }
+
+    .metadata-item {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .metadata-item label {
+        min-width: auto;
+    }
+}

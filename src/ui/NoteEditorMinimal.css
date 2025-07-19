@@ -1,0 +1,301 @@
+/* Minimal Note Editor - Clean, distraction-free interface */
+
+.minimal-editor-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: var(--background-color);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
+
+.minimal-editor-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--text-color-muted);
+    font-style: italic;
+    font-size: 1.1rem;
+}
+
+/* Header */
+.minimal-editor-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--card-background-color);
+    flex-shrink: 0;
+}
+
+.minimal-title-input {
+    flex: 1;
+    font-size: 1.5rem;
+    font-weight: 600;
+    border: none;
+    background: transparent;
+    color: var(--text-color);
+    outline: none;
+    padding: 0;
+    margin-right: 16px;
+}
+
+.minimal-title-input::placeholder {
+    color: var(--text-color-muted);
+    font-weight: 400;
+}
+
+.minimal-status-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.85rem;
+    color: var(--text-color-muted);
+}
+
+.word-count {
+    font-variant-numeric: tabular-nums;
+}
+
+.status-indicator {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-draft {
+    background: rgba(108, 117, 125, 0.1);
+    color: #6c757d;
+}
+
+.status-private {
+    background: rgba(255, 193, 7, 0.1);
+    color: #ffc107;
+}
+
+.status-published {
+    background: rgba(25, 135, 84, 0.1);
+    color: #198754;
+}
+
+/* Content Area */
+.minimal-content-area {
+    flex: 1;
+    padding: 32px 24px;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+.minimal-content-textarea {
+    width: 100%;
+    min-height: 400px;
+    max-height: none;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--text-color);
+    font-family: inherit;
+    resize: none;
+    overflow: hidden;
+}
+
+.minimal-content-textarea::placeholder {
+    color: var(--text-color-muted);
+    font-style: italic;
+}
+
+.minimal-content-textarea:focus {
+    outline: none;
+}
+
+/* Footer */
+.minimal-editor-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 24px;
+    border-top: 1px solid var(--border-color);
+    background: var(--card-background-color);
+    flex-shrink: 0;
+}
+
+.minimal-status-selector {
+    padding: 6px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--card-background-color);
+    color: var(--text-color);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+}
+
+.minimal-status-selector:hover {
+    border-color: var(--primary-color);
+}
+
+.minimal-status-selector:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.minimal-actions-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.minimal-actions-group .btn {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    min-width: auto;
+}
+
+/* Metadata Sidebar */
+.minimal-metadata-sidebar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 300px;
+    height: 100vh;
+    background: var(--card-background-color);
+    border-left: 1px solid var(--border-color);
+    box-shadow: -4px 0 12px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    overflow-y: auto;
+}
+
+/* AI Menu */
+.minimal-ai-menu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+}
+
+.minimal-ai-menu-content {
+    background: var(--card-background-color);
+    border-radius: 12px;
+    padding: 24px;
+    min-width: 300px;
+    max-width: 90vw;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    position: relative;
+}
+
+.minimal-ai-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 4px 8px;
+    font-size: 0.8rem;
+}
+
+.minimal-ai-title {
+    margin: 0 0 16px 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.minimal-ai-menu-content .btn {
+    display: block;
+    width: 100%;
+    margin-bottom: 8px;
+    text-align: left;
+    justify-content: flex-start;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .minimal-editor-header {
+        padding: 12px 16px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+    
+    .minimal-title-input {
+        margin-right: 0;
+        margin-bottom: 8px;
+    }
+    
+    .minimal-status-info {
+        justify-content: space-between;
+    }
+    
+    .minimal-content-area {
+        padding: 20px 16px;
+    }
+    
+    .minimal-editor-footer {
+        padding: 12px 16px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+    
+    .minimal-actions-group {
+        justify-content: space-between;
+    }
+    
+    .minimal-metadata-sidebar {
+        width: 100%;
+    }
+    
+    .minimal-ai-menu-content {
+        margin: 20px;
+        min-width: auto;
+    }
+}
+
+/* Dark theme adjustments */
+[data-theme="dark"] .minimal-content-textarea {
+    color: var(--text-color);
+}
+
+[data-theme="dark"] .minimal-title-input {
+    color: var(--text-color);
+}
+
+/* Focus states for accessibility */
+.minimal-editor-container:focus-within .minimal-content-area {
+    background: rgba(0, 123, 255, 0.02);
+}
+
+/* Smooth transitions */
+.minimal-editor-container * {
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+/* Print styles */
+@media print {
+    .minimal-editor-header,
+    .minimal-editor-footer {
+        display: none;
+    }
+    
+    .minimal-content-area {
+        padding: 0;
+    }
+    
+    .minimal-content-textarea {
+        background: white;
+        color: black;
+    }
+}

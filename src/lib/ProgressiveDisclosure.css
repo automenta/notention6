@@ -1,0 +1,370 @@
+/* Progressive Disclosure System Styles */
+
+/* Base disclosure styles */
+.disclosure-trigger {
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: all var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  border: none;
+  background: transparent;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: inherit;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.disclosure-trigger:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+.disclosure-trigger:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+.disclosure-trigger[aria-expanded="true"] {
+  color: var(--accent-primary);
+}
+
+.disclosure-content {
+  overflow: hidden;
+  transition: all var(--transition-base);
+}
+
+.disclosure-content.collapsed {
+  height: 0;
+  opacity: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.disclosure-content.expanding,
+.disclosure-content.collapsing {
+  overflow: hidden;
+}
+
+.disclosure-content.expanded {
+  opacity: 1;
+}
+
+/* Collapsible Section */
+.collapsible-section {
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--surface-elevated);
+  margin-bottom: var(--space-sm);
+}
+
+.collapsible-header {
+  padding: var(--space-md);
+  background: var(--surface-secondary);
+  border-bottom: 1px solid var(--border-secondary);
+  font-weight: 600;
+  color: var(--text-primary);
+  transition: all var(--transition-fast);
+}
+
+.collapsible-header:hover {
+  background: var(--surface-hover);
+}
+
+.collapsible-header[aria-expanded="true"] {
+  background: var(--accent-secondary);
+  color: var(--accent-primary);
+  border-bottom-color: var(--accent-primary);
+}
+
+.collapsible-content {
+  background: var(--surface-elevated);
+}
+
+.collapsible-content:not(.collapsed) {
+  padding: var(--space-md);
+}
+
+/* Expandable Card */
+.expandable-card {
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  background: var(--surface-elevated);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast);
+  overflow: hidden;
+}
+
+.expandable-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-accent);
+}
+
+.card-summary {
+  padding: var(--space-lg);
+  position: relative;
+  background: var(--surface-elevated);
+}
+
+.card-details {
+  background: var(--surface-secondary);
+  border-top: 1px solid var(--border-secondary);
+}
+
+.card-details:not(.collapsed) {
+  padding: var(--space-lg);
+}
+
+.expand-button {
+  position: absolute;
+  top: var(--space-md);
+  right: var(--space-md);
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-primary);
+  background: var(--surface-primary);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.expand-button:hover {
+  background: var(--accent-primary);
+  color: var(--text-inverse);
+  border-color: var(--accent-primary);
+  transform: scale(1.1);
+}
+
+.expand-button:focus-visible {
+  box-shadow: var(--shadow-focus);
+}
+
+/* Progressive Form */
+.progressive-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.form-basic {
+  background: var(--surface-elevated);
+  padding: var(--space-lg);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-primary);
+}
+
+.form-advanced {
+  background: var(--surface-secondary);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-secondary);
+  border-style: dashed;
+}
+
+.form-advanced:not(.collapsed) {
+  padding: var(--space-lg);
+  border-style: solid;
+  border-color: var(--accent-primary);
+  background: var(--accent-secondary);
+}
+
+.form-toggle {
+  align-self: flex-start;
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  background: var(--surface-elevated);
+  color: var(--text-secondary);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.form-toggle:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+  border-color: var(--accent-primary);
+}
+
+.form-toggle[aria-expanded="true"] {
+  background: var(--accent-primary);
+  color: var(--text-inverse);
+  border-color: var(--accent-primary);
+}
+
+/* Step-by-Step Guide */
+.step-guide {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.guide-step {
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--surface-elevated);
+  transition: all var(--transition-fast);
+}
+
+.guide-step:hover {
+  border-color: var(--accent-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.step-header {
+  padding: var(--space-md) var(--space-lg);
+  background: var(--surface-secondary);
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.step-header:hover {
+  background: var(--surface-hover);
+}
+
+.step-header[aria-expanded="true"] {
+  background: var(--accent-secondary);
+  color: var(--accent-primary);
+}
+
+.step-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  background: var(--accent-primary);
+  color: var(--text-inverse);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.step-header[aria-expanded="true"] .step-number {
+  background: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--accent-secondary);
+}
+
+.step-content {
+  background: var(--surface-elevated);
+}
+
+.step-content:not(.collapsed) {
+  padding: var(--space-lg);
+  border-top: 1px solid var(--border-secondary);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .collapsible-header,
+  .card-summary,
+  .form-basic,
+  .form-advanced:not(.collapsed),
+  .step-content:not(.collapsed) {
+    padding: var(--space-md);
+  }
+  
+  .step-header {
+    padding: var(--space-sm) var(--space-md);
+  }
+  
+  .expand-button {
+    top: var(--space-sm);
+    right: var(--space-sm);
+    width: 28px;
+    height: 28px;
+  }
+}
+
+/* Animation keyframes */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 1000px;
+    padding-top: var(--space-lg);
+    padding-bottom: var(--space-lg);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 1;
+    max-height: 1000px;
+    padding-top: var(--space-lg);
+    padding-bottom: var(--space-lg);
+  }
+  to {
+    opacity: 0;
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .collapsible-section,
+  .expandable-card,
+  .guide-step {
+    border-width: 2px;
+  }
+  
+  .disclosure-trigger:focus-visible {
+    outline-width: 3px;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .disclosure-trigger,
+  .disclosure-content,
+  .collapsible-header,
+  .expandable-card,
+  .step-header,
+  .expand-button,
+  .form-toggle {
+    transition: none;
+  }
+  
+  .disclosure-content.expanding,
+  .disclosure-content.collapsing {
+    transition: none;
+    animation: none;
+  }
+}
+
+/* Dark theme adjustments */
+[data-theme="dark"] .step-number {
+  background: var(--accent-primary);
+  color: var(--surface-primary);
+}
+
+[data-theme="dark"] .expand-button:hover {
+  background: var(--accent-primary);
+  color: var(--surface-primary);
+}

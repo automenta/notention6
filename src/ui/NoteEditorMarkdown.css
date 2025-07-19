@@ -1,0 +1,450 @@
+/* Markdown Note Editor - Split view with live preview */
+
+.markdown-editor-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: var(--background-color);
+}
+
+.markdown-editor-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--text-color-muted);
+    font-style: italic;
+    font-size: 1.1rem;
+}
+
+/* Header */
+.markdown-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    background: var(--card-background-color);
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.markdown-title-input {
+    flex: 1;
+    font-size: 1.3rem;
+    font-weight: 600;
+    border: none;
+    background: transparent;
+    color: var(--text-color);
+    outline: none;
+    margin-right: 16px;
+}
+
+.markdown-title-input::placeholder {
+    color: var(--text-color-muted);
+    font-weight: 400;
+}
+
+.markdown-view-controls {
+    display: flex;
+    gap: 4px;
+}
+
+.markdown-view-controls .btn {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    border-radius: 4px;
+}
+
+.markdown-view-controls .btn.active {
+    background: var(--primary-color);
+    color: white;
+}
+
+/* Main Content */
+.markdown-main-content {
+    flex: 1;
+    display: flex;
+    min-height: 0;
+}
+
+.markdown-main-content.split-view {
+    flex-direction: row;
+}
+
+.markdown-main-content.edit-view .markdown-editor-panel {
+    flex: 1;
+}
+
+.markdown-main-content.preview-view .markdown-preview-panel {
+    flex: 1;
+}
+
+/* Editor Panel */
+.markdown-editor-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--border-color);
+    background: var(--card-background-color);
+}
+
+.markdown-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 8px 12px;
+    gap: 4px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--background-color);
+}
+
+.markdown-toolbar-btn {
+    padding: 4px 8px;
+    border: 1px solid var(--border-color);
+    background: var(--card-background-color);
+    color: var(--text-color);
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    min-width: 28px;
+    text-align: center;
+}
+
+.markdown-toolbar-btn:hover {
+    background: var(--hover-background-color);
+    border-color: var(--primary-color);
+}
+
+.markdown-toolbar-btn:active {
+    transform: translateY(1px);
+}
+
+.markdown-textarea {
+    flex: 1;
+    padding: 20px;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--text-color);
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    resize: none;
+    tab-size: 2;
+}
+
+.markdown-textarea::placeholder {
+    color: var(--text-color-muted);
+    font-style: italic;
+}
+
+/* Preview Panel */
+.markdown-preview-panel {
+    flex: 1;
+    overflow-y: auto;
+    background: var(--background-color);
+}
+
+.markdown-preview-content {
+    padding: 20px;
+    max-width: none;
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+/* Preview content styling */
+.markdown-preview-content h1,
+.markdown-preview-content h2,
+.markdown-preview-content h3,
+.markdown-preview-content h4,
+.markdown-preview-content h5,
+.markdown-preview-content h6 {
+    color: var(--text-color);
+    font-weight: 600;
+    margin: 1.5em 0 0.5em 0;
+}
+
+.markdown-preview-content h1 {
+    font-size: 2rem;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 0.5rem;
+}
+
+.markdown-preview-content h2 {
+    font-size: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.3rem;
+}
+
+.markdown-preview-content h3 {
+    font-size: 1.25rem;
+}
+
+.markdown-preview-content p {
+    margin: 0.8em 0;
+}
+
+.markdown-preview-content ul,
+.markdown-preview-content ol {
+    margin: 0.8em 0;
+    padding-left: 2em;
+}
+
+.markdown-preview-content li {
+    margin: 0.2em 0;
+}
+
+.markdown-preview-content blockquote {
+    margin: 1em 0;
+    padding: 0.5em 1em;
+    border-left: 4px solid var(--primary-color);
+    background: rgba(0, 123, 255, 0.05);
+    color: var(--text-color-muted);
+}
+
+.markdown-preview-content code {
+    background: var(--hover-background-color);
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.85em;
+}
+
+.markdown-preview-content pre {
+    background: var(--hover-background-color);
+    padding: 1em;
+    border-radius: 6px;
+    overflow-x: auto;
+    border: 1px solid var(--border-color);
+}
+
+.markdown-preview-content pre code {
+    background: none;
+    padding: 0;
+}
+
+.markdown-preview-content a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.markdown-preview-content a:hover {
+    text-decoration: underline;
+}
+
+.markdown-preview-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 6px;
+    margin: 0.5em 0;
+}
+
+.markdown-preview-content table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1em 0;
+}
+
+.markdown-preview-content th,
+.markdown-preview-content td {
+    border: 1px solid var(--border-color);
+    padding: 0.5em;
+    text-align: left;
+}
+
+.markdown-preview-content th {
+    background: var(--hover-background-color);
+    font-weight: 600;
+}
+
+.markdown-preview-content input[type="checkbox"] {
+    margin-right: 0.5em;
+}
+
+.markdown-preview-content del {
+    opacity: 0.7;
+}
+
+/* Footer */
+.markdown-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background: var(--card-background-color);
+    border-top: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.markdown-status-group {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.markdown-status-selector {
+    padding: 4px 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: var(--card-background-color);
+    color: var(--text-color);
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.markdown-word-count {
+    font-size: 0.8rem;
+    color: var(--text-color-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.markdown-actions-group {
+    display: flex;
+    gap: 8px;
+}
+
+.markdown-actions-group .btn {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+}
+
+/* Metadata Sidebar */
+.markdown-metadata-sidebar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 300px;
+    height: 100vh;
+    background: var(--card-background-color);
+    border-left: 1px solid var(--border-color);
+    box-shadow: -4px 0 12px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    overflow-y: auto;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .markdown-main-content.split-view {
+        flex-direction: column;
+    }
+    
+    .markdown-editor-panel {
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .markdown-preview-panel {
+        min-height: 300px;
+    }
+}
+
+@media (max-width: 768px) {
+    .markdown-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        padding: 12px 16px;
+    }
+    
+    .markdown-title-input {
+        margin-right: 0;
+    }
+    
+    .markdown-view-controls {
+        justify-content: center;
+    }
+    
+    .markdown-toolbar {
+        padding: 8px;
+        justify-content: center;
+    }
+    
+    .markdown-textarea {
+        padding: 16px;
+        font-size: 0.85rem;
+    }
+    
+    .markdown-preview-content {
+        padding: 16px;
+    }
+    
+    .markdown-footer {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        padding: 12px 16px;
+    }
+    
+    .markdown-status-group {
+        justify-content: space-between;
+    }
+    
+    .markdown-actions-group {
+        justify-content: center;
+    }
+    
+    .markdown-metadata-sidebar {
+        width: 100%;
+    }
+    
+    /* Mobile: force single view */
+    .markdown-main-content.split-view {
+        flex-direction: column;
+    }
+    
+    .markdown-main-content.split-view .markdown-editor-panel,
+    .markdown-main-content.split-view .markdown-preview-panel {
+        flex: none;
+        height: 50vh;
+    }
+}
+
+/* Print styles */
+@media print {
+    .markdown-header,
+    .markdown-footer,
+    .markdown-toolbar {
+        display: none;
+    }
+    
+    .markdown-main-content {
+        flex-direction: column;
+    }
+    
+    .markdown-editor-panel {
+        display: none;
+    }
+    
+    .markdown-preview-panel {
+        flex: none;
+        overflow: visible;
+    }
+    
+    .markdown-preview-content {
+        padding: 0;
+    }
+}
+
+/* Accessibility */
+.markdown-toolbar-btn:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: -2px;
+}
+
+.markdown-textarea:focus {
+    background: rgba(0, 123, 255, 0.02);
+}
+
+/* Dark theme specific adjustments */
+[data-theme="dark"] .markdown-preview-content blockquote {
+    background: rgba(0, 123, 255, 0.1);
+}
+
+[data-theme="dark"] .markdown-preview-content code {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .markdown-preview-content pre {
+    background: rgba(255, 255, 255, 0.05);
+}
