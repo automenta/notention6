@@ -138,45 +138,34 @@ export function createNoteEditor(noteId?: string): HTMLElement {
         content: contentParts,
       };
 
-      // This is a temporary solution to get the HTML content.
-      // A better solution would be to use a proper HTML serializer.
-      const tempEditor = new Editor({
-        extensions: [StarterKit],
-        content: newContent,
-      });
-      const contentHtml = tempEditor.getHTML();
-      tempEditor.destroy();
-
       updateNote(note.id, {
-        content: contentHtml,
+        content: editor.getHTML(),
         values: newValues,
       });
     },
   });
 
-  useAppStore.subscribe(
-    (state) => state.notes[state.currentNoteId as string],
-    (newNote, oldNote) => {
-      if (
-        newNote?.content !== oldNote?.content &&
-        newNote?.content !== editor.getHTML()
-      ) {
+  const unsubscribe = useAppStore.subscribe(
+    (state) => state.notes[id],
+    (newNote) => {
+      if (newNote && newNote.content !== editor.getHTML()) {
         editor.commands.setContent(newNote.content, false);
       }
-      if (
-        newNote?.values !== oldNote?.values ||
-        newNote?.fields !== oldNote?.fields
-      ) {
-        const newSidebar = createMetadataSidebar();
-        newSidebar.classList.toggle(
-          "hidden",
-          metadataSidebar.classList.contains("hidden"),
-        );
-        editorLayout.replaceChild(newSidebar, metadataSidebar);
-        metadataSidebar = newSidebar;
+      if (newNote && newNote.title !== titleInput.value) {
+        titleInput.value = newNote.title;
       }
     },
   );
+
+  // Cleanup on element removal
+  const observer = new MutationObserver((mutations, obs) => {
+    if (!document.contains(editorLayout)) {
+      unsubscribe();
+      editor.destroy();
+      obs.disconnect();
+    }
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
 
   // Toolbar
   const toolbar = document.createElement("div");

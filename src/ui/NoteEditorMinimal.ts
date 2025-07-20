@@ -72,9 +72,13 @@ export function createNoteEditorMinimal(noteId?: string): HTMLElement {
   contentTextarea.placeholder = "Start writing...";
 
   // Convert HTML content to plain text for minimal editor
-  const tempDiv = document.createElement("div");
-  tempDiv.innerHTML = note.content;
-  contentTextarea.value = tempDiv.textContent || tempDiv.innerText || "";
+  const htmlToText = (html: string) => {
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = html;
+    return tempDiv.textContent || tempDiv.innerText || "";
+  };
+
+  contentTextarea.value = htmlToText(note.content);
 
   // Auto-resize textarea
   const autoResize = () => {
@@ -82,18 +86,18 @@ export function createNoteEditorMinimal(noteId?: string): HTMLElement {
     contentTextarea.style.height = contentTextarea.scrollHeight + "px";
   };
 
+  let debounceTimer: ReturnType<typeof setTimeout>;
   contentTextarea.oninput = (e) => {
     const text = (e.target as HTMLTextAreaElement).value;
 
-    // Simple HTML conversion - just wrap in paragraphs for basic structure
-    const htmlContent = text
-      .split("\n\n")
-      .map((paragraph) => paragraph.trim())
-      .filter((paragraph) => paragraph.length > 0)
-      .map((paragraph) => `<p>${paragraph.replace(/\n/g, "<br>")}</p>`)
-      .join("");
+    // Simple text to HTML conversion
+    const htmlContent =
+      "<p>" + text.replace(/\n\n/g, "</p><p>").replace(/\n/g, "<br>") + "</p>";
 
-    updateNote(note.id, { content: htmlContent || "<p></p>" });
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      updateNote(note.id, { content: htmlContent });
+    }, 500);
 
     // Update word count
     const wordCount = text
@@ -104,6 +108,21 @@ export function createNoteEditorMinimal(noteId?: string): HTMLElement {
 
     autoResize();
   };
+
+  const unsubscribe = useAppStore.subscribe(
+    (state) => state.notes[id],
+    (newNote) => {
+      if (newNote) {
+        const newText = htmlToText(newNote.content);
+        if (newText !== contentTextarea.value) {
+          contentTextarea.value = newText;
+        }
+        if (newNote.title !== titleInput.value) {
+          titleInput.value = newNote.title;
+        }
+      }
+    },
+  );
 
   // Initial word count and resize
   const initialText = contentTextarea.value;
