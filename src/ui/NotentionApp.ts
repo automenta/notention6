@@ -43,7 +43,8 @@ function applyTheme() {
 export function renderApp(rootElement: HTMLElement) {
   // Initial render function
   const render = () => {
-    const { userProfile, sidebarTab, sidebarCollapsed } = useAppStore.getState();
+    const { userProfile, sidebarTab, sidebarCollapsed } =
+      useAppStore.getState();
 
     // Apply the theme
     applyTheme();

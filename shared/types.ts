@@ -23,7 +23,7 @@ export interface OntologyProperty {
 }
 
 export interface OntologyNode {
-  id:string;
+  id: string;
   label: string;
   properties?: OntologyProperty[];
   parentId?: string;

@@ -445,7 +445,11 @@ export const useAppStore = create<AppStore>((set, get) => ({
       isEditing: true,
     }));
 
-    if (isOnline() && get().userProfile?.nostrPubkey && newNote.status !== "private") {
+    if (
+      isOnline() &&
+      get().userProfile?.nostrPubkey &&
+      newNote.status !== "private"
+    ) {
       try {
         const publishedEventIds = await nostrService.publishNoteForSync(
           newNote,
@@ -507,7 +511,11 @@ export const useAppStore = create<AppStore>((set, get) => ({
           }),
       }));
 
-      if (isOnline() && get().userProfile?.nostrPubkey && updatedNote.status !== "private") {
+      if (
+        isOnline() &&
+        get().userProfile?.nostrPubkey &&
+        updatedNote.status !== "private"
+      ) {
         try {
           const publishedEventIds = await nostrService.publishNoteForSync(
             updatedNote,

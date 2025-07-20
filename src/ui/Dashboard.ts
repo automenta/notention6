@@ -3,7 +3,7 @@ import { createQuickActions } from "./Dashboard/QuickActions";
 import { createStats } from "./Dashboard/Stats";
 import { createRecentNotes } from "./Dashboard/RecentNotes";
 import { createRecentActivity } from "./Dashboard/RecentActivity";
-import "./Dashboard.css";
+//import "./Dashboard.css"; //TODO?
 
 export function createDashboard(): HTMLElement {
   const dashboard = document.createElement("div");

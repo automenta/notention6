@@ -347,7 +347,10 @@ export function createOntologyEditor(): HTMLElement {
           const newProps = [...(node.properties || [])];
           newProps[index].name = newName;
           const updatedNode = { ...node, properties: newProps };
-          const newOntology = { ...ontology, nodes: { ...ontology.nodes, [selectedNodeId!]: updatedNode } };
+          const newOntology = {
+            ...ontology,
+            nodes: { ...ontology.nodes, [selectedNodeId!]: updatedNode },
+          };
           setOntology(newOntology);
         };
 
@@ -366,7 +369,10 @@ export function createOntologyEditor(): HTMLElement {
           const newProps = [...(node.properties || [])];
           newProps[index].type = newType;
           const updatedNode = { ...node, properties: newProps };
-          const newOntology = { ...ontology, nodes: { ...ontology.nodes, [selectedNodeId!]: updatedNode } };
+          const newOntology = {
+            ...ontology,
+            nodes: { ...ontology.nodes, [selectedNodeId!]: updatedNode },
+          };
           setOntology(newOntology);
         };
 
@@ -385,7 +391,10 @@ export function createOntologyEditor(): HTMLElement {
           const newProps = [...(node.properties || [])];
           newProps[index].value = newValue;
           const updatedNode = { ...node, properties: newProps };
-          const newOntology = { ...ontology, nodes: { ...ontology.nodes, [selectedNodeId!]: updatedNode } };
+          const newOntology = {
+            ...ontology,
+            nodes: { ...ontology.nodes, [selectedNodeId!]: updatedNode },
+          };
           setOntology(newOntology);
         };
 
@@ -413,7 +422,10 @@ export function createOntologyEditor(): HTMLElement {
           ...(node.properties || []),
           { name: "new-property", type: "text", value: "" },
         ];
-        const updatedNode: OntologyNode = { ...node, properties: newProperties };
+        const updatedNode: OntologyNode = {
+          ...node,
+          properties: newProperties,
+        };
         const newOntology = {
           ...ontology,
           nodes: { ...ontology.nodes, [selectedNodeId!]: updatedNode },
