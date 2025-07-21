@@ -1,52 +1,80 @@
-// src/ui-rewrite/AccountWizard.ts
+// src/ui/AccountWizard.ts
 import { getPublicKey } from "nostr-tools/pure";
 import { useAppStore } from "../store";
+import { createButton } from "./Button";
+import "./AccountWizard.css";
 
 export function createAccountWizard(): HTMLElement {
-  const el = document.createElement("div");
-  el.innerHTML = `
-    <h1>Account Setup Wizard</h1>
-    <p>Create a new Nostr keypair or import an existing one.</p>
-    <button id="create-key-btn" class="btn btn-primary">Create New Key</button>
-    <hr>
-    <input type="password" id="private-key-input" placeholder="Enter your private key (nsec...)">
-    <button id="import-key-btn" class="btn btn-secondary">Import Key</button>
-  `;
+  const wizardContainer = document.createElement("div");
+  wizardContainer.className = "account-wizard";
 
-  const createKeyBtn = el.querySelector("#create-key-btn");
-  const importKeyBtn = el.querySelector("#import-key-btn");
-  const privateKeyInput = el.querySelector(
-    "#private-key-input",
-  ) as HTMLInputElement;
+  const card = document.createElement("div");
+  card.className = "wizard-card";
+  wizardContainer.appendChild(card);
 
-  createKeyBtn?.addEventListener("click", async () => {
-    const { generateAndStoreNostrKeys, createProfileNote } =
-      useAppStore.getState();
-    const result = await generateAndStoreNostrKeys();
-    if (result.publicKey) {
-      await createProfileNote();
-      console.log("New Nostr keypair generated successfully");
-    }
-  });
+  const title = document.createElement("h1");
+  title.textContent = "Welcome to Notention";
+  card.appendChild(title);
 
-  importKeyBtn?.addEventListener("click", async () => {
-    const privateKey = privateKeyInput.value.trim();
-    if (privateKey) {
-      try {
-        const publicKey = getPublicKey(privateKey);
-        const { generateAndStoreNostrKeys, createProfileNote } =
-          useAppStore.getState();
-        const result = await generateAndStoreNostrKeys(privateKey, publicKey);
-        if (result.publicKey) {
-          await createProfileNote();
-          console.log("Nostr keypair imported successfully");
-        }
-      } catch (e) {
-        alert("Invalid private key");
-        console.error("Error importing key:", e);
+  const subtitle = document.createElement("p");
+  subtitle.textContent = "Create a new Nostr keypair or import an existing one to get started.";
+  card.appendChild(subtitle);
+
+  const actions = document.createElement("div");
+  actions.className = "wizard-actions";
+  card.appendChild(actions);
+
+  const createKeyBtn = createButton({
+    label: "Create New Key",
+    onClick: async () => {
+      const { generateAndStoreNostrKeys, createProfileNote } =
+        useAppStore.getState();
+      const result = await generateAndStoreNostrKeys();
+      if (result.publicKey) {
+        await createProfileNote();
+        console.log("New Nostr keypair generated successfully");
       }
-    }
+    },
+    variant: "primary",
+    fullWidth: true,
   });
+  actions.appendChild(createKeyBtn);
 
-  return el;
+  const divider = document.createElement("hr");
+  divider.className = "wizard-divider";
+  actions.appendChild(divider);
+
+  const privateKeyInput = document.createElement("input");
+  privateKeyInput.type = "password";
+  privateKeyInput.id = "private-key-input";
+  privateKeyInput.placeholder = "Enter your private key (nsec...)";
+  privateKeyInput.className = "wizard-input";
+  actions.appendChild(privateKeyInput);
+
+  const importKeyBtn = createButton({
+    label: "Import Key",
+    onClick: async () => {
+      const privateKey = privateKeyInput.value.trim();
+      if (privateKey) {
+        try {
+          const publicKey = getPublicKey(privateKey);
+          const { generateAndStoreNostrKeys, createProfileNote } =
+            useAppStore.getState();
+          const result = await generateAndStoreNostrKeys(privateKey, publicKey);
+          if (result.publicKey) {
+            await createProfileNote();
+            console.log("Nostr keypair imported successfully");
+          }
+        } catch (e) {
+          alert("Invalid private key");
+          console.error("Error importing key:", e);
+        }
+      }
+    },
+    variant: "secondary",
+    fullWidth: true,
+  });
+  actions.appendChild(importKeyBtn);
+
+  return wizardContainer;
 }

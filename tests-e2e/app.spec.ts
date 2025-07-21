@@ -5,14 +5,18 @@ test("homepage has expected title and a visible notes list area", async ({
 }) => {
   // Navigate to the app
   await page.goto("/");
+  await page.waitForLoadState("networkidle");
+
+  console.log("Page loaded");
 
   // Check if the title is "Notention"
   await expect(page).toHaveTitle(/Notention/);
+  console.log("Title is correct");
 
-  // Check if an element that looks like the notes list sidebar is visible
-  // This is the search input within the sidebar.
-  const notesListSearchInput = page.getByPlaceholder("Search notes..."); // From Sidebar.tsx
-  await expect(notesListSearchInput).toBeVisible();
+  // Check if the sidebar is visible by looking for the "Notes" button
+  const notesButton = page.getByRole("button", { name: /Notes/i });
+  await expect(notesButton).toBeVisible();
+  console.log("Notes button is visible");
 });
 
 test("create, edit, and see a new note in the list", async ({ page }) => {

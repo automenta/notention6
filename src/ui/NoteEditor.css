@@ -1,51 +1,68 @@
-/* src/ui-rewrite/NoteEditor.css */
+/* src/ui/NoteEditor.css */
 .note-editor-layout {
   display: flex;
   height: 100%;
-  gap: 20px;
+  gap: var(--space-5);
 }
 
 .note-editor-main {
   flex-grow: 1;
   display: flex;
   flex-direction: column;
-  background-color: white;
-  border-radius: 8px;
-  padding: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background-color: var(--background-color);
+  border-radius: var(--border-radius-lg);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-md);
+  overflow-y: auto;
 }
 
 .note-title-input {
   width: 100%;
-  padding: 12px 16px;
-  font-size: 1.75em;
-  font-weight: 600;
-  margin-bottom: 20px;
-  border: 2px solid transparent;
-  border-radius: 8px;
-  background-color: var(--background-color);
-  transition: border-color 0.2s ease;
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  margin-bottom: var(--space-5);
+  border: none;
+  border-bottom: var(--border-width-thick) solid transparent;
+  border-radius: 0;
+  background-color: transparent;
+  color: var(--text-color);
+  transition: border-color var(--transition-duration) var(--transition-timing-function);
 }
 
 .note-title-input:focus {
   border-color: var(--primary-color);
-  background-color: white;
+  outline: none;
+}
+
+.editor-toolbar {
+  margin-bottom: var(--space-5);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background-color: var(--background-color-secondary);
+  border-radius: var(--border-radius);
+  border: var(--border-width) solid var(--border-color);
 }
 
 .tiptap-editor {
-  border: 2px solid var(--border-color);
-  padding: 20px;
-  border-radius: 8px;
+  border: var(--border-width) solid var(--border-color);
+  padding: var(--space-4);
+  border-radius: var(--border-radius);
   flex-grow: 1;
-  min-height: 400px;
-  font-size: 16px;
-  line-height: 1.6;
-  transition: border-color 0.2s ease;
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+  color: var(--text-color);
+  background-color: var(--background-color);
+  transition: border-color var(--transition-duration) var(--transition-timing-function);
 }
 
-.tiptap-editor:focus {
+.tiptap-editor:focus-within {
   border-color: var(--primary-color);
   outline: none;
+  box-shadow: 0 0 0 2px var(--primary-color-light);
 }
 
 .tiptap-editor h1,
@@ -53,7 +70,8 @@
 .tiptap-editor h3 {
   margin-top: 1.5em;
   margin-bottom: 0.5em;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-heading);
 }
 
 .tiptap-editor p {
@@ -66,40 +84,24 @@
   margin-bottom: 1em;
 }
 
-.editor-toolbar {
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding: 12px;
-  background-color: var(--background-color);
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-}
-
-.template-selector {
-  padding: 8px 12px;
-  border-radius: 6px;
-  border: 1px solid var(--border-color);
-  background-color: white;
-  font-size: 14px;
-}
-
-.editor-toolbar .btn {
-  padding: 8px 12px;
-  font-size: 14px;
-  border-radius: 6px;
-}
-
 /* Semantic Tag Styling */
-.tiptap-editor span[data-tag] {
-  background-color: #e3f2fd;
-  color: #1565c0;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-weight: 500;
-  font-size: 0.9em;
+.tiptap-editor .mention {
+  background-color: var(--primary-color-light);
+  color: var(--primary-color);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--border-radius-sm);
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-sm);
+}
+
+.status-selector {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+  background-color: var(--background-color);
+  color: var(--text-color);
+  font-size: var(--font-size-sm);
+  margin-left: auto;
 }
 
 @media (max-width: 768px) {
@@ -108,7 +110,7 @@
   }
 
   .note-editor-main {
-    padding: 16px;
+    padding: var(--space-4);
   }
 
   .editor-toolbar {
@@ -117,6 +119,6 @@
   }
 
   .editor-toolbar .btn {
-    margin-bottom: 8px;
+    margin-bottom: var(--space-2);
   }
 }

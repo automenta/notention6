@@ -1,0 +1,129 @@
+/* src/ui/design-tokens.css */
+
+:root {
+  /* Color Palette */
+  --primary-color: #4A90E2; /* A modern, friendly blue */
+  --primary-color-dark: #357ABD;
+  --primary-color-light: #EAF2FB;
+  --secondary-color: #50E3C2; /* A vibrant accent color */
+  --secondary-color-dark: #3CB3A0;
+  --secondary-color-light: #EFFFF9;
+
+  --text-color: #333333;
+  --text-color-secondary: #666666;
+  --text-color-light: #FFFFFF;
+  --link-color: var(--primary-color);
+  --link-color-hover: var(--primary-color-dark);
+
+  --background-color: #FFFFFF;
+  --background-color-secondary: #F7F9FC;
+  --background-color-tertiary: #EFF3F8;
+  --border-color: #DDE4EE;
+  --border-color-light: #EAEFF7;
+  --divider-color: #E0E6F1;
+
+  --success-color: #28A745;
+  --error-color: #DC3545;
+  --warning-color: #FFC107;
+  --info-color: #17A2B8;
+
+  /* Dark Theme */
+  --dark-primary-color: #58A6FF;
+  --dark-primary-color-dark: #388BFD;
+  --dark-primary-color-light: #1F2937;
+  --dark-secondary-color: #50E3C2;
+  --dark-secondary-color-dark: #3CB3A0;
+  --dark-secondary-color-light: #1A3A3A;
+
+  --dark-text-color: #E5E7EB;
+  --dark-text-color-secondary: #9CA3AF;
+  --dark-link-color: var(--dark-primary-color);
+  --dark-link-color-hover: var(--dark-primary-color-dark);
+
+  --dark-background-color: #111827;
+  --dark-background-color-secondary: #1F2937;
+  --dark-background-color-tertiary: #374151;
+  --dark-border-color: #374151;
+  --dark-border-color-light: #4B5563;
+  --dark-divider-color: #4B5563;
+
+  /* Typography */
+  --font-family-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  --font-family-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo,
+    monospace;
+
+  --font-size-xs: 0.75rem; /* 12px */
+  --font-size-sm: 0.875rem; /* 14px */
+  --font-size-base: 1rem; /* 16px */
+  --font-size-lg: 1.125rem; /* 18px */
+  --font-size-xl: 1.25rem; /* 20px */
+  --font-size-2xl: 1.5rem; /* 24px */
+  --font-size-3xl: 1.875rem; /* 30px */
+
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  --line-height-base: 1.5;
+  --line-height-heading: 1.2;
+
+  /* Spacing */
+  --space-1: 0.25rem; /* 4px */
+  --space-2: 0.5rem; /* 8px */
+  --space-3: 0.75rem; /* 12px */
+  --space-4: 1rem; /* 16px */
+  --space-5: 1.25rem; /* 20px */
+  --space-6: 1.5rem; /* 24px */
+  --space-8: 2rem; /* 32px */
+  --space-10: 2.5rem; /* 40px */
+  --space-12: 3rem; /* 48px */
+  --space-16: 4rem; /* 64px */
+
+  /* Borders and Radii */
+  --border-width: 1px;
+  --border-width-thick: 2px;
+  --border-radius-sm: 0.25rem;
+  --border-radius: 0.5rem;
+  --border-radius-lg: 0.75rem;
+  --border-radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1),
+    0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+
+  /* Transitions */
+  --transition-duration: 0.2s;
+  --transition-timing-function: ease-in-out;
+}
+
+[data-theme="dark"] {
+  --primary-color: var(--dark-primary-color);
+  --primary-color-dark: var(--dark-primary-color-dark);
+  --primary-color-light: var(--dark-primary-color-light);
+  --secondary-color: var(--dark-secondary-color);
+  --secondary-color-dark: var(--dark-secondary-color-dark);
+  --secondary-color-light: var(--dark-secondary-color-light);
+
+  --text-color: var(--dark-text-color);
+  --text-color-secondary: var(--dark-text-color-secondary);
+  --link-color: var(--dark-link-color);
+  --link-color-hover: var(--dark-link-color-hover);
+
+  --background-color: var(--dark-background-color);
+  --background-color-secondary: var(--dark-background-color-secondary);
+  --background-color-tertiary: var(--dark-background-color-tertiary);
+  --border-color: var(--dark-border-color);
+  --border-color-light: var(--dark-border-color-light);
+  --divider-color: var(--dark-divider-color);
+}
