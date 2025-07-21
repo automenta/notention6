@@ -14,6 +14,8 @@ import { templates } from "../lib/templates";
 import { Note } from "../../shared/types";
 import { parseNoteContent } from "../lib/parser";
 import { createTemplateSelector } from "./TemplateSelector";
+import { createPropertyEditor } from "./PropertyEditor";
+import { TypedProperty } from "../extensions/TypedProperty";
 
 export function createNoteEditor(noteId?: string): HTMLElement {
   const { currentNoteId, notes, updateNote, userProfile } =
@@ -69,6 +71,7 @@ export function createNoteEditor(noteId?: string): HTMLElement {
       StarterKit,
       SemanticTag,
       Property,
+      TypedProperty,
       Mention.configure({
         HTMLAttributes: {
           class: "mention",
@@ -162,6 +165,25 @@ export function createNoteEditor(noteId?: string): HTMLElement {
     variant: "secondary",
   });
   toolbar.appendChild(tagButton);
+
+  const propertyButton = createButton({
+    label: "Property",
+    onClick: () => {
+      const modal = createPropertyEditor({
+        noteTags: note.tags,
+        onSave: (property) => {
+          editor.chain().focus().setTypedProperty(property).run();
+          document.body.removeChild(modal);
+        },
+        onClose: () => {
+          document.body.removeChild(modal);
+        },
+      });
+      document.body.appendChild(modal);
+    },
+    variant: "secondary",
+  });
+  toolbar.appendChild(propertyButton);
 
   const templateButton = createButton({
     label: "Template",

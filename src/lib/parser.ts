@@ -9,7 +9,8 @@ export function parseNoteContent(editor: Editor) {
       tags.add(node.attrs.tag);
     }
     if (node.type.name === "property") {
-      const { key, value } = node.attrs;
+      const { key } = node.attrs;
+      const value = node.textContent;
       if (key && value) {
         values[key] = value;
       }
