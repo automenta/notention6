@@ -29,7 +29,7 @@ export function createNoteEditor2(noteId?: string): HTMLElement {
   const mainEditorContainer = document.createElement("div");
   mainEditorContainer.className = "note-editor-main";
 
-  let metadataSidebar = createMetadataSidebar();
+  const metadataSidebar = createMetadataSidebar();
   metadataSidebar.classList.add("hidden");
 
   // Title Input

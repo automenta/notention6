@@ -31,116 +31,42 @@ export interface ButtonOptions {
   ripple?: boolean;
 }
 
+import '../components/Button';
+
 export function createButton(options: ButtonOptions): HTMLButtonElement {
-  const {
-    label,
-    onClick,
-    variant = "primary",
-    size = "medium",
-    disabled = false,
-    loading = false,
-    fullWidth = false,
-    iconOnly = false,
-    className = "",
-    tooltip,
-    ariaLabel,
-    type = "button",
-    ripple = false,
-  } = options;
+    const {
+        label,
+        onClick,
+        variant = 'primary',
+        size = 'medium',
+        disabled = false,
+        loading = false,
+        fullWidth = false,
+        iconOnly = false,
+        className = '',
+        tooltip,
+        ariaLabel,
+        type = 'button',
+        ripple = false,
+    } = options;
 
-  const button = document.createElement("button");
-  button.type = type;
+    const button = document.createElement('app-button') as any;
+    button.setAttribute('label', label);
+    button.setAttribute('variant', variant);
+    if (size !== 'medium') button.setAttribute('size', size);
+    if (disabled) button.setAttribute('disabled', '');
+    if (loading) button.setAttribute('loading', '');
+    if (fullWidth) button.setAttribute('full-width', '');
+    if (iconOnly) button.setAttribute('icon-only', '');
+    if (tooltip) button.setAttribute('tooltip', tooltip);
+    if (ariaLabel) button.setAttribute('aria-label', ariaLabel);
+    if (type) button.setAttribute('type', type);
+    if (ripple) button.setAttribute('ripple', '');
+    if (className) button.className = className;
 
-  // Build class list
-  const classes = ["button"];
+    button.addEventListener('click', onClick);
 
-  classes.push(variant);
-
-  if (size !== "medium") {
-    classes.push(size);
-  }
-
-  if (iconOnly) {
-    classes.push("icon-only");
-  }
-
-  if (fullWidth) {
-    classes.push("full-width");
-  }
-
-  if (loading) {
-    classes.push("loading");
-  }
-
-  if (ripple) {
-    classes.push("ripple");
-  }
-
-  if (className) {
-    classes.push(className);
-  }
-
-  button.className = classes.join(" ");
-
-  // Set button content
-  if (!loading) {
-    if (iconOnly) {
-      button.innerHTML = label; // For emoji icons
-    } else {
-      const textSpan = document.createElement("span");
-      textSpan.className = "button-text";
-      textSpan.textContent = label;
-      button.appendChild(textSpan);
-    }
-  }
-
-  // Set attributes
-  button.disabled = disabled || loading;
-
-  if (tooltip) {
-    button.title = tooltip;
-  }
-
-  if (ariaLabel) {
-    button.setAttribute("aria-label", ariaLabel);
-  }
-
-  if (loading) {
-    button.setAttribute("aria-busy", "true");
-  }
-
-  // Add click handler
-  button.addEventListener("click", (e) => {
-    if (!disabled && !loading) {
-      // Add click animation for ripple effect
-      if (ripple) {
-        const rect = button.getBoundingClientRect();
-        const rippleElement = document.createElement("span");
-        rippleElement.className = "ripple-effect";
-        rippleElement.style.left = `${e.clientX - rect.left}px`;
-        rippleElement.style.top = `${e.clientY - rect.top}px`;
-        button.appendChild(rippleElement);
-
-        setTimeout(() => {
-          rippleElement.remove();
-        }, 600);
-      }
-
-      onClick();
-    }
-  });
-
-  // Add keyboard accessibility
-  button.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      if (!disabled && !loading) {
-        onClick();
-      }
-    }
-  });
-
-  return button;
+    return button as HTMLButtonElement;
 }
 
 // Utility function to create icon buttons

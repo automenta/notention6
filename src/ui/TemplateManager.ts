@@ -207,7 +207,7 @@ export function createTemplateManager(): HTMLElement {
     form.appendChild(fieldsSection);
 
     // Load existing fields
-    let fieldEditors: FieldEditor[] = [];
+    const fieldEditors: FieldEditor[] = [];
     if (template?.fields) {
       template.fields.forEach((field) => {
         const editor = addFieldEditor(field);

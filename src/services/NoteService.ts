@@ -240,7 +240,7 @@ export class NoteService {
     updates: Partial<Note>,
   ): Promise<Note | null> {
     const { userProfile } = useAppStore.getState();
-    if (id === userProfile?.profileNoteId && updates.hasOwnProperty("tags")) {
+    if (id === userProfile?.profileNoteId && Object.prototype.hasOwnProperty.call(updates, "tags")) {
       throw new Error("Cannot change the tags of a profile note.");
     }
     const note = await DBService.getNote(id);
