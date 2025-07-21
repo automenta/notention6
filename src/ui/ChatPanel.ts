@@ -13,10 +13,6 @@ export function createChatPanel(): HTMLElement {
     | Contact
     | null
     | { pubkey: "public"; alias: "Public Chat" } = null;
-  let selectedContact:
-    | Contact
-    | null
-    | { pubkey: "public"; alias: "Public Chat" } = null;
   let messageUnsubscribe: (() => void) | null = null;
   let chatSubscription: string | null = null;
 
