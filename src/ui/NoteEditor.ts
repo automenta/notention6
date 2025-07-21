@@ -14,6 +14,7 @@ import { templates } from "../lib/templates";
 import { Note } from "../../shared/types";
 import { parseNoteContent } from "../lib/parser";
 import { createTemplateSelector } from "./TemplateSelector";
+import { strings } from "../lib/i18n";
 
 export function createNoteEditor(noteId?: string): HTMLElement {
   const { currentNoteId, notes, updateNote, userProfile } =
@@ -21,7 +22,7 @@ export function createNoteEditor(noteId?: string): HTMLElement {
   const id = noteId || currentNoteId;
   if (!id) {
     const container = document.createElement("div");
-    container.textContent = "No note selected.";
+    container.textContent = strings.noteEditor.noNoteSelected;
     return container;
   }
   const note: Note | null = notes[id];
@@ -35,7 +36,7 @@ export function createNoteEditor(noteId?: string): HTMLElement {
   mainEditorContainer.className = "note-editor-main";
 
   if (!note) {
-    mainEditorContainer.textContent = "No note selected.";
+    mainEditorContainer.textContent = strings.noteEditor.noNoteSelected;
     editorLayout.appendChild(mainEditorContainer);
     return editorLayout;
   }
@@ -46,7 +47,7 @@ export function createNoteEditor(noteId?: string): HTMLElement {
   const titleInput = document.createElement("input");
   titleInput.type = "text";
   titleInput.className = "note-title-input";
-  titleInput.placeholder = "Note Title";
+  titleInput.placeholder = strings.noteEditor.titlePlaceholder;
   titleInput.value = note.title;
   titleInput.oninput = (e) => {
     updateNote(note.id, { title: (e.target as HTMLInputElement).value });
@@ -123,98 +124,129 @@ export function createNoteEditor(noteId?: string): HTMLElement {
   });
   observer.observe(document.body, { childList: true, subtree: true });
 
+  // Helper function to create toolbar buttons
+  const addToolbarButton = (
+    label: string,
+    onClick: () => Promise<void> | void,
+    isActive?: () => boolean,
+  ) => {
+    let isLoading = false;
+    const button = createButton({
+      label,
+      onClick: async () => {
+        if (isLoading) return;
+        isLoading = true;
+        button.disabled = true;
+        button.textContent = strings.noteEditor.loading;
+        try {
+          await onClick();
+        } catch (error) {
+          console.error(`Error in ${label} button:`, error);
+          const { addNotification } = useAppStore.getState();
+          addNotification({
+            id: `error-${Date.now()}`,
+            type: "error",
+            message: `Error in ${label}`,
+            description: (error as Error).message,
+            timestamp: new Date(),
+          });
+        } finally {
+          isLoading = false;
+          button.disabled = false;
+          button.textContent = label;
+        }
+      },
+      variant: isActive && isActive() ? "primary" : "secondary",
+    });
+    toolbar.appendChild(button);
+    return button;
+  };
+
   // Toolbar Buttons
-  const boldButton = createButton({
-    label: "B",
-    onClick: () => editor.chain().focus().toggleBold().run(),
-    variant: editor.isActive("bold") ? "primary" : "secondary",
-  });
-  toolbar.appendChild(boldButton);
-
-  const italicButton = createButton({
-    label: "I",
-    onClick: () => editor.chain().focus().toggleItalic().run(),
-    variant: editor.isActive("italic") ? "primary" : "secondary",
-  });
-  toolbar.appendChild(italicButton);
-
-  const strikeButton = createButton({
-    label: "S",
-    onClick: () => editor.chain().focus().toggleStrike().run(),
-    variant: editor.isActive("strike") ? "primary" : "secondary",
-  });
-  toolbar.appendChild(strikeButton);
-
-  const tagButton = createButton({
-    label: "#",
-    onClick: () => {
-      const modal = createTagModal({
-        onSelect: (tag) => {
-          editor.chain().focus().setSemanticTag(tag).run();
-          document.body.removeChild(modal);
-        },
-        onClose: () => {
-          document.body.removeChild(modal);
-        },
-      });
-      document.body.appendChild(modal);
+  const buttons = [
+    {
+      label: strings.noteEditor.bold,
+      onClick: () => editor.chain().focus().toggleBold().run(),
+      isActive: () => editor.isActive("bold"),
     },
-    variant: "secondary",
-  });
-  toolbar.appendChild(tagButton);
-
-  const templateButton = createButton({
-    label: "Template",
-    onClick: () => {
-      const modal = createTemplateSelector({
-        onSelect: (template) => {
-          editor.chain().focus().insertContent(template.content).run();
-          document.body.removeChild(modal);
-        },
-        onClose: () => {
-          document.body.removeChild(modal);
-        },
-      });
-      document.body.appendChild(modal);
+    {
+      label: strings.noteEditor.italic,
+      onClick: () => editor.chain().focus().toggleItalic().run(),
+      isActive: () => editor.isActive("italic"),
     },
-    variant: "secondary",
+    {
+      label: strings.noteEditor.strike,
+      onClick: () => editor.chain().focus().toggleStrike().run(),
+      isActive: () => editor.isActive("strike"),
+    },
+    {
+      label: strings.noteEditor.tag,
+      onClick: () => {
+        const modal = createTagModal({
+          onSelect: (tag) => {
+            editor.chain().focus().setSemanticTag(tag).run();
+            document.body.removeChild(modal);
+          },
+          onClose: () => {
+            document.body.removeChild(modal);
+          },
+        });
+        document.body.appendChild(modal);
+      },
+    },
+    {
+      label: strings.noteEditor.template,
+      onClick: () => {
+        const modal = createTemplateSelector({
+          onSelect: (template) => {
+            editor.chain().focus().insertContent(template.content).run();
+            document.body.removeChild(modal);
+          },
+          onClose: () => {
+            document.body.removeChild(modal);
+          },
+        });
+        document.body.appendChild(modal);
+      },
+    },
+  ];
+
+  buttons.forEach(({ label, onClick, isActive }) => {
+    addToolbarButton(label, onClick, isActive);
   });
-  toolbar.appendChild(templateButton);
 
   // AI Buttons
   if (aiEnabled) {
-    const autoTagButton = createButton({
-      label: "Auto-tag",
-      onClick: async () => {
+    addToolbarButton(strings.noteEditor.autoTag, async () => {
+      try {
         const tags = await aiService.autoTag(note.content, note.title);
         updateNote(note.id, { tags: [...note.tags, ...tags] });
-      },
-      variant: "secondary",
+      } catch (error) {
+        console.error("Error auto-tagging:", error);
+        // In a real app, you'd show a notification to the user
+      }
     });
-    toolbar.appendChild(autoTagButton);
 
-    const summarizeButton = createButton({
-      label: "Summarize",
-      onClick: async () => {
+    addToolbarButton(strings.noteEditor.summarize, async () => {
+      try {
         const summary = await aiService.summarize(note.content, note.title);
         editor.chain().focus().insertContent(summary).run();
-      },
-      variant: "secondary",
+      } catch (error) {
+        console.error("Error summarizing:", error);
+      }
     });
-    toolbar.appendChild(summarizeButton);
 
-    const generateContentButton = createButton({
-      label: "Generate Content",
-      onClick: async () => {
-        const prompt = window.prompt("Enter a prompt to generate content:");
-        if (prompt) {
+    addToolbarButton(strings.noteEditor.generateContent, async () => {
+      const prompt = window.prompt(strings.noteEditor.enterPrompt);
+      if (prompt) {
+        try {
           const content = await aiService.generateNoteContent(prompt);
           editor.chain().focus().insertContent(content).run();
+        } catch (error) {
+          console.error("Error generating content:", error);
         }
-      },
-      variant: "secondary",
+      }
     });
-    toolbar.appendChild(generateContentButton);
   }
 
   const statusSelector = document.createElement("select");
@@ -223,7 +255,10 @@ export function createNoteEditor(noteId?: string): HTMLElement {
   statuses.forEach((status) => {
     const option = document.createElement("option");
     option.value = status;
-    option.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+    option.textContent =
+      strings.noteEditor.status[
+        status as keyof typeof strings.noteEditor.status
+      ];
     if (note.status === status) {
       option.selected = true;
     }
@@ -239,12 +274,12 @@ export function createNoteEditor(noteId?: string): HTMLElement {
   toolbar.appendChild(statusSelector);
 
   const shareButton = createButton({
-    label: "Share",
+    label: strings.noteEditor.share,
     onClick: () => {
       const { publishCurrentNoteToNostr } = useAppStore.getState();
       if (note.status === "private") {
         const recipientPk = prompt(
-          "Enter recipient's Nostr public key (npub):",
+          strings.noteEditor.enterRecipientPublicKey,
         );
         if (recipientPk) {
           publishCurrentNoteToNostr({ encrypt: true, recipientPk });
