@@ -10,6 +10,7 @@
     "preview": "vite preview",
     "test": "vitest --run",
     "test:ui": "vitest --ui",
+    "test:e2e": "playwright test",
     "coverage": "vitest run --coverage",
     "format": "prettier --write ."
   },
@@ -52,7 +53,7 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250620.0",
     "@eslint/js": "^9.25.0",
-    "@playwright/test": "^1.45.3",
+    "@playwright/test": "^1.54.1",
     "@tailwindcss/vite": "^4.1.11",
     "@testing-library/dom": "^10.0.0",
     "@testing-library/jest-dom": "^6.4.8",

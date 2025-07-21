@@ -75,6 +75,21 @@ describe("AIService", () => {
       const summary = await aiService.summarize("content");
       expect(summary).toEqual("");
     });
+
+    it("should return content when AI is enabled", async () => {
+      aiService = new AIService({
+        ...defaultUserProfilePreferences,
+        aiEnabled: true,
+      });
+      vi.spyOn(aiService, "generateNoteContent").mockResolvedValue("Generated content");
+      const content = await aiService.generateNoteContent("prompt");
+      expect(content).toEqual("Generated content");
+    });
+
+    it("should return empty string for content when AI is disabled", async () => {
+      const content = await aiService.generateNoteContent("prompt");
+      expect(content).toEqual("");
+    });
   });
 
   describe("getEmbeddingVector", () => {

@@ -13,6 +13,12 @@ export function createChatPanel(): HTMLElement {
     | Contact
     | null
     | { pubkey: "public"; alias: "Public Chat" } = null;
+  let selectedContact:
+    | Contact
+    | null
+    | { pubkey: "public"; alias: "Public Chat" } = null;
+  let messageUnsubscribe: (() => void) | null = null;
+  let chatSubscription: string | null = null;
 
   const container = document.createElement("div");
   container.className = "chat-panel-container";
@@ -34,32 +40,34 @@ export function createChatPanel(): HTMLElement {
   const contactList = document.createElement("ul");
   contactList.className = "chat-contact-list";
 
-  // Add Public Chat channel
-  const publicChatListItem = document.createElement("li");
-  publicChatListItem.textContent = "Public Chat";
-  publicChatListItem.onclick = () => {
-    selectedContact = { pubkey: "public", alias: "Public Chat" };
-    renderMessageView();
-  };
-  contactList.appendChild(publicChatListItem);
-
-  contacts.forEach((contact) => {
-    const listItem = document.createElement("li");
-    listItem.textContent =
-      contact.alias || contact.pubkey.substring(0, 12) + "...";
-    listItem.onclick = () => {
-      selectedContact = contact;
-      renderMessageView();
-    };
-    contactList.appendChild(listItem);
-  });
-
-  contactListContainer.appendChild(contactList);
-  chatLayout.appendChild(contactListContainer);
-
   // Message View
   const messageViewContainer = document.createElement("div");
   messageViewContainer.className = "message-view-container";
+
+  const updateMessageSubscription = () => {
+    if (messageUnsubscribe) {
+      messageUnsubscribe();
+      messageUnsubscribe = null;
+    }
+    if (chatSubscription) {
+      // Assuming nostrService has an unsubscribe method
+      // useAppStore.getState().nostrService?.unsubscribe(chatSubscription);
+      chatSubscription = null;
+    }
+
+    if (selectedContact) {
+      if (selectedContact.pubkey === "public") {
+        ChatService.subscribeToPublicMessages((message) => {
+          addDirectMessage(message);
+        });
+      } else {
+        ChatService.subscribeToMessages(selectedContact.pubkey, (message) => {
+          addDirectMessage(message);
+        });
+      }
+      chatSubscription = selectedContact.pubkey;
+    }
+  };
 
   const renderMessageView = () => {
     messageViewContainer.innerHTML = "";
@@ -67,6 +75,8 @@ export function createChatPanel(): HTMLElement {
       messageViewContainer.textContent = "Select a contact to start chatting.";
       return;
     }
+
+    updateMessageSubscription();
 
     const messageViewHeader = document.createElement("div");
     messageViewHeader.className = "message-view-header";
@@ -121,19 +131,11 @@ export function createChatPanel(): HTMLElement {
       messagesList.scrollTop = messagesList.scrollHeight;
     };
 
-    if (selectedContact?.pubkey === "public") {
-      ChatService.subscribeToPublicMessages((message) => {
-        addDirectMessage(message);
-        renderMessages();
-      });
-    } else if (selectedContact) {
-      ChatService.subscribeToMessages(selectedContact.pubkey, (message) => {
-        addDirectMessage(message);
-        renderMessages();
-      });
-    }
-
     renderMessages();
+    messageUnsubscribe = useAppStore.subscribe(
+      (state) => state.directMessages,
+      renderMessages,
+    );
 
     messageViewContainer.appendChild(messagesList);
 
@@ -171,11 +173,53 @@ export function createChatPanel(): HTMLElement {
     messageViewContainer.appendChild(messageForm);
   };
 
+  const renderContactList = () => {
+    contactList.innerHTML = "";
+    // Add Public Chat channel
+    const publicChatListItem = document.createElement("li");
+    publicChatListItem.textContent = "Public Chat";
+    publicChatListItem.onclick = () => {
+      selectedContact = { pubkey: "public", alias: "Public Chat" };
+      renderMessageView();
+      renderContactList();
+    };
+    if (selectedContact?.pubkey === "public") {
+      publicChatListItem.classList.add("selected");
+    }
+    contactList.appendChild(publicChatListItem);
+
+    contacts.forEach((contact) => {
+      const listItem = document.createElement("li");
+      listItem.textContent =
+        contact.alias || contact.pubkey.substring(0, 12) + "...";
+      listItem.onclick = () => {
+        selectedContact = contact;
+        renderMessageView();
+        renderContactList();
+      };
+      if (selectedContact?.pubkey === contact.pubkey) {
+        listItem.classList.add("selected");
+      }
+      contactList.appendChild(listItem);
+    });
+  };
+
+  renderContactList();
+  contactListContainer.appendChild(contactList);
+  chatLayout.appendChild(contactListContainer);
   chatLayout.appendChild(messageViewContainer);
   container.appendChild(chatLayout);
 
-  // Note: In a real implementation, we'd want to set up proper reactivity
-  // For now, the component will be re-rendered when the main app state changes
+  const contactsUnsubscribe = useAppStore.subscribe(
+    (state) => state.userProfile?.contacts,
+    renderContactList,
+  );
+
+  container.addEventListener("DOMNodeRemoved", () => {
+    if (messageUnsubscribe) messageUnsubscribe();
+    contactsUnsubscribe();
+    // Also unsubscribe from nostr subscriptions
+  });
 
   renderMessageView();
 

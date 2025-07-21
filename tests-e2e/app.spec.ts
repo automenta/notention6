@@ -3,8 +3,10 @@ import { expect, test } from "@playwright/test";
 test("homepage has expected title and a visible notes list area", async ({
   page,
 }) => {
+  console.log("Navigating to the app...");
   // Navigate to the app
   await page.goto("/");
+  console.log("Waiting for network idle...");
   await page.waitForLoadState("networkidle");
 
   console.log("Page loaded");

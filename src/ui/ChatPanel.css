@@ -31,6 +31,11 @@
   background-color: var(--hover-color);
 }
 
+.chat-contact-list li.selected {
+  background-color: #e0e0e0;
+  font-weight: bold;
+}
+
 .message-view-container {
   flex-grow: 1;
   display: flex;

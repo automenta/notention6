@@ -209,8 +209,11 @@ export function createOntologyEditor(): HTMLElement {
       nodeLabel.textContent = node.label;
       nodeLabel.onclick = () => {
         selectedNodeId = node.id;
-        renderAttributeEditor();
+        updateView();
       };
+      if (selectedNodeId === node.id) {
+        nodeContent.classList.add("selected");
+      }
       nodeContent.appendChild(nodeLabel);
 
       const deleteButton = createButton({

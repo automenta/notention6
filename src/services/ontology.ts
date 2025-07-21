@@ -282,6 +282,10 @@ export class OntologyService {
     return Array.from(matches);
   }
 
+  static getAllTags(ontology: OntologyTree): string[] {
+    return Object.values(ontology.nodes).map((node) => node.label);
+  }
+
   /**
    * Validate ontology structure
    */

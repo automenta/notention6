@@ -117,14 +117,62 @@ export function createNetworkPanel(): HTMLElement {
   matchesList.className = "matches-list";
 
   if (matches.length > 0) {
-    matches.forEach((match) => {
+    const { notes } = useAppStore.getState();
+    matches.forEach(async (match) => {
+      const localNote = notes[match.localNoteId];
+      if (!localNote) return;
+
       const listItem = document.createElement("li");
       listItem.className = "match-item";
       listItem.innerHTML = `
-        <p>Match for note: <strong>${match.localNoteId}</strong> with <strong>${match.targetNoteId}</strong></p>
-        <span>Similarity: ${match.similarity.toFixed(2)}</span>
+        <div class="match-info">
+          <p>Match found with similarity: <strong>${match.similarity.toFixed(2)}</strong></p>
+        </div>
+        <div class="match-notes">
+          <div class="match-note">
+            <h4>Your Note: ${localNote.title}</h4>
+            <p>${localNote.content.substring(0, 100)}...</p>
+          </div>
+          <div class="match-note" id="remote-note-${match.targetNoteId}">
+            <h4>Remote Note:</h4>
+            <p>Loading...</p>
+          </div>
+        </div>
       `;
       matchesList.appendChild(listItem);
+
+      const remoteNoteEvent = await nostr.getEventById(match.targetNoteId);
+      const remoteNoteContainer = listItem.querySelector(
+        `#remote-note-${match.targetNoteId}`,
+      );
+      if (remoteNoteEvent && remoteNoteContainer) {
+        const remoteNote: Note = {
+          id: remoteNoteEvent.id,
+          title:
+            remoteNoteEvent.tags.find((t) => t[0] === "title")?.[1] ||
+            "Untitled",
+          content: remoteNoteEvent.content,
+          createdAt: new Date(remoteNoteEvent.created_at * 1000),
+          updatedAt: new Date(remoteNoteEvent.created_at * 1000),
+          status: "published",
+          tags: remoteNoteEvent.tags
+            .filter((t) => t[0] === "t")
+            .map((t) => `#${t[1]}`),
+          values: {},
+          fields: {},
+          pinned: false,
+          archived: false,
+        };
+        remoteNoteContainer.innerHTML = `
+          <h4>Remote Note: ${remoteNote.title}</h4>
+          <p>${remoteNote.content.substring(0, 100)}...</p>
+        `;
+      } else if (remoteNoteContainer) {
+        remoteNoteContainer.innerHTML = `
+          <h4>Remote Note:</h4>
+          <p>Could not load note.</p>
+        `;
+      }
     });
   } else {
     const noMatchesMessage = document.createElement("p");

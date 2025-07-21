@@ -53,6 +53,11 @@
   color: var(--primary-color);
 }
 
+.node-content.selected {
+  background-color: var(--primary-color-light);
+  font-weight: bold;
+}
+
 .attribute-editor-container {
   background-color: var(--card-background-color);
   border: 1px solid var(--border-color);

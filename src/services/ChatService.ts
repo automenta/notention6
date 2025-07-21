@@ -7,72 +7,102 @@ export class ChatService {
   static async sendMessage(
     pubkey: string,
     content: string,
-  ): Promise<DirectMessage> {
-    const { nostrService: appNostrService } = useAppStore.getState();
-    const nostr = appNostrService || nostrService;
-    const event = await nostr.sendDirectMessage(pubkey, content);
-    return {
-      id: event.id,
-      from: event.pubkey,
-      to: pubkey,
-      content,
-      timestamp: new Date(event.created_at * 1000),
-      encrypted: true,
-    };
+  ): Promise<DirectMessage | null> {
+    try {
+      const { nostrService: appNostrService } = useAppStore.getState();
+      const nostr = appNostrService || nostrService;
+      const event = await nostr.sendDirectMessage(pubkey, content);
+      return {
+        id: event.id,
+        from: event.pubkey,
+        to: pubkey,
+        content,
+        timestamp: new Date(event.created_at * 1000),
+        encrypted: true,
+      };
+    } catch (error) {
+      console.error("Failed to send direct message:", error);
+      return null;
+    }
   }
 
   static subscribeToMessages(
     pubkey: string,
     onMessage: (message: DirectMessage) => void,
   ) {
-    const { nostrService: appNostrService } = useAppStore.getState();
-    const nostr = appNostrService || nostrService;
-    nostr.subscribeToDirectMessages(pubkey, async (event) => {
-      const privateKey = nostr.getPrivateKey();
-      if (privateKey) {
-        const content = nip04.decrypt(privateKey, event.pubkey, event.content);
-        const message: DirectMessage = {
-          id: event.id,
-          from: event.pubkey,
-          to: pubkey,
-          content,
-          timestamp: new Date(event.created_at * 1000),
-          encrypted: true,
-        };
-        onMessage(message);
-      }
-    });
+    try {
+      const { nostrService: appNostrService } = useAppStore.getState();
+      const nostr = appNostrService || nostrService;
+      nostr.subscribeToDirectMessages(pubkey, async (event) => {
+        try {
+          const privateKey = nostr.getPrivateKey();
+          if (privateKey) {
+            const content = nip04.decrypt(
+              privateKey,
+              event.pubkey,
+              event.content,
+            );
+            const message: DirectMessage = {
+              id: event.id,
+              from: event.pubkey,
+              to: pubkey,
+              content,
+              timestamp: new Date(event.created_at * 1000),
+              encrypted: true,
+            };
+            onMessage(message);
+          }
+        } catch (error) {
+          console.error("Failed to decrypt message:", error);
+        }
+      });
+    } catch (error) {
+      console.error("Failed to subscribe to direct messages:", error);
+    }
   }
 
-  static async sendPublicMessage(content: string): Promise<DirectMessage> {
-    const { nostrService: appNostrService } = useAppStore.getState();
-    const nostr = appNostrService || nostrService;
-    const eventIds = await nostr.publishEvent(42, content, [["c", "public"]]);
-    return {
-      id: eventIds[0] || "",
-      from: nostr.getPublicKey() || "",
-      to: "public",
-      content,
-      timestamp: new Date(),
-      encrypted: false,
-    };
+  static async sendPublicMessage(
+    content: string,
+  ): Promise<DirectMessage | null> {
+    try {
+      const { nostrService: appNostrService } = useAppStore.getState();
+      const nostr = appNostrService || nostrService;
+      const eventIds = await nostr.publishEvent(42, content, [
+        ["c", "public"],
+      ]);
+      return {
+        id: eventIds[0] || "",
+        from: nostr.getPublicKey() || "",
+        to: "public",
+        content,
+        timestamp: new Date(),
+        encrypted: false,
+      };
+    } catch (error) {
+      console.error("Failed to send public message:", error);
+      return null;
+    }
   }
 
   static subscribeToPublicMessages(
     onMessage: (message: DirectMessage) => void,
   ) {
-    const { nostrService: appNostrService } = useAppStore.getState();
-    const nostr = appNostrService || nostrService;
-    nostr.subscribeToEvents([{ kinds: [42], "#c": ["public"] }], (event) => {
-      const message: DirectMessage = {
-        id: event.id,
-        from: event.pubkey,
-        to: "public",
-        content: event.content,
-        timestamp: new Date(event.created_at * 1000),
-        encrypted: false,
-      };
-      onMessage(message);
-    });
+    try {
+      const { nostrService: appNostrService } = useAppStore.getState();
+      const nostr = appNostrService || nostrService;
+      nostr.subscribeToEvents([{ kinds: [42], "#c": ["public"] }], (event) => {
+        const message: DirectMessage = {
+          id: event.id,
+          from: event.pubkey,
+          to: "public",
+          content: event.content,
+          timestamp: new Date(event.created_at * 1000),
+          encrypted: false,
+        };
+        onMessage(message);
+      });
+    } catch (error) {
+      console.error("Failed to subscribe to public messages:", error);
+    }
   }
 }

@@ -10,6 +10,8 @@ import { generateSecretKey, getPublicKey } from "nostr-tools/pure";
 import { bytesToHex } from "@noble/hashes/utils";
 import { Contact, Note, OntologyTree } from "../../shared/types"; // Assuming NostrUserProfile and RelayDict might be needed
 import { DBService } from "./db";
+import { createInvertedIndex } from "../lib/invertedIndex";
+import { OntologyService } from "./ontology";
 
 const ONTOLOGY_KIND = 30078; // Kind for ontology events
 
@@ -968,9 +970,8 @@ export class NostrService {
     onMatch: (localNote: Note, remoteNote: Note, similarity: number) => void,
     allNotes: Note[],
   ) {
-    const ontologyTags = Object.values(ontology.nodes).map((node) =>
-      node.label.toLowerCase().replace(/^[#@]/, ""),
-    );
+    const invertedIndex = createInvertedIndex(allNotes, ontology);
+    const ontologyTags = Object.keys(invertedIndex);
 
     this.subscribeToEvents(
       [{ kinds: [1], "#t": ontologyTags }],
@@ -989,12 +990,27 @@ export class NostrService {
           archived: false,
         };
 
-        for (const localNote of allNotes) {
+        const remoteTags = new Set(
+          remoteNote.tags.flatMap((t) =>
+            OntologyService.getSemanticMatches(ontology, t),
+          ),
+        );
+
+        const candidateNoteIds = new Set<string>();
+        for (const tag of remoteTags) {
+          if (invertedIndex[tag]) {
+            invertedIndex[tag].forEach((id) => candidateNoteIds.add(id));
+          }
+        }
+
+        for (const noteId of candidateNoteIds) {
+          const localNote = allNotes.find((n) => n.id === noteId);
+          if (!localNote) continue;
+
           const localTags = new Set(
-            localNote.tags.map((t) => t.toLowerCase().replace(/^[#@]/, "")),
-          );
-          const remoteTags = new Set(
-            remoteNote.tags.map((t) => t.toLowerCase().replace(/^[#@]/, "")),
+            localNote.tags.flatMap((t) =>
+              OntologyService.getSemanticMatches(ontology, t),
+            ),
           );
 
           const intersection = new Set(
@@ -1004,15 +1020,18 @@ export class NostrService {
 
           if (intersection.size > 0) {
             const similarity = intersection.size / union.size;
-            onMatch(localNote, remoteNote, similarity);
-            const { useAppStore } = await import("../store");
-            useAppStore.getState().addNotification({
-              id: `match-${localNote.id}-${remoteNote.id}`,
-              type: "success",
-              message: `New match found for note: ${localNote.title}`,
-              description: `Found a new note with similarity of ${similarity.toFixed(2)}`,
-              timestamp: new Date(),
-            });
+            if (similarity > 0.1) {
+              // Threshold to avoid weak matches
+              onMatch(localNote, remoteNote, similarity);
+              const { useAppStore } = await import("../store");
+              useAppStore.getState().addNotification({
+                id: `match-${localNote.id}-${remoteNote.id}`,
+                type: "success",
+                message: `New match found for note: ${localNote.title}`,
+                description: `Found a new note with similarity of ${similarity.toFixed(2)}`,
+                timestamp: new Date(),
+              });
+            }
           }
         }
       },

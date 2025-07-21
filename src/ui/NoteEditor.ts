@@ -12,6 +12,8 @@ import { createTagModal } from "./TagModal";
 import { createMetadataSidebar } from "./MetadataSidebar";
 import { templates } from "../lib/templates";
 import { Note } from "../../shared/types";
+import { parseNoteContent } from "../lib/parser";
+import { createTemplateSelector } from "./TemplateSelector";
 
 export function createNoteEditor(noteId?: string): HTMLElement {
   const { currentNoteId, notes, updateNote, userProfile } =
@@ -39,7 +41,6 @@ export function createNoteEditor(noteId?: string): HTMLElement {
   }
 
   let metadataSidebar = createMetadataSidebar();
-  metadataSidebar.classList.add("hidden");
 
   // Title Input
   const titleInput = document.createElement("input");
@@ -96,7 +97,8 @@ export function createNoteEditor(noteId?: string): HTMLElement {
     content: note.content,
     onUpdate: ({ editor }) => {
       const html = editor.getHTML();
-      updateNote(note.id, { content: html });
+      const { tags, values } = parseNoteContent(editor);
+      updateNote(note.id, { content: html, tags, values });
     },
   });
 
@@ -161,12 +163,31 @@ export function createNoteEditor(noteId?: string): HTMLElement {
   });
   toolbar.appendChild(tagButton);
 
+  const templateButton = createButton({
+    label: "Template",
+    onClick: () => {
+      const modal = createTemplateSelector({
+        onSelect: (template) => {
+          editor.chain().focus().insertContent(template.content).run();
+          document.body.removeChild(modal);
+        },
+        onClose: () => {
+          document.body.removeChild(modal);
+        },
+      });
+      document.body.appendChild(modal);
+    },
+    variant: "secondary",
+  });
+  toolbar.appendChild(templateButton);
+
   // AI Buttons
   if (aiEnabled) {
     const autoTagButton = createButton({
       label: "Auto-tag",
       onClick: async () => {
-        // ... (logic remains the same)
+        const tags = await aiService.autoTag(note.content, note.title);
+        updateNote(note.id, { tags: [...note.tags, ...tags] });
       },
       variant: "secondary",
     });
@@ -175,21 +196,26 @@ export function createNoteEditor(noteId?: string): HTMLElement {
     const summarizeButton = createButton({
       label: "Summarize",
       onClick: async () => {
-        // ... (logic remains the same)
+        const summary = await aiService.summarize(note.content, note.title);
+        editor.chain().focus().insertContent(summary).run();
       },
       variant: "secondary",
     });
     toolbar.appendChild(summarizeButton);
-  }
 
-  const toggleSidebarButton = createButton({
-    label: "Metadata",
-    onClick: () => {
-      metadataSidebar.classList.toggle("hidden");
-    },
-    variant: "secondary",
-  });
-  toolbar.appendChild(toggleSidebarButton);
+    const generateContentButton = createButton({
+      label: "Generate Content",
+      onClick: async () => {
+        const prompt = window.prompt("Enter a prompt to generate content:");
+        if (prompt) {
+          const content = await aiService.generateNoteContent(prompt);
+          editor.chain().focus().insertContent(content).run();
+        }
+      },
+      variant: "secondary",
+    });
+    toolbar.appendChild(generateContentButton);
+  }
 
   const statusSelector = document.createElement("select");
   statusSelector.className = "status-selector";

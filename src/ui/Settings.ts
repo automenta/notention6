@@ -88,6 +88,7 @@ export function createSettings(): HTMLElement {
       },
     };
     updateUserProfile(newUserProfile);
+    useAppStore.getState().getAIService().reinitializeModels();
   };
   aiEnabledLabel.appendChild(aiEnabledCheckbox);
   aiBasicFields.appendChild(aiEnabledLabel);
@@ -123,6 +124,7 @@ export function createSettings(): HTMLElement {
       },
     };
     updateUserProfile(newUserProfile);
+    useAppStore.getState().getAIService().reinitializeModels();
   };
 
   aiBasicFields.appendChild(providerLabel);
@@ -145,10 +147,32 @@ export function createSettings(): HTMLElement {
       },
     };
     updateUserProfile(newUserProfile);
+    useAppStore.getState().getAIService().reinitializeModels();
   };
 
   aiAdvancedFields.appendChild(geminiKeyLabel);
   aiAdvancedFields.appendChild(geminiKeyInput);
+
+  const ollamaUrlLabel = document.createElement("label");
+  ollamaUrlLabel.textContent = "🏠 Ollama API URL";
+  ollamaUrlLabel.style.fontWeight = "500";
+  const ollamaUrlInput = document.createElement("input");
+  ollamaUrlInput.type = "text";
+  ollamaUrlInput.placeholder = "http://localhost:11434";
+  ollamaUrlInput.value = userProfile?.preferences.ollamaApiUrl || "";
+  ollamaUrlInput.onchange = (e) => {
+    const newUserProfile: UserProfile = {
+      ...userProfile!,
+      preferences: {
+        ...userProfile!.preferences,
+        ollamaApiUrl: (e.target as HTMLInputElement).value,
+      },
+    };
+    updateUserProfile(newUserProfile);
+    useAppStore.getState().getAIService().reinitializeModels();
+  };
+  aiAdvancedFields.appendChild(ollamaUrlLabel);
+  aiAdvancedFields.appendChild(ollamaUrlInput);
 
   // AI Matching Sensitivity
   const sensitivityLabel = document.createElement("label");
