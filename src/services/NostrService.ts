@@ -343,17 +343,17 @@ export class NostrService {
       `Subscribing to events on ${relaysToUse.join(", ")} with filters:`,
       filters,
     );
-    const sub = this.pool.sub(relaysToUse, filters, { id: subscriptionId });
 
-    sub.on("event", (event: Event) => {
-      onEvent(event);
-    });
-
-    sub.on("eose", () => {
-      console.log(
-        `Subscription ${subscriptionId || ""} EOSE received from one or more relays.`,
-      );
-      // End Of Stored Events. You can stop loaders here.
+    const sub = this.pool.subscribe(relaysToUse, filters, {
+      onevent(event) {
+        onEvent(event);
+      },
+      oneose() {
+        console.log(
+          `Subscription ${subscriptionId || ""} EOSE received from one or more relays.`,
+        );
+      },
+      id: subscriptionId,
     });
 
     return sub; // The caller can use this to .unsub() later
