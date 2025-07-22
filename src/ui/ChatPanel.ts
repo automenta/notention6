@@ -51,8 +51,7 @@ export function createChatPanel(): HTMLElement {
       messageUnsubscribe = null;
     }
     if (chatSubscription) {
-      // Assuming nostrService has an unsubscribe method
-      // useAppStore.getState().nostrService?.unsubscribe(chatSubscription);
+      useAppStore.getState().unsubscribeFromNostr(chatSubscription);
       chatSubscription = null;
     }
 

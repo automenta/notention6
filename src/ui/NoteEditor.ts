@@ -42,7 +42,7 @@ export function createNoteEditor(noteId?: string): HTMLElement {
     return editorLayout;
   }
 
-  let metadataSidebar = createMetadataSidebar();
+  const metadataSidebar = createMetadataSidebar();
 
   // Title Input
   const titleInput = document.createElement("input");
@@ -191,6 +191,11 @@ export function createNoteEditor(noteId?: string): HTMLElement {
       const modal = createTemplateSelector({
         onSelect: (template) => {
           editor.chain().focus().insertContent(template.content).run();
+          // Apply default tags and values from the template
+          updateNote(note.id, {
+            tags: [...new Set([...note.tags, ...template.defaultTags])],
+            values: { ...note.values, ...template.defaultValues },
+          });
           document.body.removeChild(modal);
         },
         onClose: () => {

@@ -177,17 +177,18 @@ export class NostrService {
       shareEmbeddingsWithPublicNotes: false, // Default to false
     };
 
-    // If trying to publish a public (non-encrypted) note but global sharing is off, prevent.
-    if (!encrypt && !currentPrivacySettings.sharePublicNotesGlobally) {
-      console.warn("Public note publishing is disabled by privacy settings.");
-      // Or throw new Error('Public note publishing is disabled by privacy settings.');
-      // For now, let's allow it but it won't include much if other settings are also false.
-      // A better approach would be to prevent the call from the store if settings disallow.
-      // Or, if this service is called directly, it should strictly adhere.
-      // Let's make it strict:
-      // throw new Error('Public note publishing is disabled by privacy settings.');
-      // For now, let's proceed but filter tags/values based on other settings.
-      // The UI/store should ideally prevent calling this if sharePublicNotesGlobally is false for a public note.
+    // If the note is a draft, it should not be published to Nostr.
+    if (note.status === "draft") {
+      console.log("Note is a draft, not publishing to Nostr.");
+      return [];
+    }
+
+    // Determine if the note should be encrypted based on its status or explicit encryption request.
+    const shouldEncrypt = encrypt || note.status === "private";
+
+    // If trying to publish a public (non-encrypted) note but its status is private, prevent.
+    if (!shouldEncrypt && note.status === "private") {
+      throw new Error("Cannot publish a private note publicly. Please set note status to 'published' or encrypt it.");
     }
 
     const tags: string[][] = [];
@@ -199,7 +200,7 @@ export class NostrService {
       Math.floor((note.createdAt || new Date()).getTime() / 1000).toString(),
     ]);
 
-    if (encrypt || currentPrivacySettings.shareTagsWithPublicNotes) {
+    if (shouldEncrypt || currentPrivacySettings.shareTagsWithPublicNotes) {
       (note.tags || []).forEach((tag) => {
         const tagName =
           tag.startsWith("#") || tag.startsWith("@") ? tag.substring(1) : tag;
@@ -207,7 +208,7 @@ export class NostrService {
       });
     }
 
-    if (encrypt || currentPrivacySettings.shareValuesWithPublicNotes) {
+    if (shouldEncrypt || currentPrivacySettings.shareValuesWithPublicNotes) {
       if (note.values) {
         for (const [key, value] of Object.entries(note.values)) {
           tags.push(["param", key, value]);
@@ -215,10 +216,9 @@ export class NostrService {
       }
     }
 
-    // Add embedding if public, sharing is enabled, and embedding exists
+    // Add embedding if it's an encrypted note, or if it's a public note and sharing is enabled
     if (
-      !encrypt &&
-      currentPrivacySettings.shareEmbeddingsWithPublicNotes &&
+      (shouldEncrypt || currentPrivacySettings.shareEmbeddingsWithPublicNotes) &&
       note.embedding &&
       note.embedding.length > 0
     ) {

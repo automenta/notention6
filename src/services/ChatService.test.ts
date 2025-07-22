@@ -43,9 +43,7 @@ describe("ChatService", () => {
 
     const message = await ChatService.sendPublicMessage(content);
 
-    expect(nostrService.publishEvent).toHaveBeenCalledWith(42, content, [
-      ["c", "public"],
-    ]);
+    expect(nostrService.publishEvent).toHaveBeenCalledWith(1, content, [["t", "public-chat"]]);
     expect(message.to).toBe("public");
     expect(message.content).toBe(content);
     expect(message.encrypted).toBe(false);
@@ -56,7 +54,7 @@ describe("ChatService", () => {
     ChatService.subscribeToPublicMessages(onMessage);
 
     expect(nostrService.subscribeToEvents).toHaveBeenCalledWith(
-      [{ kinds: [42], "#c": ["public"] }],
+      [{ kinds: [1], "#t": ["public-chat"] }],
       expect.any(Function),
     );
   });

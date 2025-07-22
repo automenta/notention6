@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 /**
  * A simple logger utility that prefixes messages with a given name.
  * @param name - The name of the logger (e.g., component name).

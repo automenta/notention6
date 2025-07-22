@@ -1,9 +1,10 @@
 import { templates } from "../lib/templates";
 import { createButton } from "./Button";
 import "./TemplateSelector.css";
+import { NotentionTemplate } from "../../shared/types";
 
 interface TemplateSelectorProps {
-  onSelect: (template: { title: string; content: string }) => void;
+  onSelect: (template: NotentionTemplate) => void;
   onClose: () => void;
 }
 
@@ -26,7 +27,7 @@ export function createTemplateSelector(
   Object.values(templates).forEach((template) => {
     const listItem = document.createElement("li");
     const button = createButton({
-      label: template.title,
+      label: template.name, // Use template.name for display
       onClick: () => props.onSelect(template),
       variant: "secondary",
     });

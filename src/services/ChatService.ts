@@ -67,7 +67,7 @@ export class ChatService {
     try {
       const { nostrService: appNostrService } = useAppStore.getState();
       const nostr = appNostrService || nostrService;
-      const eventIds = await nostr.publishEvent(42, content, [["c", "public"]]);
+      const eventIds = await nostr.publishEvent(1, content, [["t", "public-chat"]]); // Kind 1 for public notes/messages, with a specific tag
       return {
         id: eventIds[0] || "",
         from: nostr.getPublicKey() || "",
@@ -88,7 +88,7 @@ export class ChatService {
     try {
       const { nostrService: appNostrService } = useAppStore.getState();
       const nostr = appNostrService || nostrService;
-      nostr.subscribeToEvents([{ kinds: [42], "#c": ["public"] }], (event) => {
+      nostr.subscribeToEvents([{ kinds: [1], "#t": ["public-chat"] }], (event) => {
         const message: DirectMessage = {
           id: event.id,
           from: event.pubkey,

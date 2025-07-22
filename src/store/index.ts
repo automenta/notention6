@@ -1179,6 +1179,19 @@ export const useAppStore = create<AppStore>((set, get) => ({
         nostrRelays: userProfile.nostrRelays, // Sync store's top-level relays
       });
       get().setError("network", undefined); // Clear previous errors
+
+      // Add a notification to prompt user to back up their private key
+      if (newlyGeneratedSk) { // Only prompt if a new key was generated
+        get().addNotification({
+          id: uuidv4(),
+          type: "warning",
+          message: "Important: Back up your Nostr Private Key!",
+          description: "Go to Settings > Account to view and securely back up your private key. This is crucial for account recovery.",
+          timestamp: new Date(),
+          timeout: 15000, // Keep visible for a longer time
+        });
+      }
+
       return { publicKey: pkToStore, privateKey: newlyGeneratedSk };
     } catch (error: any) {
       get().setError(
@@ -1243,25 +1256,14 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
     // Ensure privacySettings are available, using defaults if somehow missing
     const privacySettings = userProfile.privacySettings || {
-      sharePublicNotesGlobally: false,
       shareTagsWithPublicNotes: true, // Default to true if settings object is missing
       shareValuesWithPublicNotes: true, // Default to true if settings object is missing
+      shareEmbeddingsWithPublicNotes: false, // Default to false
     };
 
-    // Prevent public publish if globally disabled
-    if (!options.encrypt && !privacySettings.sharePublicNotesGlobally) {
-      get().setError(
-        "network",
-        "Public sharing is disabled in your privacy settings.",
-      );
-      // toast.error('Cannot publish note publicly.', { description: 'Public sharing is disabled in your privacy settings.' });
-      // Removed toast from here as it might not be available in all contexts store is used.
-      // UI should handle user feedback for this error.
-      console.error(
-        "Cannot publish note publicly: Public sharing is disabled in your privacy settings.",
-      );
-      return;
-    }
+    // The note's status (draft, private, published) now dictates public/private sharing.
+    // No need for a separate global 'sharePublicNotesGlobally' setting here.
+    // The UI should prevent publishing a 'draft' or 'private' note publicly.
 
     get().setLoading("network", true);
     get().setError("network", undefined);
@@ -1287,13 +1289,10 @@ export const useAppStore = create<AppStore>((set, get) => ({
       );
 
       // Update local note state if published publicly
-      if (!options.encrypt && privacySettings.sharePublicNotesGlobally) {
+      if (!options.encrypt) {
         await get().updateNote(currentNoteId, {
           status: "published",
-          isSharedPublicly: true,
         });
-      } else if (options.encrypt) {
-        await get().updateNote(currentNoteId, { status: "published" });
       }
       // toast.success("Note published to Nostr!"); // UI should handle this
       console.log(
@@ -1422,15 +1421,17 @@ export const useAppStore = create<AppStore>((set, get) => ({
     }
   },
 
-  addDirectMessage: (message: DirectMessage) => {
-    set((state) => ({ directMessages: [...state.directMessages, message] })); // Basic add
-    // TODO: Decrypt if necessary and if keys are available
+  addDirectMessage: async (message: DirectMessage) => {
+    set((state) => ({ directMessages: [...state.directMessages, message] }));
+    await DBService.saveMessage(message);
   },
 
-  addPublicChatMessage: (message: DirectMessage) => {
+  addPublicChatMessage: async (message: DirectMessage) => {
+    console.log("Adding public chat message to store and DB:", message);
     set((state) => ({
       publicChatMessages: [...state.publicChatMessages, message],
     }));
+    await DBService.saveMessage(message);
   },
 
   setNostrRelays: async (newRelays: string[]) => {
@@ -1515,6 +1516,26 @@ export const useAppStore = create<AppStore>((set, get) => ({
     }
     // Kind 1: Public Note (can be for general browsing, matching, or topic feeds)
     else if (event.kind === 1) {
+      console.log("Processing incoming Kind 1 event:", event);
+
+      // Check if it's a public chat message
+      const isPublicChatMessage = event.tags.some(
+        (tag) => tag[0] === "t" && tag[1] === "public-chat",
+      );
+
+      if (isPublicChatMessage) {
+        const message: DirectMessage = {
+          id: event.id,
+          from: event.pubkey,
+          to: "public",
+          content: event.content,
+          timestamp: new Date(event.created_at * 1000),
+          encrypted: false,
+        };
+        state.addPublicChatMessage(message);
+        return; // Processed as chat, no further note processing needed for this event
+      }
+
       // 1. Check if it belongs to any subscribed topics
       const eventTags = event.tags
         .filter((t) => t[0] === "t")

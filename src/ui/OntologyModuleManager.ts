@@ -363,7 +363,7 @@ export function createOntologyModuleManager(): HTMLElement {
   actionsBar.appendChild(disableAllButton);
 
   // Main content area
-  let contentArea = document.createElement("div");
+  const contentArea = document.createElement("div");
   contentArea.className = "module-content-area";
 
   const renderContent = () => {
