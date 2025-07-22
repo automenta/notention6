@@ -12,6 +12,7 @@ import {
 import { createFeedbackSystem } from "../lib/AnimationSystem";
 import "./Settings.css";
 import { UserProfile } from "../../shared/types";
+import { createSyncSettings } from "./SyncSettings";
 
 export function createSettings(): HTMLElement {
   const {
@@ -373,6 +374,8 @@ export function createSettings(): HTMLElement {
     variant: "secondary",
   });
   dataManagementSection.appendChild(importOntologyButton);
+
+  dataManagementSection.appendChild(createSyncSettings());
 
   container.appendChild(dataManagementSection);
 

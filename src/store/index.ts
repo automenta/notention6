@@ -108,6 +108,7 @@ interface AppActions {
   // DM specific actions
   sendDirectMessage: (recipientPk: string, content: string) => Promise<void>;
   subscribeToDirectMessages: (relays?: string[]) => string | null; // Returns subscription ID
+  addPublicChatMessage: (message: DirectMessage) => void;
 
   // Topic subscription actions
   addTopicSubscription: (topic: string, subscriptionId: string) => void;
@@ -116,6 +117,7 @@ interface AppActions {
 
   // Sync actions
   syncWithNostr: (force?: boolean) => Promise<void>;
+  syncOntologyWithNostr: () => Promise<void>;
   setLastSyncTimestamp: (timestamp: Date) => void;
 
   // Embedding Matches
@@ -242,6 +244,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
   matches: [],
   directMessages: [],
+  publicChatMessages: [],
   embeddingMatches: [], // New state for embedding-based matches
   // Default relays, user can override via settings
   nostrRelays: [
@@ -1424,6 +1427,12 @@ export const useAppStore = create<AppStore>((set, get) => ({
     // TODO: Decrypt if necessary and if keys are available
   },
 
+  addPublicChatMessage: (message: DirectMessage) => {
+    set((state) => ({
+      publicChatMessages: [...state.publicChatMessages, message],
+    }));
+  },
+
   setNostrRelays: async (newRelays: string[]) => {
     const state = get();
     const userProfile = state.userProfile;
@@ -1492,6 +1501,17 @@ export const useAppStore = create<AppStore>((set, get) => ({
           console.error("Failed to decrypt DM:", error, event);
         }
       }
+    } else if (event.kind === 42) {
+      // Kind 42: Public Chat Message
+      const message: DirectMessage = {
+        id: event.id,
+        from: event.pubkey,
+        to: "public",
+        content: event.content,
+        timestamp: new Date(event.created_at * 1000),
+        encrypted: false,
+      };
+      state.addPublicChatMessage(message);
     }
     // Kind 1: Public Note (can be for general browsing, matching, or topic feeds)
     else if (event.kind === 1) {
@@ -1833,52 +1853,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
       const currentSyncTime = new Date();
       const relays = userProfile.nostrRelays || get().nostrRelays;
 
-      // 1. Fetch remote ontology (Kind 30001)
-      const remoteOntology = await nostrService.fetchSyncedOntology(relays);
-      if (remoteOntology && remoteOntology.updatedAt) {
-        const localOntology = ontology; // from get()
-        const remoteDate = new Date(remoteOntology.updatedAt);
-        if (
-          !localOntology.updatedAt ||
-          remoteDate > new Date(localOntology.updatedAt)
-        ) {
-          console.log("Remote ontology is newer. Updating local ontology.");
-          await DBService.saveOntology(remoteOntology); // This updates local DB
-          set({ ontology: remoteOntology }); // Update store
-        } else if (
-          localOntology.updatedAt &&
-          new Date(localOntology.updatedAt) > remoteDate
-        ) {
-          console.log("Local ontology is newer. Publishing local ontology.");
-          await nostrService.publishOntologyForSync(localOntology, relays);
-          await DBService.setOntologyNeedsSync(false); // Mark as synced
-        }
-      } else {
-        // No remote ontology, or it's malformed. Publish local if it exists and needs sync.
-        if (
-          (await DBService.getOntologyNeedsSync()) ||
-          (ontology.updatedAt && forceFullSync)
-        ) {
-          console.log(
-            "Publishing local ontology (no remote or local needs sync).",
-          );
-          await nostrService.publishOntologyForSync(ontology, relays);
-          await DBService.setOntologyNeedsSync(false);
-        }
-      }
-
-      // 2. Process local pending ontology sync (if not covered above)
-      if (await DBService.getOntologyNeedsSync()) {
-        const localOntology = (await DBService.getOntology()) || ontology; // Get latest from DB
-        if (localOntology.updatedAt) {
-          // Ensure it has data
-          console.log("Processing pending local ontology sync.");
-          await nostrService.publishOntologyForSync(localOntology, relays);
-          await DBService.setOntologyNeedsSync(false);
-        }
-      }
-
-      // 3. Fetch remote notes (Kind 4, self-addressed, with specific 'd' tag)
+      // 1. Fetch remote notes (Kind 4, self-addressed, with specific 'd' tag)
       // Use lastSyncTimestamp if not a forceFullSync, otherwise fetch all.
       const since = forceFullSync
         ? undefined
@@ -2075,6 +2050,73 @@ export const useAppStore = create<AppStore>((set, get) => ({
       console.error("Nostr sync failed:", error);
       setError("sync", `Sync failed: ${error.message}`);
       // toast.error("Sync Failed", { id: "nostr-sync", description: error.message });
+    } finally {
+      setLoading("sync", false);
+    }
+  },
+
+  syncOntologyWithNostr: async () => {
+    const { setLoading, setError, userProfile, ontology } = get();
+    if (!isOnline()) {
+      setError("sync", "Cannot sync: Application is offline.");
+      return;
+    }
+    if (
+      !userProfile ||
+      !userProfile.nostrPubkey ||
+      !nostrService.isLoggedIn()
+    ) {
+      setError("sync", "Cannot sync: User not logged into Nostr.");
+      return;
+    }
+
+    setLoading("sync", true);
+    setError("sync", undefined);
+
+    try {
+      const relays = userProfile.nostrRelays || get().nostrRelays;
+
+      const remoteOntology = await nostrService.fetchSyncedOntology(relays);
+      if (remoteOntology && remoteOntology.updatedAt) {
+        const localOntology = ontology;
+        const remoteDate = new Date(remoteOntology.updatedAt);
+        if (
+          !localOntology.updatedAt ||
+          remoteDate > new Date(localOntology.updatedAt)
+        ) {
+          console.log("Remote ontology is newer. Updating local ontology.");
+          await DBService.saveOntology(remoteOntology);
+          set({ ontology: remoteOntology });
+        } else if (
+          localOntology.updatedAt &&
+          new Date(localOntology.updatedAt) > remoteDate
+        ) {
+          console.log("Local ontology is newer. Publishing local ontology.");
+          await nostrService.publishOntologyForSync(localOntology, relays);
+          await DBService.setOntologyNeedsSync(false);
+        }
+      } else {
+        if (await DBService.getOntologyNeedsSync() || ontology.updatedAt) {
+          console.log(
+            "Publishing local ontology (no remote or local needs sync).",
+          );
+          await nostrService.publishOntologyForSync(ontology, relays);
+          await DBService.setOntologyNeedsSync(false);
+        }
+      }
+
+      if (await DBService.getOntologyNeedsSync()) {
+        const localOntology = (await DBService.getOntology()) || ontology;
+        if (localOntology.updatedAt) {
+          console.log("Processing pending local ontology sync.");
+          await nostrService.publishOntologyForSync(localOntology, relays);
+          await DBService.setOntologyNeedsSync(false);
+        }
+      }
+      console.log("Ontology sync with Nostr complete.");
+    } catch (error: any) {
+      console.error("Nostr ontology sync failed:", error);
+      setError("sync", `Ontology sync failed: ${error.message}`);
     } finally {
       setLoading("sync", false);
     }

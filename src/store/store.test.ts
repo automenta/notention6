@@ -163,7 +163,6 @@ describe("App Store", () => {
     expect(finalState.nostrConnected).toBe(true);
 
     // Check if initial sync was attempted
-    expect(nostrService.fetchSyncedOntology).toHaveBeenCalled(); // Part of syncWithNostr
     expect(nostrService.fetchSyncedNotes).toHaveBeenCalled(); // Part of syncWithNostr
   });
 
@@ -458,65 +457,67 @@ describe("App Store", () => {
       expect(nostrService.fetchSyncedOntology).not.toHaveBeenCalled();
     });
 
-    it("should fetch remote ontology and update local if remote is newer", async () => {
-      const remoteOntologyNewer: OntologyTree = {
-        nodes: {
-          remoteNode: { id: "remoteNode", label: "#Remote", children: [] },
-        },
-        rootIds: ["remoteNode"],
-        updatedAt: new Date(initialOntology.updatedAt.getTime() + 10000),
-      };
-      vi.mocked(nostrService.fetchSyncedOntology).mockResolvedValue(
-        remoteOntologyNewer,
-      );
-      vi.mocked(DBService.saveOntology).mockResolvedValue(undefined);
+    describe("syncOntologyWithNostr", () => {
+      it("should fetch remote ontology and update local if remote is newer", async () => {
+        const remoteOntologyNewer: OntologyTree = {
+          nodes: {
+            remoteNode: { id: "remoteNode", label: "#Remote", children: [] },
+          },
+          rootIds: ["remoteNode"],
+          updatedAt: new Date(initialOntology.updatedAt.getTime() + 10000),
+        };
+        vi.mocked(nostrService.fetchSyncedOntology).mockResolvedValue(
+          remoteOntologyNewer,
+        );
+        vi.mocked(DBService.saveOntology).mockResolvedValue(undefined);
 
-      await state.syncWithNostr();
+        await state.syncOntologyWithNostr();
 
-      expect(nostrService.fetchSyncedOntology).toHaveBeenCalled();
-      expect(DBService.saveOntology).toHaveBeenCalledWith(remoteOntologyNewer);
-      expect(useAppStore.getState().ontology).toEqual(remoteOntologyNewer);
-    });
+        expect(nostrService.fetchSyncedOntology).toHaveBeenCalled();
+        expect(DBService.saveOntology).toHaveBeenCalledWith(remoteOntologyNewer);
+        expect(useAppStore.getState().ontology).toEqual(remoteOntologyNewer);
+      });
 
-    it("should publish local ontology if local is newer than remote", async () => {
-      const localOntologyNewer: OntologyTree = {
-        ...initialOntology,
-        updatedAt: new Date(Date.now() + 20000),
-      };
-      useAppStore.setState({ ontology: localOntologyNewer });
+      it("should publish local ontology if local is newer than remote", async () => {
+        const localOntologyNewer: OntologyTree = {
+          ...initialOntology,
+          updatedAt: new Date(Date.now() + 20000),
+        };
+        useAppStore.setState({ ontology: localOntologyNewer });
 
-      const remoteOntologyOlder: OntologyTree = {
-        nodes: {
-          remoteNode: { id: "remoteNode", label: "#Remote", children: [] },
-        },
-        rootIds: ["remoteNode"],
-        updatedAt: new Date(initialOntology.updatedAt.getTime() - 10000),
-      };
-      vi.mocked(nostrService.fetchSyncedOntology).mockResolvedValue(
-        remoteOntologyOlder,
-      );
-      vi.mocked(DBService.setOntologyNeedsSync).mockResolvedValue(undefined);
+        const remoteOntologyOlder: OntologyTree = {
+          nodes: {
+            remoteNode: { id: "remoteNode", label: "#Remote", children: [] },
+          },
+          rootIds: ["remoteNode"],
+          updatedAt: new Date(initialOntology.updatedAt.getTime() - 10000),
+        };
+        vi.mocked(nostrService.fetchSyncedOntology).mockResolvedValue(
+          remoteOntologyOlder,
+        );
+        vi.mocked(DBService.setOntologyNeedsSync).mockResolvedValue(undefined);
 
-      await state.syncWithNostr();
+        await state.syncOntologyWithNostr();
 
-      expect(nostrService.publishOntologyForSync).toHaveBeenCalledWith(
-        localOntologyNewer,
-        state.userProfile?.nostrRelays,
-      );
-      expect(DBService.setOntologyNeedsSync).toHaveBeenCalledWith(false);
-    });
-    it("should publish local ontology if no remote ontology and local needs sync or forceFullSync", async () => {
-      vi.mocked(nostrService.fetchSyncedOntology).mockResolvedValue(null);
-      vi.mocked(DBService.getOntologyNeedsSync).mockResolvedValue(true);
-      const localOntologyToSync = { ...initialOntology, updatedAt: new Date() };
-      useAppStore.setState({ ontology: localOntologyToSync });
+        expect(nostrService.publishOntologyForSync).toHaveBeenCalledWith(
+          localOntologyNewer,
+          state.userProfile?.nostrRelays,
+        );
+        expect(DBService.setOntologyNeedsSync).toHaveBeenCalledWith(false);
+      });
+      it("should publish local ontology if no remote ontology and local needs sync", async () => {
+        vi.mocked(nostrService.fetchSyncedOntology).mockResolvedValue(null);
+        vi.mocked(DBService.getOntologyNeedsSync).mockResolvedValue(true);
+        const localOntologyToSync = { ...initialOntology, updatedAt: new Date() };
+        useAppStore.setState({ ontology: localOntologyToSync });
 
-      await state.syncWithNostr(true); // Test with forceFullSync
-      expect(nostrService.publishOntologyForSync).toHaveBeenCalledWith(
-        localOntologyToSync,
-        state.userProfile?.nostrRelays,
-      );
-      expect(DBService.setOntologyNeedsSync).toHaveBeenCalledWith(false);
+        await state.syncOntologyWithNostr();
+        expect(nostrService.publishOntologyForSync).toHaveBeenCalledWith(
+          localOntologyToSync,
+          state.userProfile?.nostrRelays,
+        );
+        expect(DBService.setOntologyNeedsSync).toHaveBeenCalledWith(false);
+      });
     });
 
     it("should fetch remote notes and update local if remote is newer", async () => {

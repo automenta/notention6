@@ -171,6 +171,7 @@ export interface AppState {
   // Network state
   matches: Match[];
   directMessages: DirectMessage[];
+  publicChatMessages: DirectMessage[];
   nostrRelays: string[];
   connected: boolean;
 

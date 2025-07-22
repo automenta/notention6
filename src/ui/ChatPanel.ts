@@ -6,8 +6,13 @@ import { Contact, DirectMessage } from "../../shared/types";
 import { ChatService } from "../services/ChatService";
 
 export function createChatPanel(): HTMLElement {
-  const { userProfile, directMessages, sendDirectMessage, addDirectMessage } =
-    useAppStore.getState();
+  const {
+    userProfile,
+    directMessages,
+    publicChatMessages,
+    sendDirectMessage,
+    addDirectMessage,
+  } = useAppStore.getState();
   const contacts = userProfile?.contacts || [];
   let selectedContact:
     | Contact
@@ -88,7 +93,7 @@ export function createChatPanel(): HTMLElement {
       let messagesToShow: DirectMessage[] = [];
 
       if (selectedContact?.pubkey === "public") {
-        messagesToShow = directMessages.filter((dm) => !dm.encrypted);
+        messagesToShow = publicChatMessages;
       } else if (selectedContact) {
         messagesToShow = directMessages.filter(
           (dm) =>
@@ -128,10 +133,12 @@ export function createChatPanel(): HTMLElement {
     };
 
     renderMessages();
-    messageUnsubscribe = useAppStore.subscribe(
-      (state) => state.directMessages,
-      renderMessages,
-    );
+    messageUnsubscribe = useAppStore.subscribe((state) => {
+      if (selectedContact?.pubkey === "public") {
+        return state.publicChatMessages;
+      }
+      return state.directMessages;
+    }, renderMessages);
 
     messageViewContainer.appendChild(messagesList);
 
