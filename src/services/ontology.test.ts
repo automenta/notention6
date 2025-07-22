@@ -12,7 +12,12 @@ describe("OntologyService", () => {
         parentId: "node-1",
         children: ["node-3"],
       },
-      "node-3": { id: "node-3", label: "#NLP", parentId: "node-2", children: [] },
+      "node-3": {
+        id: "node-3",
+        label: "#NLP",
+        parentId: "node-2",
+        children: [],
+      },
     },
     rootIds: ["node-1"],
   };

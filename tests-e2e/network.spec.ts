@@ -38,6 +38,8 @@ test.describe("Network", () => {
     await page.click('button:has-text("Network")');
 
     // Check that the matching note is displayed
-    await expect(page.locator(".match-note h4")).toHaveText("Remote Note: Note 2");
+    await expect(page.locator(".match-note h4")).toHaveText(
+      "Remote Note: Note 2",
+    );
   });
 });

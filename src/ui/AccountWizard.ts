@@ -17,7 +17,8 @@ export function createAccountWizard(): HTMLElement {
   card.appendChild(title);
 
   const subtitle = document.createElement("p");
-  subtitle.textContent = "Create a new Nostr keypair or import an existing one to get started.";
+  subtitle.textContent =
+    "Create a new Nostr keypair or import an existing one to get started.";
   card.appendChild(subtitle);
 
   const actions = document.createElement("div");

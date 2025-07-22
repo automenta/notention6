@@ -1,11 +1,11 @@
 // src/extensions/TypedProperty.ts
-import { mergeAttributes, Node } from '@tiptap/core';
-import { OntologyProperty } from '../../shared/types';
+import { mergeAttributes, Node } from "@tiptap/core";
+import { OntologyProperty } from "../../shared/types";
 
 export const TypedProperty = Node.create({
-  name: 'typedProperty',
+  name: "typedProperty",
 
-  group: 'inline',
+  group: "inline",
 
   inline: true,
 
@@ -15,18 +15,18 @@ export const TypedProperty = Node.create({
     return {
       name: {
         default: null,
-        parseHTML: (element) => element.getAttribute('data-name'),
-        renderHTML: (attributes) => ({ 'data-name': attributes.name }),
+        parseHTML: (element) => element.getAttribute("data-name"),
+        renderHTML: (attributes) => ({ "data-name": attributes.name }),
       },
       type: {
-        default: 'text',
-        parseHTML: (element) => element.getAttribute('data-type'),
-        renderHTML: (attributes) => ({ 'data-type': attributes.type }),
+        default: "text",
+        parseHTML: (element) => element.getAttribute("data-type"),
+        renderHTML: (attributes) => ({ "data-type": attributes.type }),
       },
       value: {
         default: null,
-        parseHTML: (element) => element.getAttribute('data-value'),
-        renderHTML: (attributes) => ({ 'data-value': attributes.value }),
+        parseHTML: (element) => element.getAttribute("data-value"),
+        renderHTML: (attributes) => ({ "data-value": attributes.value }),
       },
     };
   },
@@ -34,7 +34,7 @@ export const TypedProperty = Node.create({
   parseHTML() {
     return [
       {
-        tag: 'span[data-typed-property]',
+        tag: "span[data-typed-property]",
       },
     ];
   },
@@ -42,8 +42,10 @@ export const TypedProperty = Node.create({
   renderHTML({ HTMLAttributes }) {
     const { name, value } = HTMLAttributes;
     return [
-      'span',
-      mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, { 'data-typed-property': '' }),
+      "span",
+      mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
+        "data-typed-property": "",
+      }),
       `${name}:: ${value}`,
     ];
   },
@@ -55,7 +57,11 @@ export const TypedProperty = Node.create({
         ({ commands }) => {
           return commands.insertContent({
             type: this.type.name,
-            attrs: { name: property.name, type: property.type, value: property.value },
+            attrs: {
+              name: property.name,
+              type: property.type,
+              value: property.value,
+            },
           });
         },
     };
@@ -65,29 +71,29 @@ export const TypedProperty = Node.create({
     return ({ node, getPos, editor }) => {
       const { name, type, value } = node.attrs;
 
-      const dom = document.createElement('span');
-      dom.classList.add('typed-property');
-      dom.setAttribute('data-name', name);
-      dom.setAttribute('data-type', type);
-      dom.setAttribute('data-value', value);
+      const dom = document.createElement("span");
+      dom.classList.add("typed-property");
+      dom.setAttribute("data-name", name);
+      dom.setAttribute("data-type", type);
+      dom.setAttribute("data-value", value);
 
-      const nameElement = document.createElement('strong');
+      const nameElement = document.createElement("strong");
       nameElement.textContent = `${name}:: `;
       dom.appendChild(nameElement);
 
-      const valueElement = document.createElement('span');
+      const valueElement = document.createElement("span");
       valueElement.textContent = value;
-      valueElement.contentEditable = 'true';
+      valueElement.contentEditable = "true";
       dom.appendChild(valueElement);
 
-      valueElement.addEventListener('blur', (e) => {
+      valueElement.addEventListener("blur", (e) => {
         const newValue = (e.target as HTMLSpanElement).innerText;
-        if (typeof getPos === 'function') {
+        if (typeof getPos === "function") {
           editor.view.dispatch(
             editor.view.state.tr.setNodeMarkup(getPos(), undefined, {
               ...node.attrs,
               value: newValue,
-            })
+            }),
           );
         }
       });

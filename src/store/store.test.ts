@@ -474,7 +474,9 @@ describe("App Store", () => {
         await state.syncOntologyWithNostr();
 
         expect(nostrService.fetchSyncedOntology).toHaveBeenCalled();
-        expect(DBService.saveOntology).toHaveBeenCalledWith(remoteOntologyNewer);
+        expect(DBService.saveOntology).toHaveBeenCalledWith(
+          remoteOntologyNewer,
+        );
         expect(useAppStore.getState().ontology).toEqual(remoteOntologyNewer);
       });
 
@@ -508,7 +510,10 @@ describe("App Store", () => {
       it("should publish local ontology if no remote ontology and local needs sync", async () => {
         vi.mocked(nostrService.fetchSyncedOntology).mockResolvedValue(null);
         vi.mocked(DBService.getOntologyNeedsSync).mockResolvedValue(true);
-        const localOntologyToSync = { ...initialOntology, updatedAt: new Date() };
+        const localOntologyToSync = {
+          ...initialOntology,
+          updatedAt: new Date(),
+        };
         useAppStore.setState({ ontology: localOntologyToSync });
 
         await state.syncOntologyWithNostr();

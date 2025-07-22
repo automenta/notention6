@@ -81,7 +81,9 @@ describe("AIService", () => {
         ...defaultUserProfilePreferences,
         aiEnabled: true,
       });
-      vi.spyOn(aiService, "generateNoteContent").mockResolvedValue("Generated content");
+      vi.spyOn(aiService, "generateNoteContent").mockResolvedValue(
+        "Generated content",
+      );
       const content = await aiService.generateNoteContent("prompt");
       expect(content).toEqual("Generated content");
     });

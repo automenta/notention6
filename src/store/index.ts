@@ -2096,7 +2096,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
           await DBService.setOntologyNeedsSync(false);
         }
       } else {
-        if (await DBService.getOntologyNeedsSync() || ontology.updatedAt) {
+        if ((await DBService.getOntologyNeedsSync()) || ontology.updatedAt) {
           console.log(
             "Publishing local ontology (no remote or local needs sync).",
           );

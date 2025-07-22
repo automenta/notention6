@@ -67,9 +67,7 @@ export class ChatService {
     try {
       const { nostrService: appNostrService } = useAppStore.getState();
       const nostr = appNostrService || nostrService;
-      const eventIds = await nostr.publishEvent(42, content, [
-        ["c", "public"],
-      ]);
+      const eventIds = await nostr.publishEvent(42, content, [["c", "public"]]);
       return {
         id: eventIds[0] || "",
         from: nostr.getPublicKey() || "",

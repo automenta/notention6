@@ -67,7 +67,9 @@ test.describe("Chat", () => {
     await page.click('button:has-text("Send")');
 
     // Check that the message is displayed
-    await expect(page.locator(".message-bubble")).toHaveText("Hello, everyone!");
+    await expect(page.locator(".message-bubble")).toHaveText(
+      "Hello, everyone!",
+    );
 
     // In the second user's page, check that the message is received
     await page2.click('button:has-text("Chats")');

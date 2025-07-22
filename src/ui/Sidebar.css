@@ -19,7 +19,9 @@
   border-radius: var(--border-radius);
   color: var(--text-color-secondary);
   font-weight: var(--font-weight-medium);
-  transition: background-color var(--transition-duration) var(--transition-timing-function),
+  transition:
+    background-color var(--transition-duration)
+      var(--transition-timing-function),
     color var(--transition-duration) var(--transition-timing-function);
 }
 
