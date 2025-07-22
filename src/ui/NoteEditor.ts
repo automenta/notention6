@@ -280,6 +280,17 @@ export function createNoteEditor(noteId?: string): HTMLElement {
   });
   toolbar.appendChild(shareButton);
 
+  const deleteButton = createButton({
+    label: "Delete",
+    onClick: () => {
+      if (confirm("Are you sure you want to delete this note?")) {
+        useAppStore.getState().deleteNote(note.id);
+      }
+    },
+    variant: "danger",
+  });
+  toolbar.appendChild(deleteButton);
+
   editorLayout.appendChild(mainEditorContainer);
   editorLayout.appendChild(metadataSidebar);
 

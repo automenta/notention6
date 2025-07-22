@@ -79,6 +79,8 @@ interface AppActions {
   setEditorContent: (content: string) => void;
   setIsEditing: (editing: boolean) => void;
   setNoteView: (view: AppState["noteView"]) => void;
+  setNotesViewMode: (mode: AppState["notesViewMode"]) => void;
+  setMessagingViewMode: (mode: AppState["messagingViewMode"]) => void;
 
   // Loading and error actions
   setLoading: (key: keyof AppState["loading"], loading: boolean) => void;
@@ -241,6 +243,8 @@ export const useAppStore = create<AppStore>((set, get) => ({
   searchQuery: "",
   searchFilters: {},
   noteView: "all",
+  notesViewMode: "list",
+  messagingViewMode: "contacts",
 
   matches: [],
   directMessages: [],
@@ -976,6 +980,14 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
   setNoteView: (view: AppState["noteView"]) => {
     set({ noteView: view });
+  },
+
+  setNotesViewMode: (mode: AppState["notesViewMode"]) => {
+    set({ notesViewMode: mode });
+  },
+
+  setMessagingViewMode: (mode: AppState["messagingViewMode"]) => {
+    set({ messagingViewMode: mode });
   },
 
   setLoading: (key: keyof AppState["loading"], loading: boolean) => {

@@ -1,5 +1,5 @@
 import { createAppShell } from "@/ui/AppShell";
-import "./src/index.css";
+import "./index.css";
 
 const rootElement = document.getElementById("root");
 

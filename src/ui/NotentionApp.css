@@ -33,6 +33,43 @@
   overflow-y: auto;
 }
 
+.two-panel-layout {
+  display: flex;
+  flex-direction: row;
+  height: 100vh;
+}
+
+.left-panel {
+  overflow-y: auto;
+  border-right: 1px solid var(--border);
+}
+
+.right-panel {
+  overflow-y: auto;
+  flex-grow: 1;
+}
+
+.notes-layout .left-panel {
+  width: 40%;
+}
+
+.notes-layout .right-panel {
+  width: 60%;
+}
+
+.messaging-layout .left-panel {
+  width: 30%;
+}
+
+.messaging-layout .right-panel {
+  width: 70%;
+}
+
+.panel-toggle-btn, .view-toggle-btn {
+  margin: 1rem;
+}
+
+
 .sidebar-toggle-btn {
   position: absolute;
   top: 1rem;

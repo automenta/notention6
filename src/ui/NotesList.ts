@@ -86,6 +86,16 @@ export function createNotesList(): HTMLElement {
 
   searchFilterContainer.appendChild(viewSwitcher);
 
+  const newNoteButton = createButton({
+    label: "New Note",
+    onClick: () => {
+      useAppStore.getState().createNote();
+    },
+    variant: "primary",
+    className: "new-note-btn"
+  });
+  searchFilterContainer.appendChild(newNoteButton);
+
   const newFolderButton = createButton({
     label: "New Folder",
     onClick: () => {

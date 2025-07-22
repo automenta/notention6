@@ -167,6 +167,8 @@ export interface AppState {
   searchQuery: string;
   searchFilters: SearchFilters;
   noteView: "all" | "favorites" | "archived";
+  notesViewMode: "list" | "folders";
+  messagingViewMode: "contacts" | "network";
 
   // Network state
   matches: Match[];

@@ -4,6 +4,15 @@ import { defineConfig } from "vite";
 
 // https://vite.dev/config/
 export default defineConfig({
+  build: {
+    rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, "index.html"),
+        notes: path.resolve(__dirname, "notes.html"),
+        messaging: path.resolve(__dirname, "messaging.html"),
+      },
+    },
+  },
   plugins: [tailwindcss()],
   resolve: {
     alias: {
